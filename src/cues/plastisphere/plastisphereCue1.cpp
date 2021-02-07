@@ -134,7 +134,7 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
         out.addMessage("/perc/clock/"+ to_string( data.id[i] + 1 ) +"/trigger", 1);
     }
     
-    for( int i = 0; i < data.ncontours; ++i )
+    for( size_t i = 0; i < data.ncontours; ++i )
     {
         double scaled = clip( data.contour_area[i] * 10., 0., 1.);
       //  cout << scaled << " ";
@@ -180,7 +180,7 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
 
     if( m_newCue )
     {
-        for( int i = 0; i < fig_1_y.size(); ++i )
+        for( size_t i = 0; i < fig_1_y.size(); ++i )
         {
             fig_1_x.emplace_back( m_rand_generator.uniformRand() );
         }
@@ -281,21 +281,21 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
         vector<int> ids = data.id;
         for_each(ids.begin(), ids.end(), [](int& n){ n++; });
 
-        out.addMessage("/filter/voice", ids );
-        out.addMessage("/filter/Q", scale( data.contour_area, 0., 1., 0.71, 2.) );
-        out.addMessage("/filter/dB",scale( data.contour_area, 0., 1., -6., 0.));
-        out.addMessage("/filter/type", ArrayXd::Constant( data.ncontours, 2) );
-        out.addMessage("/filter/pan", scale( data.contour_area, 0, 1, -1, 1 ) );
+        out.addMessage("/filter/voice",     ids );
+        out.addMessage("/filter/Q",         scale( data.contour_area, 0., 1., 0.71, 2.) );
+        out.addMessage("/filter/dB",        scale( data.contour_area, 0., 1., -6., 0.));
+        out.addMessage("/filter/type",      ArrayXd::Constant( data.ncontours, 2) );
+        out.addMessage("/filter/pan",       scale( data.contour_area, 0, 1, -1, 1 ) );
 
         ArrayXd filter_down_angle = scale( abs( data.defect_rel_mean_angle ), 0., 180, 1, 2.);
         ArrayXd filter_down_area = scale( data.contour_area, 0, 1, 0., 20.);
 
-        out.addMessage("/filter/down/angle", filter_down_angle );
-        out.addMessage("/filter/down/area", filter_down_area );
-        out.addMessage("/filter/downsamp/wobble/time", ArrayXd::Constant( data.ncontours, 100) );
+        out.addMessage("/filter/down/angle",            filter_down_angle );
+        out.addMessage("/filter/down/area",             filter_down_area );
+        out.addMessage("/filter/downsamp/wobble/time",  ArrayXd::Constant( data.ncontours, 100) );
         out.addMessage("/filter/downsamp/wobble/start", filter_down_angle );
-        out.addMessage("/filter/downsamp/wobble/end", ArrayXd(filter_down_angle + filter_down_area) );
-        out.addMessage("/filter/hz", mtof( scale( data.contour_area, 0, 1, 120., 60.) ) );
+        out.addMessage("/filter/downsamp/wobble/end",   ArrayXd(filter_down_angle + filter_down_area) );
+        out.addMessage("/filter/hz",                    mtof( scale( data.contour_area, 0, 1, 120., 60.) ) );
     }
    
     

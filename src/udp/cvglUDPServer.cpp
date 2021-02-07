@@ -351,28 +351,19 @@ void cvglUDPServer::loop()
             
             if( read )
             {
-             
-                MapOSC o;
-                o.inputOSC(read, buf);
-                
-                //OdotBundle_s s(buf, read);
-                 
-                //OdotBundle b = s.deserialize();
-                
-                receivedBundle(o);
-                
-                //cout << "sent" << endl;
-                //s.release();
-            
-                 
-                /*
-                for( int i = 0; i < read; ++i )
+/*
+                for( size_t i = 0; i < read; ++i )
                 {
-                    cout << buf[i];
+
+                    printf("%c[%ld] ", (buf[i] == '\0' ? '_' : buf[i]), i);
                 }
-                
+
                 cout << endl;
-                 */
+*/
+                MapOSC o;
+                o.inputOSC(read, buf);       
+                receivedBundle(o);
+
              
             }
         }

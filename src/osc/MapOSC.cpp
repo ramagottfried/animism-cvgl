@@ -4,6 +4,8 @@
 #include <inttypes.h>
 #include <arpa/inet.h>
 
+#include <iostream>
+
 /*
 #include "osc_bundle_iterator_s.h"
 #include "osc_message_iterator_s.h"
@@ -170,8 +172,9 @@ void MapOSC::inputOSC( long len, char * ptr )
 {
 
     // MapOSC is a bundle, so we can add elements directly
+    // buf substr is crashing now, maybe because of the internal null chars, not sure yet
 
-    string buf(ptr);
+    string buf(ptr, len);
     long _n = OSC_HEADER_SIZE;
 
     while( _n < len )
@@ -180,12 +183,15 @@ void MapOSC::inputOSC( long len, char * ptr )
 
         int32_t addr_start = _n + 4;
         int32_t addr_end = buf.find_first_of('\0', addr_start);
-        string addr = buf.substr(addr_start, addr_end);
-
+        string addr = buf.substr(addr_start, addr_end-addr_start);
+       // cout << "addr " << addr << " start " << addr_start << " end " << addr_end <<endl;
 
         int32_t typetags_start = addr_start + osc_util_getPaddedStringLen(addr);
         int32_t typetags_end = buf.find_first_of('\0', typetags_start);
-        string typetags = buf.substr(typetags_start, typetags_end);
+        string typetags = buf.substr(typetags_start, typetags_end-typetags_start);
+
+        //cout << "typetags " << typetags << endl;
+
 
         int32_t data_start = typetags_start + osc_util_getPaddedStringLen(typetags);
         size_t bytes_to_next = 0;
