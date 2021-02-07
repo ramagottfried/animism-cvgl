@@ -665,8 +665,9 @@ namespace cvgl {
                 int y = pointer[i]->y;
                 if( pointer[miny_ind]->y > y )
                     miny_ind = i;
-                    if( pointer[maxy_ind]->y < y )
-                        maxy_ind = i;
+
+                if( pointer[maxy_ind]->y < y )
+                    maxy_ind = i;
             }
         }
         else
@@ -677,8 +678,9 @@ namespace cvgl {
                 float y = pointerf[i]->y;
                 if( pointerf[miny_ind]->y > y )
                     miny_ind = i;
-                    if( pointerf[maxy_ind]->y < y )
-                        maxy_ind = i;
+
+                if( pointerf[maxy_ind]->y < y )
+                    maxy_ind = i;
             }
         }
         
@@ -711,24 +713,25 @@ namespace cvgl {
             
             for( i = tr_count - 1; i > 0; i-- )
                 hullbuf[nout++] = int(pointer[tr_stack[i]] - data0);
-                int stop_idx = tr_count > 2 ? tr_stack[1] : tl_count > 2 ? tl_stack[tl_count - 2] : -1;
-            
-                // lower half
-                int *bl_stack = stack;
-                int bl_count = !is_float ?
-                Sklansky_( pointer, 0, miny_ind, bl_stack, 1, -1) :
-                Sklansky_( pointerf, 0, miny_ind, bl_stack, 1, -1);
-                int *br_stack = stack + bl_count;
-                int br_count = !is_float ?
-                Sklansky_( pointer, total-1, miny_ind, br_stack, 1, 1) :
-                Sklansky_( pointerf, total-1, miny_ind, br_stack, 1, 1);
-            
-                if( clockwise )
-                {
-                    std::swap( bl_stack, br_stack );
-                    std::swap( bl_count, br_count );
-                }
-            
+
+            int stop_idx = tr_count > 2 ? tr_stack[1] : tl_count > 2 ? tl_stack[tl_count - 2] : -1;
+
+            // lower half
+            int *bl_stack = stack;
+            int bl_count = !is_float ?
+            Sklansky_( pointer, 0, miny_ind, bl_stack, 1, -1) :
+            Sklansky_( pointerf, 0, miny_ind, bl_stack, 1, -1);
+            int *br_stack = stack + bl_count;
+            int br_count = !is_float ?
+            Sklansky_( pointer, total-1, miny_ind, br_stack, 1, 1) :
+            Sklansky_( pointerf, total-1, miny_ind, br_stack, 1, 1);
+
+            if( clockwise )
+            {
+                std::swap( bl_stack, br_stack );
+                std::swap( bl_count, br_count );
+            }
+
             if( stop_idx >= 0 )
             {
                 int check_idx = bl_count > 2 ? bl_stack[1] :

@@ -420,7 +420,7 @@ size_t MapOSC::getMapOSCSize()
 
 
 
-size_t serializeVector( char *buf, size_t n, const char * address, std::vector<MapAtom>& vec )
+size_t serializeVector( char *buf, size_t remaining_size, const char * address, std::vector<MapAtom>& vec )
 {
     size_t _n = 0;
     size_t addresslen = strlen(address);
@@ -428,10 +428,10 @@ size_t serializeVector( char *buf, size_t n, const char * address, std::vector<M
     size_t padded_typetag_len = osc_util_getPaddingForNBytes(vec.size() + 1);
     size_t num_bytes_before_data = 4 + padded_address_len + padded_typetag_len;
 
-    if(n < num_bytes_before_data){
+    if(remaining_size < num_bytes_before_data){
         return 0;
     }
-    _n = num_bytes_before_data;
+    _n += num_bytes_before_data;
     
     char *ptr = buf;
     memset(ptr, '\0', num_bytes_before_data);
@@ -495,11 +495,11 @@ size_t serializeVector( char *buf, size_t n, const char * address, std::vector<M
             }
             case 's':
             {
-                const char * str = at.get<std::string>().c_str();
-                size_t len = strlen( str );
+                const string& str = at.get<std::string>().c_str();
+                size_t len = str.length();
                 size_t plen = osc_util_getPaddingForNBytes(len);
                 memset(ptr, '\0', plen);
-                memcpy(ptr, str, len);
+                memcpy(ptr, str.c_str(), len);
                 _n += plen;
             }
             default:
@@ -541,13 +541,17 @@ void MapOSC::serializeIntoBuffer(char *ptr, size_t size )
 {
     size_t _n = 0;
     
-   // memset(ptr, '\0', size);
+    memset(ptr, '\0', size);
     memcpy(ptr, OSC_EMPTY_HEADER, OSC_HEADER_SIZE);
     _n += OSC_HEADER_SIZE;
     
     for (auto& it : map)
     {
-        _n += serializeVector(ptr + _n, size - _n, it.first.c_str(), it.second.getAtomVector() );
+        _n += serializeVector(ptr + _n,
+                              size - _n,
+                              it.first.c_str(), //address
+                              it.second.getAtomVector() //vec
+                              );
     }
     
    // printf("_n %ld \n", _n);

@@ -8,7 +8,7 @@ int main( void )
 {
     
     std::cout << "hardware_concurrency " << std::thread::hardware_concurrency() << std::endl;
-    std::string sendIp = "127.0.0.1";
+    std::string sendIp = "192.168.100.1";
 
     cvglMainProcess app;
     app.init(8888, 9999, sendIp);
@@ -16,6 +16,7 @@ int main( void )
     cvglDeckLinkCamera bm_cam(4);
     //cvglDeckLinkCamera bm_cam2(2);
     
+    cout << "checking cv cam" << endl;
     cvglCVCamera cvcam(0);
    
     if( bm_cam.hasCamera() )
@@ -26,11 +27,13 @@ int main( void )
         bm_cam.start();
 
     }
-    else if( cvcam.hasCamera() )
+    //else
+    if( cvcam.hasCamera() )
     {
         cout << "doing cv camera " << endl;
         cvcam.setProcessFrameCallback( [&app](cv::Mat& mat){ app.processFrame(mat, 3); } );
-        if( !bm_cam.hasCamera() ){
+        if( !bm_cam.hasCamera() )
+        {
             app.context.setupWindow( cvcam.getWidth(), cvcam.getHeight() );
             app.useCameraID(3);
         }

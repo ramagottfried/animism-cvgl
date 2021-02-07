@@ -29,7 +29,7 @@ struct MapAtom
         if constexpr (std::is_same_v<T, std::string>)
         {
             return std::visit( overloaded {
-                    [](std::string arg) { return arg; },
+                    [](std::string& arg) { return arg; },
                     [](auto& arg) { return std::to_string(arg); }
             }, m_atom);
         }

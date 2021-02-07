@@ -416,7 +416,7 @@ AnalysisData cvglCV::analyzeContour()
         
         size_t hullI_size = hullI.rows * hullI.cols;
         if( hullI_size > 3 )
-            convexityDefects( data.contours[i], hullI, defects );
+            cvgl::convexityDefects( data.contours[i], hullI, defects );
         
         data.hullP_vec.emplace_back( hullP );
         data.hullI_vec.emplace_back( hullI );

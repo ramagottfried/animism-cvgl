@@ -92,9 +92,7 @@ void cvglContext::setupWindow(int width, int height )
     m_aspectRatio = (double)width / (double)height;
     
     glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE);
 
@@ -102,7 +100,7 @@ void cvglContext::setupWindow(int width, int height )
   //  glfwWindowHint(GLFW_DEPTH_BITS, 24);
   //  glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
-    std::string glsl_version = "";
+   // std::string glsl_version = "";
 
 #ifdef __APPLE__
     // GL 3.2 + GLSL 150
@@ -115,9 +113,9 @@ void cvglContext::setupWindow(int width, int height )
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 #elif __linux__
     // GL 3.2 + GLSL 150
-    glsl_version = "#version 150";
+   // glsl_version = "#version 150";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 #elif _WIN32
     // GL 3.0 + GLSL 130
     glsl_version = "#version 130";

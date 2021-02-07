@@ -360,11 +360,20 @@ HRESULT cvglDeckLinkCamera::VideoInputFormatChanged (BMDVideoInputFormatChangedE
 
         m_width = (int)newDisplayMode->GetWidth();
         m_height = (int)newDisplayMode->GetHeight();
+
         m_mutex.unlock();
+
     }
 
     std::cout << "unlocking with size " << m_width << " " << m_height << std::endl;
-    
+/*
+    if( !m_width || !m_height )
+    {
+        m_deckLinkInput->StopStreams();
+        m_opencamera = false;
+        cout << "stopped empty stream " << endl;
+    }
+  */
 bail:
     return S_OK;
 }
