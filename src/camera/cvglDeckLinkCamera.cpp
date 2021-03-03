@@ -10,17 +10,17 @@ cvglDeckLinkCamera::cvglDeckLinkCamera(int index) : m_refCount(1)
     {
         blackmagic = true;
         
-        m_opencamera = true;
-        
-        
         m_thread_pool = std::make_unique<ThreadPool>(2);
 
         // lock and wait for auto-detection to update
         printf("checking for lock \n");
         
-        lock_guard<mutex> lock(m_mutex);
+        //auto now=std::chrono::steady_clock::now();
+        //    test_mutex.try_lock_until(now + std::chrono::seconds(10));
+        m_mutex.try_lock_for(std::chrono::seconds(2));
         printf("exiting mutex lock with size : %d %d\n" , m_width, m_height);
-        
+
+        m_mutex.unlock();
         init_softlock = false;
         pause();
         
@@ -360,6 +360,8 @@ HRESULT cvglDeckLinkCamera::VideoInputFormatChanged (BMDVideoInputFormatChangedE
 
         m_width = (int)newDisplayMode->GetWidth();
         m_height = (int)newDisplayMode->GetHeight();
+
+        m_opencamera = true;
 
         m_mutex.unlock();
 

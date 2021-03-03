@@ -50,7 +50,7 @@ private:
 
     int32_t m_refCount;
     
-    std::mutex m_mutex;
+    std::timed_mutex m_mutex;
     
     bool init_softlock = true;
     bool m_isplaying = false;

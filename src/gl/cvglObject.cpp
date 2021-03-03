@@ -204,7 +204,7 @@ void cvglObject::rewriteVerticesWithIds( vector<GLuint> idx )
     
     for( const auto& i : idx )
     {
-        m_vertices[v_idx++] = cvglVertex({ (float)get<0>(vert_list[i]), (float)get<1>(vert_list[i]) });
+        m_vertices[v_idx++] = cvglVertex({{ (float)get<0>(vert_list[i]), (float)get<1>(vert_list[i]), 0 }, {0, 0} });
     }
     
     m_size.back() = n_verts;

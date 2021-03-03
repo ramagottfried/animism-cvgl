@@ -13,10 +13,10 @@ int main( void )
     cvglMainProcess app;
     app.init(8888, 9999, sendIp);
 
-    cvglDeckLinkCamera bm_cam(4);
+    cvglDeckLinkCamera bm_cam(2);
     //cvglDeckLinkCamera bm_cam2(2);
     
-    cout << "checking cv cam" << endl;
+    cout << "blackmagic " << bm_cam.hasCamera() << " checking cv cam" << endl;
     cvglCVCamera cvcam(0);
    
     if( bm_cam.hasCamera() )
@@ -27,8 +27,7 @@ int main( void )
         bm_cam.start();
 
     }
-    //else
-    if( cvcam.hasCamera() )
+    else if( cvcam.hasCamera() )
     {
         cout << "doing cv camera " << endl;
         cvcam.setProcessFrameCallback( [&app](cv::Mat& mat){ app.processFrame(mat, 3); } );
@@ -44,6 +43,7 @@ int main( void )
         app.close();
         return -1;
     }
+
     /*
     if( bm_cam2.hasCamera() )
     {

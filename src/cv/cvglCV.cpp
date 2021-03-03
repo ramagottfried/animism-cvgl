@@ -1,3 +1,6 @@
+#include "opencv2/cudaoptflow.hpp"
+#include "opencv2/cudaarithm.hpp"
+#include "opencv2/video/tracking.hpp"
 
 #include "cvglCV.hpp"
 #include "cvglHelperFunctions.hpp"

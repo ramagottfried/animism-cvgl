@@ -315,7 +315,7 @@ void cvglMainProcess::processAnalysis(const AnalysisData& data)
 
 void setTriangleTexcords(unique_ptr<cvglObject> & obj )
 {
-    for( int i = 0; i < obj->getSize(); i++  )
+    for( size_t i = 0; i < obj->getSize(); i++  )
     {
         cvglVertex vert = obj->getVertex(i);
 
@@ -350,7 +350,7 @@ void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
         minrectMesh->reserve( analysis.contours.size() * 4 * 2 );
     }
     
-    for( int i = 0 ; i < analysis.contour_idx.size(); i++ )
+    for( size_t i = 0 ; i < analysis.contour_idx.size(); i++ )
     {
         
         if( m_draw_contour )

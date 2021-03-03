@@ -33,7 +33,7 @@ public:
     
     cvglCV() : m_id_used(m_maxIDs)
     {
-        m_thread_pool = std::make_unique<ThreadPool>(4);
+        m_thread_pool = std::make_unique<ThreadPool>(16);
         printf("cv optimization %i\n", cv::useOptimized() );
     }
     
