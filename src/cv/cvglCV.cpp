@@ -111,7 +111,8 @@ void cvglCV::preprocessDifference()
        m_prev_frame = src_color_sized.clone();
     }
 
-    Mat diff = m_prev_frame - src_color_sized;
+    UMat diff;
+    cv::subtract( m_prev_frame, src_color_sized, diff);
        
     m_prev_frame = src_color_sized.clone();
        
@@ -205,7 +206,7 @@ void cvglCV::preprocessCanny()
 
 
 static void drawArrows(UMat& _frame, const vector<Point2f>& prevPts, const vector<Point2f>& nextPts, const vector<uchar>& status,
-                       Scalar line_color = Scalar(0, 0, 255))
+                       Scalar line_color = Scalar(0, 0, 255), double resize_scale = 1)
 {
     Mat frame = _frame.getMat(ACCESS_WRITE);
     for (size_t i = 0; i < prevPts.size(); ++i)
@@ -214,8 +215,8 @@ static void drawArrows(UMat& _frame, const vector<Point2f>& prevPts, const vecto
         {
             int line_thickness = 1;
 
-            Point p = prevPts[i];
-            Point q = nextPts[i];
+            Point p = prevPts[i] * resize_scale;
+            Point q = nextPts[i] * resize_scale;
 
             double angle = atan2((double) p.y - q.y, (double) p.x - q.x);
 
@@ -245,6 +246,24 @@ static void drawArrows(UMat& _frame, const vector<Point2f>& prevPts, const vecto
     }
 }
 
+static Mat getVisibleFlow(InputArray flow)
+{
+    vector<UMat> flow_vec;
+    split(flow, flow_vec);
+    UMat magnitude, angle;
+    cartToPolar(flow_vec[0], flow_vec[1], magnitude, angle, true);
+    magnitude.convertTo(magnitude, CV_32F, 0.2);
+    vector<UMat> hsv_vec;
+    hsv_vec.push_back(angle);
+    hsv_vec.push_back(UMat::ones(angle.size(), angle.type()));
+    hsv_vec.push_back(magnitude);
+    UMat hsv;
+    merge(hsv_vec, hsv);
+    Mat img;
+    cvtColor(hsv, img, COLOR_HSV2BGR);
+    return img;
+}
+
 
 void cvglCV::getFlow()
 {
@@ -256,7 +275,7 @@ void cvglCV::getFlow()
         return;
     }
     
-    float resize = m_resize * 0.5;
+    float resize = m_resize;
     cv::resize(m_img, src_color_sized, cv::Size(), resize, resize, cv::INTER_AREA);
     cv::cvtColor(src_color_sized, src_gray, cv::COLOR_RGB2GRAY);
     
@@ -267,21 +286,51 @@ void cvglCV::getFlow()
 
     const double resize_scalar = 1.0 / resize;
 
-    const size_t points = 1000;
+    /*
+    // pyrLK
+    const size_t points = 100;
 
     vector<unsigned char> status(points);
     vector<float> err;
 
-
     m_track_points.clear();
-
 
     goodFeaturesToTrack(m_prev_frame, m_track_points, points, 0.01, 0.0);
     if(m_track_points.size() == 0)
         return;
     calcOpticalFlowPyrLK(m_prev_frame, src_gray, m_track_points, m_next_track_points, status, err);
 
-    drawArrows(m_img, m_track_points, m_next_track_points, status, Scalar(255, 0, 0));
+    drawArrows(m_img, m_track_points, m_next_track_points, status, Scalar(255, 0, 0), resize_scalar);
+*/
+
+    dense_flow->calc(m_prev_frame, src_gray, flow);
+
+
+    // display
+    vector<UMat> flow_vec;
+    split(flow, flow_vec);
+    UMat magnitude, angle;
+    cartToPolar(flow_vec[0], flow_vec[1], magnitude, angle, true);
+    magnitude.convertTo(magnitude, CV_32F, 0.01);
+
+    vector<UMat> hsv_vec;
+    hsv_vec.push_back(angle);
+    hsv_vec.push_back(UMat::ones(angle.size(), angle.type()));
+    hsv_vec.push_back(magnitude);
+
+    UMat hsv;
+    merge(hsv_vec, hsv);
+
+    UMat img;
+    cvtColor(hsv, img, COLOR_HSV2BGR);
+
+    img.convertTo(img, CV_8UC3, 255);
+    cv::resize(img, img, cv::Size(), resize_scalar, resize_scalar);
+
+
+    add(m_img, img, m_img);
+
+    //img.copyTo(m_img);
 
 
     m_prev_frame = src_gray.clone();
@@ -784,7 +833,7 @@ void cvglCV::analysisTracking(AnalysisData& data, const AnalysisData& prev_data)
 }
 
 
-vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const Mat& mask, const cv::Rect& roi)
+vector<PixStats> cvglCV::getStatsChar( const UMat& src, const UMat& sobel, const Mat& mask, const cv::Rect& roi)
 {
     //const int plane, T& min, T& max, T& varience
     
@@ -815,13 +864,16 @@ vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const M
     int col_start = roi.x;
     int col_end = col_start + roi.width;
     
+    const cv::Mat src_mat = src.getMat(ACCESS_READ);
+    const cv::Mat sob_mat = sobel.getMat(ACCESS_READ);
+
     for( int i = row_start; i < row_end; ++i )
     {
         mask_p = mask.ptr<uchar>(i);
         
         // do type check above here, eventually would be nice to support float also
-        src_p = src.ptr<uchar>(i);
-        sobel_p = sobel.ptr<float>(i);
+        src_p = src_mat.ptr<uchar>(i);
+        sobel_p = sob_mat.ptr<float>(i);
         
         for( int j = col_start; j < col_end; ++j )
         {
@@ -877,8 +929,8 @@ vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const M
         col = index[i].x;
         row = index[i].y;
         
-        src_p = src.ptr<uchar>(row);
-        sobel_p = sobel.ptr<float>(row);
+        src_p = src_mat.ptr<uchar>(row);
+        sobel_p = sob_mat.ptr<float>(row);
         
         for( int c = 0; c < nchans; ++c)
         {

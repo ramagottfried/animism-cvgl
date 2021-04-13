@@ -22,7 +22,7 @@ int main( void )
     if( bm_cam.hasCamera() )
     {
         cout << "found blackmagic 2 " << endl;
-        bm_cam.setProcessFrameCallback( [&app](cv::Mat& mat) { app.processFrame(mat, 1); } );
+        bm_cam.setProcessFrameCallback( [&app](cv::UMat& mat) { app.processFrame(mat, 1); } );
         app.context.setupWindow( bm_cam.getWidth(), bm_cam.getHeight() );
         bm_cam.start();
 
@@ -30,7 +30,7 @@ int main( void )
     else if( cvcam.hasCamera() )
     {
         cout << "doing cv camera " << endl;
-        cvcam.setProcessFrameCallback( [&app](cv::Mat& mat){ app.processFrame(mat, 3); } );
+        cvcam.setProcessFrameCallback( [&app](cv::UMat& mat){ app.processFrame(mat, 3); } );
         if( !bm_cam.hasCamera() )
         {
             app.context.setupWindow( cvcam.getWidth(), cvcam.getHeight() );

@@ -411,7 +411,7 @@ HRESULT STDMETHODCALLTYPE cvglDeckLinkCamera::VideoInputFrameArrived (IDeckLinkV
     {
         //checkFrameOrderStart();
         
-        cv::Mat mRGB;
+        cv::UMat mRGB;
         cv::cvtColor(cv::Mat((int)videoFrame->GetHeight(), (int)videoFrame->GetWidth(), CV_8UC2, data),
                      mRGB,
                      cv::COLOR_YUV2BGR_UYVY );
@@ -420,7 +420,7 @@ HRESULT STDMETHODCALLTYPE cvglDeckLinkCamera::VideoInputFrameArrived (IDeckLinkV
                 note: processFrameCallback may take ownership of Mat
          */
         if( blackmagic && m_processFrameCallback )
-             m_thread_pool->enqueue([&](cv::Mat _data){ m_processFrameCallback(_data);}, std::move(mRGB));
+             m_thread_pool->enqueue([&](cv::UMat _data){ m_processFrameCallback(_data);}, std::move(mRGB));
             //m_processFrameCallback( mRGB );
 
            // m_thread_pool->enqueue([&](cv::Mat _data){ m_processFrameCallback(_data);}, std::move(mRGB));

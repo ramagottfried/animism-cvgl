@@ -33,6 +33,8 @@ public:
     
     cvglCV() : m_id_used(m_maxIDs)
     {
+        cv::ocl::setUseOpenCL(true);
+
         m_thread_pool = std::make_unique<ThreadPool>(16);
         printf("cv optimization %i\n", cv::useOptimized() );
     }
@@ -81,10 +83,10 @@ public:
     void analysisThread(AnalysisData data);
     void analysisTracking(AnalysisData& data, const AnalysisData& prev_data);
     
-    std::vector<PixStats> getStatsChar( const cv::Mat& src, const cv::Mat& sobel, const cv::Mat& mask, const cv::Rect& roi);
+    std::vector<PixStats> getStatsChar( const cv::UMat& src, const cv::UMat& sobel, const cv::Mat& mask, const cv::Rect& roi);
     
     
-    inline const cv::Mat& getFrame()
+    inline const cv::UMat& getFrame()
     {
         return m_img;
     }
@@ -92,7 +94,7 @@ public:
     // setters
     void setCVParams( MapOSC & b );
     
-    inline void setFrame( cv::Mat & frame )
+    inline void setFrame( cv::UMat & frame )
     {
         m_img.release();
         m_img = std::move(frame);
@@ -139,8 +141,8 @@ protected:
     
     AnalysisData m_prev_data;
     
-    cv::Mat m_img, m_prev_frame;
-    cv::Mat src_color_sized, threshold_output, src_gray, src_blur_gray, sob;
+    cv::UMat m_img, m_prev_frame;
+    cv::UMat src_color_sized, threshold_output, src_gray, src_blur_gray, sob, flow;
     
     float m_resize = 0.5; // { (512. / 1920), (512. / 1080.) };
     
@@ -168,6 +170,8 @@ protected:
     cv::Ptr<cv::BackgroundSubtractorMOG2> pBackSub = cv::createBackgroundSubtractorMOG2();
     cv::Mat fgMask;
 
+
+    cv::Ptr<cv::DenseOpticalFlow> dense_flow = cv::FarnebackOpticalFlow::create();
     
  //   std::vector<cv::Point2f>    m_prev_centroids;
  //   std::vector<int>            m_prev_centroid_id;

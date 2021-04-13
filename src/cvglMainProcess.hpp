@@ -26,7 +26,7 @@ public:
     
 
     // --- called from camera thread ---
-    void processFrame(cv::Mat & frame, int camera_id ) ;
+    void processFrame(cv::UMat & frame, int camera_id ) ;
     void analysisToGL(const AnalysisData& analysis);
 
     // --- called from cv analysis worker thread when m_data has been set ---

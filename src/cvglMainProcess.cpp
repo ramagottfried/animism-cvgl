@@ -231,14 +231,14 @@ void cvglMainProcess::setMainParams( MapOSC & b )
  *  callback from camera thread
  *  wondering if maybe the camera thread is getting slowed down by the analysis
  */
-void cvglMainProcess::processFrame(cv::Mat & frame, int camera_id )
+void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
 {
     if( m_use_camera_id == camera_id )
     {
         {
             unique_lock<mutex> lock(m_gl_lock);
             
-            if( !frame.data || !objects_initialized )
+            if( frame.empty() || !objects_initialized )
                 return;
             
             m_newframe = true;
@@ -246,7 +246,14 @@ void cvglMainProcess::processFrame(cv::Mat & frame, int camera_id )
 
             // note that any graphics processing to display needs to happen here,
             // otherwise, the frame is not redrawn after releasing the gl lock
-            getFlow();
+            switch(m_use_preprocess) {
+                case 3:
+                    getFlow();
+                break;
+            default:
+                break;
+            }
+
 
         }
         
@@ -403,7 +410,7 @@ void cvglMainProcess::draw()
     
     // this can get slowed down if a new frame comes in while the old one is still being drawn?
     
-    if( !lock.try_lock() || !context.isActive() || !objects_initialized || !m_img.data || !m_newframe ){
+    if( !lock.try_lock() || !context.isActive() || !objects_initialized || m_img.empty() || !m_newframe ){
         //cout << "<< draw unlock" << endl;
         return;
     }
@@ -424,7 +431,7 @@ void cvglMainProcess::draw()
     if( m_draw_frame && m_use_camera_id > 0 )
     {
         rect->bind();
-        frameTex->setTexture( getFrame() );
+        frameTex->setTexture( getFrame().getMat(ACCESS_READ) );
         rect->draw();
     }
     

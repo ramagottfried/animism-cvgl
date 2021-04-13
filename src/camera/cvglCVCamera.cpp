@@ -22,7 +22,7 @@ cvglCVCamera::cvglCVCamera(int index)
 // opencv camera callback
 void cvglCVCamera::cvCamLoop()
 {
-    cv::Mat _frame;
+    cv::UMat _frame;
     
     while( cap.isOpened() && m_stop_cv_loop == false )
     {
