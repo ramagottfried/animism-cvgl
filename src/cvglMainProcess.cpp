@@ -248,7 +248,7 @@ void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
             // otherwise, the frame is not redrawn after releasing the gl lock
             switch(m_use_preprocess) {
                 case 3:
-                    getFlow();
+                   // getFlow();
                 break;
             default:
                 break;
@@ -276,8 +276,8 @@ void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
                     preprocessCanny(); // << really slow! (now a bit faster after using move above)
                     break;
                 case 3:
-//                    getFlow();
-                    m_contour_analysis = false;
+                    preprocessDenseFlow();
+                  //  m_contour_analysis = false;
                 default:
                     break;
             }

@@ -42,9 +42,10 @@ public:
     void preprocess();
     void preprocessDifference();
     void preprocessCanny();
-    
+    void preprocessDenseFlow();
+
     void getFlow();
-        
+
 //    struct cvglAnalysisReturnStruct {
 //        std::vector< cv::Mat > contours;
 //        std::vector< int > contour_idx;
@@ -83,7 +84,7 @@ public:
     void analysisThread(AnalysisData data);
     void analysisTracking(AnalysisData& data, const AnalysisData& prev_data);
     
-    std::vector<PixStats> getStatsChar( const cv::UMat& src, const cv::UMat& sobel, const cv::Mat& mask, const cv::Rect& roi);
+    std::vector<PixStats> getStatsChar( const cv::Mat& src, const cv::Mat& sobel, const cv::Mat& mask, const cv::Rect& roi);
     
     
     inline const cv::UMat& getFrame()
@@ -148,7 +149,7 @@ protected:
     
     bool m_invert = false;
     int m_thresh = 102;
-    float m_minsize = 0.000;
+    float m_minsize = 0.00;
     float m_maxsize = 0.9;
     bool m_parents_only = 0;
     double m_track_radius = 0.1;

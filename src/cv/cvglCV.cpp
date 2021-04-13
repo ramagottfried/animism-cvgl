@@ -265,6 +265,70 @@ static Mat getVisibleFlow(InputArray flow)
 }
 
 
+void cvglCV::preprocessDenseFlow()
+{
+
+    //printf("hi \n");
+
+    if( m_img.empty() )
+    {
+        return;
+    }
+
+    cv::resize(m_img, src_color_sized, cv::Size(), m_resize, m_resize, cv::INTER_AREA);
+    cv::cvtColor(src_color_sized, src_gray, cv::COLOR_RGB2GRAY);
+
+    if( m_prev_frame.empty() ){
+        m_prev_frame = src_gray.clone();
+        return;
+    }
+
+    dense_flow->calc(m_prev_frame, src_gray, flow);
+
+    m_prev_frame = src_gray.clone();
+
+    UMat mag_gray;
+    // display
+    {
+        vector<UMat> flow_vec;
+        split(flow, flow_vec);
+
+        UMat sq_x, sq_y, sum, dist;
+        multiply(flow_vec[0], flow_vec[0], sq_x );
+        multiply(flow_vec[1], flow_vec[1], sq_y );
+        add(sq_x, sq_y, sum);
+        sqrt( sum, dist);
+
+       // cartToPolar(flow_vec[0], flow_vec[1], magnitude, angle, true);
+        dist.convertTo(mag_gray, CV_8U, 255);
+
+
+        vector<UMat> xy_dist;
+        xy_dist.push_back( dist );
+        xy_dist.push_back(flow_vec[1]);
+        xy_dist.push_back(flow_vec[0]);
+
+        UMat merged_xy_dist, converted;
+        merge(xy_dist, merged_xy_dist);
+        merged_xy_dist.convertTo(src_color_sized, CV_8U, 255);
+
+    }
+
+/*
+    double min, max;
+    minMaxIdx(magnitude, &min, &max);
+    cout << min << " " << max << endl;
+*/
+
+    GaussianBlur(mag_gray, src_blur_gray, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
+    erode( src_blur_gray, src_blur_gray, m_er_element );
+    dilate( src_blur_gray, src_blur_gray, m_di_element );
+
+    threshold( src_blur_gray, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
+
+    Sobel(src_gray, sob, CV_32F, 1, 1);
+}
+
 void cvglCV::getFlow()
 {
     
@@ -326,6 +390,7 @@ void cvglCV::getFlow()
 
     img.convertTo(img, CV_8UC3, 255);
     cv::resize(img, img, cv::Size(), resize_scalar, resize_scalar);
+
 
 
     add(m_img, img, m_img);
@@ -422,22 +487,24 @@ void cvglCV::getFlow()
 AnalysisData cvglCV::analyzeContour()
 {
     AnalysisData data;
+   // cout << "analyzeContour" << endl;
 
     if( threshold_output.empty() )
     {
-       // cout << "no image" << endl;
+        cout << "no image" << endl;
         return data;
     }
     
+   // Mat thesh = threshold_output.getMat(ACCESS_READ);
     findContours( threshold_output, data.contours, data.hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
     
     size_t npix = threshold_output.rows * threshold_output.cols;
     
     data.halfW = threshold_output.cols / 2.0f;
     data.halfH = threshold_output.rows / 2.0f;
-    
+
     vector< double > contour_area;
-    
+
     for( size_t i = 0; i < data.contours.size(); i++ )
     {
         double contour_a = contourArea( data.contours[i] ) / npix;
@@ -487,11 +554,17 @@ void cvglCV::analysisThread(AnalysisData data)
     unique_lock<mutex> lock(m_lock);
     const AnalysisData prev_data = m_prev_data;
     vector<int> id_used = m_id_used;
+
+    Mat src_color_sized_mat, sob_mat;
+
+    src_color_sized.copyTo(src_color_sized_mat);
+    sob.copyTo(sob_mat);
+
     m_lock.unlock();
     
-    int nchans = src_color_sized.channels();
-    double src_width = (double)src_color_sized.size().width;
-    double src_height = (double)src_color_sized.size().height;
+    int nchans = src_color_sized_mat.channels();
+    double src_width = (double)src_color_sized_mat.size().width;
+    double src_height = (double)src_color_sized_mat.size().height;
     double npix = src_width * src_height;
     
     vector< double > channel_means[nchans];
@@ -504,12 +577,12 @@ void cvglCV::analysisThread(AnalysisData data)
         const Mat& contour = data.contours[ data.contour_idx[i] ];
         
         
-        Mat contour_mask = Mat::zeros( src_color_sized.size(), CV_8UC1 );
+        Mat contour_mask = Mat::zeros( src_color_sized_mat.size(), CV_8UC1 );
         drawContours(contour_mask, data.contours, i, Scalar(255), FILLED);
         
         cv::Rect boundRect = boundingRect( contour );
         
-        vector<PixStats> stats = getStatsChar( src_color_sized, sob, contour_mask, boundRect );
+        vector<PixStats> stats = getStatsChar( src_color_sized_mat, sob_mat, contour_mask, boundRect );
         if (m_color_mode == 2 && stats.size() == 3) {
             stats[0].mean *= 0.3921568627; // 100/255 to sacle to 0-100
             stats[1].mean -= 128;
@@ -538,7 +611,7 @@ void cvglCV::analysisThread(AnalysisData data)
         
         data.pix_channel_stats.emplace_back(stats);
 
-        data.focus(i) = stats[ src_color_sized.channels() ].variance;
+        data.focus(i) = stats[ src_color_sized_mat.channels() ].variance;
         
         data.parent(i) = data.hierarchy[ data.contour_idx[i] ][3] ;
         data.parimeter(i) = arcLength(contour, true) ;
@@ -833,7 +906,7 @@ void cvglCV::analysisTracking(AnalysisData& data, const AnalysisData& prev_data)
 }
 
 
-vector<PixStats> cvglCV::getStatsChar( const UMat& src, const UMat& sobel, const Mat& mask, const cv::Rect& roi)
+vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const Mat& mask, const cv::Rect& roi)
 {
     //const int plane, T& min, T& max, T& varience
     
@@ -864,16 +937,16 @@ vector<PixStats> cvglCV::getStatsChar( const UMat& src, const UMat& sobel, const
     int col_start = roi.x;
     int col_end = col_start + roi.width;
     
-    const cv::Mat src_mat = src.getMat(ACCESS_READ);
-    const cv::Mat sob_mat = sobel.getMat(ACCESS_READ);
+    //const cv::Mat src_mat = src.getMat(ACCESS_READ);
+    //const cv::Mat sob_mat = sobel.getMat(ACCESS_READ);
 
     for( int i = row_start; i < row_end; ++i )
     {
         mask_p = mask.ptr<uchar>(i);
         
         // do type check above here, eventually would be nice to support float also
-        src_p = src_mat.ptr<uchar>(i);
-        sobel_p = sob_mat.ptr<float>(i);
+        src_p = src.ptr<uchar>(i);
+        sobel_p = sobel.ptr<float>(i);
         
         for( int j = col_start; j < col_end; ++j )
         {
@@ -929,8 +1002,8 @@ vector<PixStats> cvglCV::getStatsChar( const UMat& src, const UMat& sobel, const
         col = index[i].x;
         row = index[i].y;
         
-        src_p = src_mat.ptr<uchar>(row);
-        sobel_p = sob_mat.ptr<float>(row);
+        src_p = src.ptr<uchar>(row);
+        sobel_p = sobel.ptr<float>(row);
         
         for( int c = 0; c < nchans; ++c)
         {
