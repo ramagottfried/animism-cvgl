@@ -203,7 +203,49 @@ void cvglCV::preprocessCanny()
 }
 
 
-// not sure if this is a good idea, gl should probably be separated
+
+static void drawArrows(UMat& _frame, const vector<Point2f>& prevPts, const vector<Point2f>& nextPts, const vector<uchar>& status,
+                       Scalar line_color = Scalar(0, 0, 255))
+{
+    Mat frame = _frame.getMat(ACCESS_WRITE);
+    for (size_t i = 0; i < prevPts.size(); ++i)
+    {
+        if (status[i])
+        {
+            int line_thickness = 1;
+
+            Point p = prevPts[i];
+            Point q = nextPts[i];
+
+            double angle = atan2((double) p.y - q.y, (double) p.x - q.x);
+
+            double hypotenuse = sqrt( (double)(p.y - q.y)*(p.y - q.y) + (double)(p.x - q.x)*(p.x - q.x) );
+
+            if (hypotenuse < 1.0)
+                continue;
+
+            // Here we lengthen the arrow by a factor of three.
+            q.x = (int) (p.x - 3 * hypotenuse * cos(angle));
+            q.y = (int) (p.y - 3 * hypotenuse * sin(angle));
+
+            // Now we draw the main line of the arrow.
+            line(frame, p, q, line_color, line_thickness);
+
+            // Now draw the tips of the arrow. I do some scaling so that the
+            // tips look proportional to the main line of the arrow.
+
+            p.x = (int) (q.x + 9 * cos(angle + CV_PI / 4));
+            p.y = (int) (q.y + 9 * sin(angle + CV_PI / 4));
+            line(frame, p, q, line_color, line_thickness);
+
+            p.x = (int) (q.x + 9 * cos(angle - CV_PI / 4));
+            p.y = (int) (q.y + 9 * sin(angle - CV_PI / 4));
+            line(frame, p, q, line_color, line_thickness);
+        }
+    }
+}
+
+
 void cvglCV::getFlow()
 {
     
@@ -223,9 +265,32 @@ void cvglCV::getFlow()
         return;
     }
 
+    const double resize_scalar = 1.0 / resize;
+
+    const size_t points = 1000;
+
+    vector<unsigned char> status(points);
+    vector<float> err;
+
+
+    m_track_points.clear();
+
+
+    goodFeaturesToTrack(m_prev_frame, m_track_points, points, 0.01, 0.0);
+    if(m_track_points.size() == 0)
+        return;
+    calcOpticalFlowPyrLK(m_prev_frame, src_gray, m_track_points, m_next_track_points, status, err);
+
+    drawArrows(m_img, m_track_points, m_next_track_points, status, Scalar(255, 0, 0));
+
+
+    m_prev_frame = src_gray.clone();
+
+
+    /*
+
     pBackSub->apply(src_gray, fgMask);
     
-    const double resize_scalar = 1.0 / resize;
 
     Mat mask(src_gray.size(), CV_8UC1);
 
@@ -260,6 +325,7 @@ void cvglCV::getFlow()
        // add(m_img, mask, m_img);
 
   //  bitwise_not(m_img,m_img, mask);
+
 
         if( !m_prev_frame.empty() && m_prev_points.size() != 0 )
         {
@@ -298,85 +364,9 @@ void cvglCV::getFlow()
         m_prev_points = corners;
     }
 
-    
-    
-    /*
-        if( m_prev_n_flow_points != corners.size() ){
-           cout << "** Number of corners detected: " << corners.size() << endl;
-            m_prev_n_flow_points = corners.size();
-        }
-       int radius = 10;
-       for( size_t i = 0; i < corners.size(); i++ )
-       {
-           circle( m_img, corners[i] * (1 / m_resize), radius, Scalar(255,255,255), FILLED );
-       }
-    */
 
-    /*
-       @param prev first 8-bit single-channel input image.
-       @param next second input image of the same size and the same type as prev.
-       @param flow computed flow image that has the same size as prev and type CV_32FC2.
-       @param pyr_scale parameter, specifying the image scale (\<1) to build pyramids for each image;
-       pyr_scale=0.5 means a classical pyramid, where each next layer is twice smaller than the previous
-       one.
-       @param levels number of pyramid layers including the initial image; levels=1 means that no extra
-       layers are created and only the original images are used.
-       @param winsize averaging window size; larger values increase the algorithm robustness to image
-       noise and give more chances for fast motion detection, but yield more blurred motion field.
-       @param iterations number of iterations the algorithm does at each pyramid level.
-       @param poly_n size of the pixel neighborhood used to find polynomial expansion in each pixel;
-       larger values mean that the image will be approximated with smoother surfaces, yielding more
-       robust algorithm and more blurred motion field, typically poly_n =5 or 7.
-       @param poly_sigma standard deviation of the Gaussian that is used to smooth derivatives used as a
-       basis for the polynomial expansion; for poly_n=5, you can set poly_sigma=1.1, for poly_n=7, a
-       good value would be poly_sigma=1.5.
-       @param flags operation flags that can be a combination of the following:
-        -   **OPTFLOW_USE_INITIAL_FLOW** uses the input flow as an initial flow approximation.
-        -   **OPTFLOW_FARNEBACK_GAUSSIAN** uses the Gaussian \f$\texttt{winsize}\times\texttt{winsize}\f$
-            filter instead of a box filter of the same size for optical flow estimation; usually, this
-            option gives z more accurate flow than with a box filter, at the cost of lower speed;
-            normally, winsize for a Gaussian window should be set to a larger value to achieve the same
-            level of robustness.
-
-       The function finds an optical flow for each prev pixel using the @cite Farneback2003 algorithm so that
-       */
-    
-    /*
-    Mat flow(src_gray.size(), CV_32FC2);
-    double pyr_scale = 0.5;
-    int levels = 3;
-    int winsize = 25;
-                                               
-    int iterations = 3;
-    int poly_n = 7;
-    double poly_sigma = 1.5;
-                                               
-    int flags = OPTFLOW_USE_INITIAL_FLOW;
-   
-    calcOpticalFlowFarneback(m_prev_frame, src_gray, flow, pyr_scale, levels, winsize, iterations, poly_n, poly_sigma, flags);
-
-    for (int y = 0; y < m_prev_frame.rows; y += 5) {
-     for (int x = 0; x < m_prev_frame.cols; x += 5)  {
-         
-         // get the flow from y, x position * 10 for better visibility
-         const Point2f flowatxy = flow.at<Point2f>(y, x) * 10;
-         //cout << flowatxy << endl;
-              // draw line at flow direction
-        if( flowatxy == flowatxy )
-        {
-            line(m_img,
-                  Point(x, y) * resize_scalar,
-                  Point( cvRound(x + flowatxy.x), cvRound(y + flowatxy.y) ) * resize_scalar,
-                  Scalar(255,0,0) );
-             // draw initial point
-            // circle(m_img, Point(x, y) * resize_scalar, 1, Scalar(0, 0, 0), -1);
-        }
-       
-     }
-    }
-*/
     m_prev_frame = fgMask.clone();
-
+    */
     
 }
 
@@ -399,7 +389,7 @@ AnalysisData cvglCV::analyzeContour()
     
     vector< double > contour_area;
     
-    for( int i = 0; i < data.contours.size(); i++ )
+    for( size_t i = 0; i < data.contours.size(); i++ )
     {
         double contour_a = contourArea( data.contours[i] ) / npix;
         
@@ -460,7 +450,7 @@ void cvglCV::analysisThread(AnalysisData data)
         
     data.centroids.reserve( data.ncontours );
     
-    for( int i = 0; i < data.ncontours; i++ )
+    for( size_t i = 0; i < data.ncontours; i++ )
     {
         const Mat& contour = data.contours[ data.contour_idx[i] ];
         
@@ -638,7 +628,7 @@ void cvglCV::analysisThread(AnalysisData data)
     if( prev_data.centroids.size() == 0 )
     {
         
-        for( int i = 0; i < data.centroids.size(); i++ )
+        for( size_t i = 0; i < data.centroids.size(); i++ )
         {
             id_used[i] = 1;
             data.id.emplace_back(i);
@@ -666,14 +656,14 @@ void cvglCV::analysisThread(AnalysisData data)
         
         
         // fist check if previous points are found
-        for( int j = 0; j < prev_data.centroids.size(); j++ )
+        for( size_t j = 0; j < prev_data.centroids.size(); j++ )
         {
             
             min = radius_max;
             closest_idx = -1;
             debug_count = 0;
             
-            for( int i = 0; i < data.centroids.size(); i++ )
+            for( size_t i = 0; i < data.centroids.size(); i++ )
             {
                 
                 double delta = norm(data.centroids[i] - prev_data.centroids[j]);
@@ -709,11 +699,11 @@ void cvglCV::analysisThread(AnalysisData data)
         }
         
         // check for unassigned new_ids, and then find the first unused id number:
-        for( int i = 0; i < data.centroids.size(); i++ )
+        for( size_t i = 0; i < data.centroids.size(); i++ )
         {
             if( data.id[i] == -1 )
             {
-                for( int n = 0; n < m_maxIDs; n++ )
+                for( size_t n = 0; n < m_maxIDs; n++ )
                 {
                     if( id_used[n] == 0)
                     {
@@ -762,7 +752,7 @@ void cvglCV::analysisTracking(AnalysisData& data, const AnalysisData& prev_data)
     auto time_now = std::chrono::system_clock::now();
     
     // note: preset delta varaibles to zero in init function in case there are no matching ids from prev frame
-    for( int i = 0; i < data.ncontours; ++i )
+    for( size_t i = 0; i < data.ncontours; ++i )
     {
         auto prev_ref = prev_data.id_idx.find( data.id[i] );
         if( prev_ref != prev_data.id_idx.end() && prev_data.ncontours > 0 )
@@ -882,7 +872,7 @@ vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const M
     stats[focus].mean = stats[focus].sum / size;
     
     int row, col;
-    for( int i = 0; i < size; ++i )
+    for( size_t i = 0; i < size; ++i )
     {
         col = index[i].x;
         row = index[i].y;

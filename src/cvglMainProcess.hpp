@@ -66,7 +66,7 @@ private:
     int m_cue_idx = 1;
     
     int m_use_camera_id = 1;
-    int m_use_preprocess = 0;
+    int m_use_preprocess = 3;
     
     std::mutex m_gl_lock, m_osc_lock;
     
@@ -91,6 +91,7 @@ private:
     float m_minrect_line_thickness = 1;
     float m_contour_line_thickness = 1;
         
+    bool m_contour_analysis = true;
 };
 
 

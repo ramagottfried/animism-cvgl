@@ -244,8 +244,9 @@ void cvglMainProcess::processFrame(cv::Mat & frame, int camera_id )
             m_newframe = true;
             setFrame(frame); // takes ownership of frame in local storage m_img
 
-            // note that any graphics processing to display needs to happen here, otherwise, the frame is not redrawn...
-            //getFlow();
+            // note that any graphics processing to display needs to happen here,
+            // otherwise, the frame is not redrawn after releasing the gl lock
+            getFlow();
 
         }
         
@@ -269,13 +270,15 @@ void cvglMainProcess::processFrame(cv::Mat & frame, int camera_id )
                     break;
                 case 3:
 //                    getFlow();
+                    m_contour_analysis = false;
                 default:
                     break;
             }
             
-            data = analyzeContour();
-            m_data = data;
-            
+            if( m_contour_analysis ){
+                data = analyzeContour();
+                m_data = data;
+            }
         }
         //    cvx.getFlow( flowMesh );
        // profile.markEnd("preproc");

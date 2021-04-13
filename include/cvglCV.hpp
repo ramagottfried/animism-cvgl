@@ -100,7 +100,7 @@ public:
     
     inline void gaussSigma(int k)
     {
-        m_gauss_sigma = 3;
+        m_gauss_sigma = k;
         m_gauss_ksize = m_gauss_sigma * 5;
     }
     
@@ -162,7 +162,7 @@ protected:
     cv::Mat m_di_element = getStructuringElement( cv::MORPH_RECT, cv::Size(1,1), cv::Point(0,0) );
     
     //cv::Mat m_prev_points;
-    std::vector<cv::Point2f> m_prev_points;
+    std::vector<cv::Point2f> m_track_points, m_next_track_points;
     
     size_t m_prev_n_flow_points = 0;
     cv::Ptr<cv::BackgroundSubtractorMOG2> pBackSub = cv::createBackgroundSubtractorMOG2();
