@@ -49,16 +49,11 @@ list(APPEND LIB_LIST Eigen3::Eigen)
 
 message(STATUS "    eigen include path: ${Eigen3_INCLUDE_DIRS}")
 
-add_executable(cvgl
-    src/cues/plastisphere/plastisphereCue0.cpp
-    src/cues/plastisphere/plastisphereCue1.cpp
-    src/cvgl_main.cpp
-    src/cvglMainProcess.cpp
-    src/cues/cvglCues.cpp
+add_library(libcvgl STATIC
     src/mixer/cvglMixer.cpp
     src/camera/cvglCameraBase.cpp
     src/camera/cvglCVCamera.cpp
-    src/camera/cvglDeckLinkCamera.cpp    
+    src/camera/cvglDeckLinkCamera.cpp
     src/gl/cvglCallbacks.cpp
     src/gl/cvglContext.cpp
     src/gl/cvglObject.cpp
@@ -82,11 +77,25 @@ add_executable(cvgl
     ${BLACKMAGIC_PLATFORM_SOURCES}
 )
 
+target_include_directories(libcvgl PUBLIC ${GLAD_DIR}/include )
+target_include_directories(libcvgl PUBLIC ${DECKLINK_SDK_INCLUDE_DIR} PUBLIC ${DECKLINK_PLATFORM_INCLUDE})
+target_include_directories(libcvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_link_libraries(libcvgl ${LIB_LIST}  )
+
+list(APPEND LIB_LIST libcvgl)
+
+add_executable(cvgl
+    src/cues/plastisphere/plastisphereCue0.cpp
+    src/cues/plastisphere/plastisphereCue1.cpp
+    src/cvgl_main.cpp
+    src/cvglMainProcess.cpp
+    src/cues/cvglCues.cpp
+)
+
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+#target_include_directories(cvgl PRIVATE ${GLAD_DIR}/include )
+#target_include_directories(cvgl PRIVATE ${DECKLINK_SDK_INCLUDE_DIR} PRIVATE ${DECKLINK_PLATFORM_INCLUDE})
 
-target_include_directories(cvgl PRIVATE ${GLAD_DIR}/include )
-target_include_directories(cvgl PRIVATE ${DECKLINK_SDK_INCLUDE_DIR} PRIVATE ${DECKLINK_PLATFORM_INCLUDE})
 
-
-target_link_libraries(cvgl ${LIB_LIST}  )
+target_link_libraries(cvgl libcvgl  )
 

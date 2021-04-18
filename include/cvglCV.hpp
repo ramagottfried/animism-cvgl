@@ -39,10 +39,32 @@ public:
         printf("cv optimization %i\n", cv::useOptimized() );
     }
     
-    void preprocess();
+    void preprocess()
+    {
+        switch (m_use_preprocess) {
+            case 0:
+                preprocessBasic(); // basic image contours
+                break;
+            case 1:
+                preprocessDifference(); // delta based movement
+                break;
+            case 2:
+                preprocessCanny(); // edge contours
+                break;
+            case 3:
+                preprocessDenseFlow(); // dense optical flow (better for image)
+            default:
+                break;
+        }
+
+    }
+
+    void preprocessBasic();
     void preprocessDifference();
     void preprocessCanny();
     void preprocessDenseFlow();
+
+    std::vector<cv::UMat> colorSegmentation(const std::string& type = "kmeans");
 
     void getFlow();
 
@@ -85,8 +107,9 @@ public:
     void analysisTracking(AnalysisData& data, const AnalysisData& prev_data);
     
     std::vector<PixStats> getStatsChar( const cv::Mat& src, const cv::Mat& sobel, const cv::Mat& mask, const cv::Rect& roi);
-    
-    
+
+    std::vector<PixStats> getStatsFloat( const cv::Mat& src, const cv::Mat& sobel, const cv::Mat& mask, const cv::Rect& roi);
+
     inline const cv::UMat& getFrame()
     {
         return m_img;
@@ -155,6 +178,7 @@ protected:
     double m_track_radius = 0.1;
     
     int m_color_mode = 2; 
+    int m_use_preprocess = 0;
     
     float m_canny_min = 0;
     float m_canny_max = 30;

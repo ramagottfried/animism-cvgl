@@ -63,11 +63,12 @@ private:
     
     cvglProfile profile;
 
-    int m_cue_idx = 1;
+    int m_cue_idx = 0;
     
     int m_use_camera_id = 1;
-    int m_use_preprocess = 3;
-    
+//    int m_use_preprocess = 3;
+
+
     std::mutex m_gl_lock, m_osc_lock;
     
     bool m_newframe = false;

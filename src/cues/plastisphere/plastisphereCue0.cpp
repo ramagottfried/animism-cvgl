@@ -36,7 +36,43 @@ MapOSC cvglCues::cue0( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
     
     // b messages get sent to CV and GL params
     b.addMessage("/video/black",  0);
- 
+
+    if( data.ncontours > 0 )
+    {
+        size_t nchannels = data.pix_channel_stats[0].size() ;
+
+        if( nchannels )
+        {
+            nchannels--;
+
+            vector< vector<double> > means;
+            means.resize(nchannels);
+
+            for( size_t j = 0; j < nchannels; j++)
+            {
+                means[j].reserve( data.ncontours );
+                for( size_t i = 0; i < data.ncontours; i++)
+                {
+                    means[j].emplace_back( data.pix_channel_stats[i][j].mean );
+                }
+
+            }
+
+            for( size_t j = 0; j < nchannels; j++)
+            {
+                string addr = "/vec/"+to_string(j);
+                out.addMessage(addr, means[j]);
+
+            }
+
+        }
+        else
+        {
+            cout << data.ncontours << " contours but no channels? " << nchannels << endl;
+
+        }
+
+    }
 
     return out;
 }

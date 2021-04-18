@@ -176,8 +176,15 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         }
         else if( addr == "/use/preprocess" )
         {
-            m_use_preprocess = val.getInt();
-         //   cout << "setting preprocess to " << m_use_preprocess << " " << val.getInt() << endl;
+            int setProcessIDX = val.getInt();
+            if( setProcessIDX != m_use_preprocess )
+            {
+                m_use_preprocess = setProcessIDX;
+                m_prev_frame.release();
+                m_prev_frame = UMat();
+            }
+
+       //     cout << "setting preprocess to " << m_use_preprocess << " " << val.getInt() << endl;
         }
         else if( addr == "/enable/contour" )
         {
@@ -226,7 +233,6 @@ void cvglMainProcess::setMainParams( MapOSC & b )
 }
 
 
-
 /**
  *  callback from camera thread
  *  wondering if maybe the camera thread is getting slowed down by the analysis
@@ -235,70 +241,42 @@ void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
 {
     if( m_use_camera_id == camera_id )
     {
-        {
-            unique_lock<mutex> lock(m_gl_lock);
-            
-            if( frame.empty() || !objects_initialized )
-                return;
-            
-            m_newframe = true;
-            setFrame(frame); // takes ownership of frame in local storage m_img
 
-            // note that any graphics processing to display needs to happen here,
-            // otherwise, the frame is not redrawn after releasing the gl lock
-            switch(m_use_preprocess) {
-                case 3:
-                   // getFlow();
-                break;
-            default:
-                break;
-            }
+        unique_lock<mutex> lock(m_gl_lock);
+
+        if( frame.empty() || !objects_initialized )
+            return;
+
+        m_newframe = true;
+        setFrame(frame); // takes ownership of frame in local storage m_img
 
 
-        }
-        
-        
         AnalysisData data;
-        
-        {
-            unique_lock<mutex> lock_osc(m_osc_lock);
-            
-           // profile.markStart();
-            // pre-processes inherited from cvglCV
-            switch (m_use_preprocess) {
-                case 0:
-                    preprocess();
-                    break;
-                case 1:
-                    preprocessDifference();
-                    break;
-                case 2:
-                    preprocessCanny(); // << really slow! (now a bit faster after using move above)
-                    break;
-                case 3:
-                    preprocessDenseFlow();
-                  //  m_contour_analysis = false;
-                default:
-                    break;
-            }
-            
-            if( m_contour_analysis ){
-                data = analyzeContour();
-                m_data = data;
-            }
+
+
+        unique_lock<mutex> lock_osc(m_osc_lock);
+      // cout << " preprocessing mode " << m_use_preprocess << endl;
+
+
+        preprocess();
+
+        if( m_contour_analysis ){
+            data = analyzeContour();
+            m_data = data;
         }
-        //    cvx.getFlow( flowMesh );
+
+
+            //    cvx.getFlow( flowMesh );
        // profile.markEnd("preproc");
         
         //profile.markStart();
         
         //profile.markEnd("analyzeContour");
         
-        {
-            unique_lock<mutex> lock(m_gl_lock);
-            analysisToGL( data );
+
+
+         analysisToGL( data );
         
-        }
         
     }
     
@@ -472,3 +450,99 @@ void cvglMainProcess::draw()
     m_newframe = false;
     
 }
+
+
+
+
+
+// multi-block thread lock version, moving back to longer gl block
+// so that it's easier to draw to the image from the cv processing
+
+/*
+void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
+{
+    if( m_use_camera_id == camera_id )
+    {
+
+        // this first lock is for the gl thread, and here is were we need to perform any
+        // operations that should be displayed, it's separated from the analysis thread
+        // in order to speed up the display part a bit
+       {
+            unique_lock<mutex> lock(m_gl_lock);
+
+            if( frame.empty() || !objects_initialized )
+                return;
+
+            m_newframe = true;
+            setFrame(frame); // takes ownership of frame in local storage m_img
+
+            // note that any graphics processing to display needs to happen here,
+            // otherwise, the frame is not redrawn after releasing the gl lock
+            switch(m_use_preprocess) {
+                case 3:
+                   // getFlow();
+                break;
+            default:
+                break;
+            }
+
+
+        }
+
+
+        // second block is for the analysis data, preprocessing based on the settings that
+        // have been set from the OSC input, and so there is a lock for the udp/osc thread
+
+        AnalysisData data;
+
+        {
+            unique_lock<mutex> lock_osc(m_osc_lock);
+          // cout << " preprocessing mode " << m_use_preprocess << endl;
+
+           // profile.markStart();
+            // pre-processes inherited from cvglCV
+            switch (m_use_preprocess) {
+                case 0:
+                    preprocess();
+                    break;
+                case 1:
+                    preprocessDifference();
+                    break;
+                case 2:
+                    preprocessCanny();
+                    break;
+                case 3:
+                    preprocessDenseFlow();
+                  //  m_contour_analysis = false;
+                default:
+                    break;
+            }
+
+            if( m_contour_analysis ){
+                data = analyzeContour();
+                m_data = data;
+            }
+        }
+        //    cvx.getFlow( flowMesh );
+       // profile.markEnd("preproc");
+
+        //profile.markStart();
+
+        //profile.markEnd("analyzeContour");
+
+
+        // finally we add the analysis to the gl objects to draw, after the analysis
+        // this is not part of the first part, because if the analysis is too slow,
+        // then this should hypothetically make it possible to draw the video part first,
+        // and maybe the next frame might have the objects from the previous frame, but
+        // but that is ok, better than blocking the gl thread for the analysis
+
+        {
+            unique_lock<mutex> lock(m_gl_lock);
+            analysisToGL( data );
+        }
+
+    }
+
+}
+*/

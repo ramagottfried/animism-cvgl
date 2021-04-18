@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <iostream>
 
 #include <Eigen/Dense>
 #include "cvglAnalysisData.hpp"

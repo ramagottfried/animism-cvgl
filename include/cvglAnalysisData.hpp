@@ -150,6 +150,7 @@ struct AnalysisData
         elapsed_contour = Eigen::ArrayXd::Zero(n);
         
         // add pixel data here
+        pix_channel_stats.resize(n);
     }
 };
 

@@ -1,4 +1,4 @@
-#include "opencv2/cudaoptflow.hpp"
+﻿#include "opencv2/cudaoptflow.hpp"
 #include "opencv2/cudaarithm.hpp"
 #include "opencv2/video/tracking.hpp"
 
@@ -50,7 +50,7 @@ void cvglCV::setCVParams( MapOSC & b )
     }
 }
 
-void cvglCV::preprocess()
+void cvglCV::preprocessBasic()
 {
     
     // later could wrap each function with a "set to output" flag, which could be used for debugging
@@ -97,13 +97,14 @@ void cvglCV::preprocess()
 
 void cvglCV::preprocessDifference()
 {
-    
+
     if( m_img.empty() )
     {
         return;
     }
-    
-    float resize = m_resize; // avoid lock
+
+
+    float resize = m_resize; // avoid OSC lock?
     cv::resize(m_img, src_color_sized, cv::Size(), resize, resize, cv::INTER_AREA);
     
     if( m_prev_frame.empty() )
@@ -140,11 +141,11 @@ void cvglCV::preprocessDifference()
     erode( src_blur_gray, src_blur_gray, m_er_element );
     dilate( src_blur_gray, src_blur_gray, m_di_element );
     
+
     threshold( src_blur_gray, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
     
     Sobel(src_gray, sob, CV_32F, 1, 1);
 
-    
 }
 
 void cvglCV::preprocessCanny()
@@ -204,6 +205,240 @@ void cvglCV::preprocessCanny()
 }
 
 
+// quantize the image to numBits
+cv::Mat quantizeImage(const cv::Mat& inImage, int numBits)
+{
+    cv::Mat retImage = inImage.clone();
+
+    uchar maskBit = 0xFF;
+
+    // keep numBits as 1 and (8 - numBits) would be all 0 towards the right
+    maskBit = maskBit << (8 - numBits);
+
+    for(int j = 0; j < retImage.rows; j++)
+    {
+        for(int i = 0; i < retImage.cols; i++)
+        {
+            cv::Vec3b valVec = retImage.at<cv::Vec3b>(j, i);
+            valVec[0] = valVec[0] & maskBit;
+            valVec[1] = valVec[1] & maskBit;
+            valVec[2] = valVec[2] & maskBit;
+            retImage.at<cv::Vec3b>(j, i) = valVec;
+        }
+    }
+
+    return retImage;
+}
+
+
+/**
+ * @brief cvglCV::colorSegmentation
+ * @return vector of segemented color groups
+ */
+vector<UMat> cvglCV::colorSegmentation(const string& type)
+{
+    if( m_img.empty() )
+    {
+        return vector<UMat>();
+    }
+
+   // Mat q = quantizeImage(m_img.getMat(ACCESS_READ), 4);
+   // q.copyTo(m_img);
+    float resize = m_resize; // avoid lock
+    cv::resize(m_img, src_color_sized, cv::Size(), resize, resize, cv::INTER_AREA);
+
+    UMat filtered;
+    pyrMeanShiftFiltering( src_color_sized, filtered, 20, 45, 3);
+
+    filtered.copyTo(m_img);
+    /*
+
+    float resize = m_resize; // avoid lock
+    cv::resize(m_img, src_color_sized, cv::Size(), resize, resize, cv::INTER_AREA);
+//    cvtColor(src_color_sized, src_color_sized, COLOR_RGB2HLS_FULL);
+
+    Mat hsv;
+    cvtColor(src_color_sized, hsv, COLOR_BGR2HSV);
+
+    // Quantize the hue to 30 levels
+    // and the saturation to 32 levels
+    int hbins = 100, sbins = 32;
+    int histSize[] = {hbins, sbins};
+
+    // hue varies from 0 to 179, see cvtColor
+    float hranges[] = { 0, 180 };
+    // saturation varies from 0 (black-gray-white) to
+    // 255 (pure spectrum color)
+
+    float sranges[] = { 0, 256 };
+    const float* ranges[] = { hranges, sranges };
+
+    MatND hist;
+    // we compute the histogram from the 0-th and 1-st channels
+    int channels[] = {0, 1};
+
+    calcHist( &hsv,
+              1,
+              channels,
+              Mat(),
+              hist,
+              2,
+              histSize,
+              ranges,
+              true,
+              false );
+
+
+
+    double maxVal=0;
+    minMaxLoc(hist, 0, &maxVal, 0, 0);
+    int scale = 10;
+    Mat histImg = Mat::zeros(sbins*scale, hbins*10, CV_8UC3);
+    for( int h = 0; h < hbins; h++ )
+        for( int s = 0; s < sbins; s++ )
+        {
+            float binVal = hist.at<float>(h, s);
+            int intensity = cvRound(binVal*255/maxVal);
+            rectangle( histImg,
+                       Point(h*scale, s*scale),
+                       Point( (h+1)*scale - 1, (s+1)*scale - 1),
+                       Scalar::all(intensity),
+                       -1 );
+        }
+  // cout << "test" << endl;
+    histImg.copyTo(m_img);
+
+    */
+
+/*
+    Mat labels, centers;
+    int clusters = 5;
+    double compactness = kmeans(src_color_sized,
+                                clusters,
+                                labels,
+                                TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 10, 1.0),
+                                1,
+                                KMEANS_PP_CENTERS,
+                                centers );
+
+    cout << "kmeans" << endl;
+*/
+    return vector<UMat>();
+}
+
+
+void cvglCV::preprocessDenseFlow()
+{
+
+   // printf("hi \n");
+
+    if( m_img.empty() )
+    {
+        return;
+    }
+
+    cv::resize(m_img, src_color_sized, cv::Size(), m_resize, m_resize, cv::INTER_AREA);
+    cv::cvtColor(src_color_sized, src_gray, cv::COLOR_RGB2GRAY);
+
+
+    if( m_invert )
+    {
+        // seems to have no effect on flow caclulation
+        bitwise_not(src_gray, src_gray);
+    }
+
+
+    GaussianBlur(src_gray, src_blur_gray, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
+    erode( src_blur_gray, src_blur_gray, m_er_element );
+    dilate( src_blur_gray, src_blur_gray, m_di_element );
+
+
+    if( m_prev_frame.empty() ){
+        m_prev_frame = src_blur_gray.clone();
+        return;
+    }
+
+    dense_flow->calc(m_prev_frame, src_blur_gray, flow);
+
+    m_prev_frame = src_blur_gray.clone();
+
+    UMat mag_gray;
+
+    // dist
+    {
+      //  double min, max; // debugging
+
+        vector<UMat> flow_vec;
+        split(flow, flow_vec);
+
+        UMat dist, angle, angle_scaled;
+
+        cartToPolar(flow_vec[0], flow_vec[1], dist, angle, true);
+
+        // some scaling
+        dist.convertTo(dist, CV_32F, 10);
+
+        // used for threshold
+        dist.convertTo(mag_gray, CV_8U, 1.);
+
+
+       // divide(angle, 1., angle_scaled); // 0-1
+
+        /*
+        minMaxIdx(angle, &min, &max);
+        cout << "angle " << min << " " << max << endl;
+        cout << "angle type " << angle.type() << " dist type " <<  dist.type() << endl;
+        */
+
+        // manually scale to 0-255
+       // multiply(dist, 255., dist);
+       // multiply(angle_scaled, 255., angle_scaled);
+
+/*
+        minMaxIdx(dist, &min, &max);
+        cout << "dist " << min << " " << max << endl;
+        minMaxIdx(mag_gray, &min, &max);
+        cout << "mag_gray " << min << " " << max << endl;
+*/
+        vector<UMat> xy_dist = { angle, dist };
+
+        UMat merged_xy_dist;
+        merge(xy_dist, merged_xy_dist);
+
+        merged_xy_dist.copyTo(src_color_sized);
+        //merged_xy_dist.convertTo(src_color_sized, CV_8U);
+
+/*
+
+        vector<UMat> hsv_vec;
+        hsv_vec.push_back(angle);
+        hsv_vec.push_back(UMat::ones(angle.size(), angle.type()));
+        hsv_vec.push_back(dist);
+
+        UMat hsv;
+        merge(hsv_vec, hsv);
+
+        UMat img;
+        cvtColor(hsv, img, COLOR_HSV2BGR);
+
+        img.convertTo(img, CV_8UC3, 255);
+
+        const double resize_scalar = 1.0 / m_resize;
+
+        cv::resize(img, img, cv::Size(), resize_scalar, resize_scalar);
+        img.copyTo(m_img);
+*/
+
+    }
+
+
+    threshold( mag_gray, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
+
+    Sobel(src_gray, sob, CV_32F, 1, 1);
+}
+
+
+
 
 static void drawArrows(UMat& _frame, const vector<Point2f>& prevPts, const vector<Point2f>& nextPts, const vector<uchar>& status,
                        Scalar line_color = Scalar(0, 0, 255), double resize_scale = 1)
@@ -246,88 +481,7 @@ static void drawArrows(UMat& _frame, const vector<Point2f>& prevPts, const vecto
     }
 }
 
-static Mat getVisibleFlow(InputArray flow)
-{
-    vector<UMat> flow_vec;
-    split(flow, flow_vec);
-    UMat magnitude, angle;
-    cartToPolar(flow_vec[0], flow_vec[1], magnitude, angle, true);
-    magnitude.convertTo(magnitude, CV_32F, 0.2);
-    vector<UMat> hsv_vec;
-    hsv_vec.push_back(angle);
-    hsv_vec.push_back(UMat::ones(angle.size(), angle.type()));
-    hsv_vec.push_back(magnitude);
-    UMat hsv;
-    merge(hsv_vec, hsv);
-    Mat img;
-    cvtColor(hsv, img, COLOR_HSV2BGR);
-    return img;
-}
 
-
-void cvglCV::preprocessDenseFlow()
-{
-
-    //printf("hi \n");
-
-    if( m_img.empty() )
-    {
-        return;
-    }
-
-    cv::resize(m_img, src_color_sized, cv::Size(), m_resize, m_resize, cv::INTER_AREA);
-    cv::cvtColor(src_color_sized, src_gray, cv::COLOR_RGB2GRAY);
-
-    if( m_prev_frame.empty() ){
-        m_prev_frame = src_gray.clone();
-        return;
-    }
-
-    dense_flow->calc(m_prev_frame, src_gray, flow);
-
-    m_prev_frame = src_gray.clone();
-
-    UMat mag_gray;
-    // display
-    {
-        vector<UMat> flow_vec;
-        split(flow, flow_vec);
-
-        UMat sq_x, sq_y, sum, dist;
-        multiply(flow_vec[0], flow_vec[0], sq_x );
-        multiply(flow_vec[1], flow_vec[1], sq_y );
-        add(sq_x, sq_y, sum);
-        sqrt( sum, dist);
-
-       // cartToPolar(flow_vec[0], flow_vec[1], magnitude, angle, true);
-        dist.convertTo(mag_gray, CV_8U, 255);
-
-
-        vector<UMat> xy_dist;
-        xy_dist.push_back( dist );
-        xy_dist.push_back(flow_vec[1]);
-        xy_dist.push_back(flow_vec[0]);
-
-        UMat merged_xy_dist, converted;
-        merge(xy_dist, merged_xy_dist);
-        merged_xy_dist.convertTo(src_color_sized, CV_8U, 255);
-
-    }
-
-/*
-    double min, max;
-    minMaxIdx(magnitude, &min, &max);
-    cout << min << " " << max << endl;
-*/
-
-    GaussianBlur(mag_gray, src_blur_gray, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
-    erode( src_blur_gray, src_blur_gray, m_er_element );
-    dilate( src_blur_gray, src_blur_gray, m_di_element );
-
-    threshold( src_blur_gray, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
-
-    Sobel(src_gray, sob, CV_32F, 1, 1);
-}
 
 void cvglCV::getFlow()
 {
@@ -374,6 +528,15 @@ void cvglCV::getFlow()
     vector<UMat> flow_vec;
     split(flow, flow_vec);
     UMat magnitude, angle;
+
+    /*
+    multiply(flow_vec[0], flow_vec[0], sq_x );
+    multiply(flow_vec[1], flow_vec[1], sq_y );
+    add(sq_x, sq_y, sum);
+    sqrt( sum, dist);
+    dist.convertTo(dist, CV_32F, 0.01);
+    */
+
     cartToPolar(flow_vec[0], flow_vec[1], magnitude, angle, true);
     magnitude.convertTo(magnitude, CV_32F, 0.01);
 
@@ -393,9 +556,9 @@ void cvglCV::getFlow()
 
 
 
-    add(m_img, img, m_img);
+    //add(m_img, img, m_img);
 
-    //img.copyTo(m_img);
+    img.copyTo(m_img);
 
 
     m_prev_frame = src_gray.clone();
@@ -491,7 +654,7 @@ AnalysisData cvglCV::analyzeContour()
 
     if( threshold_output.empty() )
     {
-        cout << "no image" << endl;
+       // cout << "no image analyzeContour" << endl;
         return data;
     }
     
@@ -552,13 +715,14 @@ AnalysisData cvglCV::analyzeContour()
 void cvglCV::analysisThread(AnalysisData data)
 {
     unique_lock<mutex> lock(m_lock);
-    const AnalysisData prev_data = m_prev_data;
-    vector<int> id_used = m_id_used;
 
-    Mat src_color_sized_mat, sob_mat;
+        const AnalysisData prev_data = m_prev_data;
+        vector<int> id_used = m_id_used;
 
-    src_color_sized.copyTo(src_color_sized_mat);
-    sob.copyTo(sob_mat);
+        Mat src_color_sized_mat, sob_mat;
+
+        src_color_sized.copyTo(src_color_sized_mat);
+        sob.copyTo(sob_mat);
 
     m_lock.unlock();
     
@@ -572,6 +736,8 @@ void cvglCV::analysisThread(AnalysisData data)
         
     data.centroids.reserve( data.ncontours );
     
+    const bool float_mat = src_color_sized_mat.depth() == CV_32F || src_color_sized_mat.depth() == CV_64F;
+
     for( size_t i = 0; i < data.ncontours; i++ )
     {
         const Mat& contour = data.contours[ data.contour_idx[i] ];
@@ -582,8 +748,14 @@ void cvglCV::analysisThread(AnalysisData data)
         
         cv::Rect boundRect = boundingRect( contour );
         
-        vector<PixStats> stats = getStatsChar( src_color_sized_mat, sob_mat, contour_mask, boundRect );
-        if (m_color_mode == 2 && stats.size() == 3) {
+
+        vector<PixStats> stats;
+        if( float_mat )
+            stats = getStatsFloat( src_color_sized_mat, sob_mat, contour_mask, boundRect );
+        else
+            stats = getStatsChar( src_color_sized_mat, sob_mat, contour_mask, boundRect );
+
+        if (m_use_preprocess != 3 && m_color_mode == 2 && stats.size() == 3) {
             stats[0].mean *= 0.3921568627; // 100/255 to sacle to 0-100
             stats[1].mean -= 128;
             stats[2].mean -= 128;
@@ -609,7 +781,7 @@ void cvglCV::analysisThread(AnalysisData data)
              */
         }
         
-        data.pix_channel_stats.emplace_back(stats);
+        data.pix_channel_stats[i] = stats;
 
         data.focus(i) = stats[ src_color_sized_mat.channels() ].variance;
         
@@ -967,7 +1139,7 @@ vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const M
                         stats[c].max = val;
                     
                     
-                    stats[c].sum += val;
+                    stats[c].sum += (double)val;
                     
                 }
                 
@@ -978,7 +1150,7 @@ vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const M
                 if( sobel_p[j] > stats[focus].max )
                     stats[focus].max = sobel_p[j];
                 
-                stats[focus].sum += sobel_p[j];
+                stats[focus].sum += (double)sobel_p[j];
                 
             }
             
@@ -993,9 +1165,9 @@ vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const M
     {
         stats[c].mean = stats[c].sum / size;
     }
-    
+
     stats[focus].mean = stats[focus].sum / size;
-    
+
     int row, col;
     for( size_t i = 0; i < size; ++i )
     {
@@ -1025,8 +1197,135 @@ vector<PixStats> cvglCV::getStatsChar( const Mat& src, const Mat& sobel, const M
     
     stats[focus].variance = stats[focus].dev_sum / v_size;
     
+
     return stats;
     
+}
+
+
+vector<PixStats> cvglCV::getStatsFloat( const Mat& src, const Mat& sobel, const Mat& mask, const cv::Rect& roi)
+{
+    //const int plane, T& min, T& max, T& varience
+
+   // cout << "getStatsFloat" << endl;
+
+    // test roi
+    if( src.size() != mask.size() )
+    {
+        printf("size mismatch\n");
+        return vector<PixStats>();
+    }
+
+    int nchans = src.channels();
+    int nstats = nchans + 1; // focus (removed flow)
+
+    int focus = nchans;
+
+    vector<PixStats> stats( nstats );
+
+    vector<cv::Point> index;
+    index.reserve( roi.area() );
+
+    const float *src_p = NULL;
+    const uchar *mask_p = NULL;
+    const float *sobel_p = NULL;
+
+    int row_start = roi.y;
+    int row_end = roi.y + roi.height;
+
+    int col_start = roi.x;
+    int col_end = col_start + roi.width;
+
+    //const cv::Mat src_mat = src.getMat(ACCESS_READ);
+    //const cv::Mat sob_mat = sobel.getMat(ACCESS_READ);
+
+    for( int i = row_start; i < row_end; ++i )
+    {
+        mask_p = mask.ptr<uchar>(i);
+
+        // do type check above here, eventually would be nice to support float also
+        src_p = src.ptr<float>(i);
+        sobel_p = sobel.ptr<float>(i);
+
+        for( int j = col_start; j < col_end; ++j )
+        {
+            if( mask_p[j] )
+            {
+                index.push_back( cv::Point(j, i) );
+
+
+                // src
+                for( int c = 0; c < nchans; ++c)
+                {
+                    const float val = src_p[ (j*nchans) + c];
+
+                    if( val < stats[c].min )
+                        stats[c].min = val;
+
+                    if( val > stats[c].max )
+                        stats[c].max = val;
+
+
+                    stats[c].sum += val;
+
+                }
+
+                //sobel
+                if( sobel_p[j] < stats[focus].min )
+                    stats[focus].min = sobel_p[j];
+
+                if( sobel_p[j] > stats[focus].max )
+                    stats[focus].max = sobel_p[j];
+
+                stats[focus].sum += sobel_p[j];
+
+            }
+
+        }
+    }
+
+    size_t size = index.size();
+    if( size == 0 )
+        ;//cout << "size zero" << endl;
+
+    for( int c = 0; c < nchans; ++c)
+    {
+        stats[c].mean = stats[c].sum / size;
+    }
+
+    stats[focus].mean = stats[focus].sum / size;
+
+    int row, col;
+    for( size_t i = 0; i < size; ++i )
+    {
+        col = index[i].x;
+        row = index[i].y;
+
+        src_p = src.ptr<float>(row);
+        sobel_p = sobel.ptr<float>(row);
+
+        for( int c = 0; c < nchans; ++c)
+        {
+            double dx = src_p[ (col*nchans) + c ] - stats[c].mean;
+            stats[c].dev_sum += (dx*dx);
+        }
+
+        double dx = sobel_p[ col ] - stats[focus].mean;
+        stats[focus].dev_sum += (dx*dx);
+
+    }
+
+    double v_size = size - 1;
+
+    for( int c = 0; c < nchans; ++c)
+    {
+        stats[c].variance = stats[c].dev_sum / v_size;
+    }
+
+    stats[focus].variance = stats[focus].dev_sum / v_size;
+
+    return stats;
+
 }
 
 
