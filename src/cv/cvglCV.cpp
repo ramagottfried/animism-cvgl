@@ -6,7 +6,6 @@
 #include "cvglHelperFunctions.hpp"
 //#include "cvglMainProcess.hpp"
 
-
 using namespace cv;
 using namespace std;
 using namespace Eigen;
@@ -17,8 +16,19 @@ void cvglCV::setCVParams( MapOSC & b )
     {
         const string& addr = msg.first;
         MapOSCArray& m = msg.second;
-        
-        if( addr == "/invert" )
+        if( addr == "/use/preprocess" )
+        {
+            int setProcessIDX = m.getInt();
+            if( setProcessIDX != m_use_preprocess )
+            {
+                m_use_preprocess = setProcessIDX;
+                m_prev_frame.release();
+                m_prev_frame = UMat();
+            }
+
+       //     cout << "setting preprocess to " << m_use_preprocess << " " << val.getInt() << endl;
+        }
+        else if( addr == "/invert" )
         {
             m_invert = m.getInt() > 0;
         }
@@ -46,9 +56,37 @@ void cvglCV::setCVParams( MapOSC & b )
         {
             m_maxsize = m.getFloat();
         }
+        else if( addr == "/gauss/sigma" )
+        {
+            m_gauss_sigma = m.getInt();
+            m_gauss_ksize = m_gauss_sigma*5;
+        }
         
     }
 }
+
+void cvglCV::preprocess()
+{
+   //cout << " preprocess  " << m_use_preprocess << endl;
+
+    switch (m_use_preprocess) {
+        case 0:
+            preprocessBasic(); // basic image contours
+            break;
+        case 1:
+            preprocessDifference(); // delta based movement
+            break;
+        case 2:
+            preprocessCanny(); // edge contours
+            break;
+        case 3:
+            preprocessDenseFlow(); // dense optical flow (better for image)
+        default:
+            break;
+    }
+
+}
+
 
 void cvglCV::preprocessBasic()
 {
@@ -381,8 +419,11 @@ void cvglCV::preprocessDenseFlow()
         // used for threshold
         dist.convertTo(mag_gray, CV_8U, 1.);
 
+        add(angle, 90.0f, angle); // 0-1
 
-       // divide(angle, 1., angle_scaled); // 0-1
+        Mat mask = angle.getMat(ACCESS_READ) > 180.0f;
+
+        subtract(angle, 360.0f, angle, mask); // 0-1
 
         /*
         minMaxIdx(angle, &min, &max);
@@ -400,7 +441,7 @@ void cvglCV::preprocessDenseFlow()
         minMaxIdx(mag_gray, &min, &max);
         cout << "mag_gray " << min << " " << max << endl;
 */
-        vector<UMat> xy_dist = { angle, dist };
+        vector<UMat> xy_dist = { angle, dist, flow_vec[0], flow_vec[1] };
 
         UMat merged_xy_dist;
         merge(xy_dist, merged_xy_dist);
@@ -1056,7 +1097,7 @@ void cvglCV::analysisTracking(AnalysisData& data, const AnalysisData& prev_data)
             double dx = data.centroid_x(i) - prev_data.centroid_x(prev_idx);
             double dy = data.centroid_y(i) - prev_data.centroid_y(prev_idx);
             data.delta_centroid_x(i) = dx;
-            data.delta_centroid_x(i) = dy;
+            data.delta_centroid_y(i) = dy;
             data.delta_centroid_dist(i) = sqrt( dx*dx + dy*dy );
                         
             data.start_centroid_x(i) = prev_data.start_centroid_x(prev_idx);

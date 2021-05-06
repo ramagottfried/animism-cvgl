@@ -201,11 +201,11 @@ void MapOSC::inputOSC( long len, char * ptr )
         MapOSCArray newVec;
         newVec.reserve( natoms );
 
-        char * dataPtr = NULL;
+        char * dataPtr = ptr + data_start;
 
         for( size_t i = 0; i < typetags.length(); i++)
         {
-            dataPtr = ptr + data_start + bytes_to_next;
+            dataPtr += bytes_to_next;
 
             switch ( typetags[i] )
             {

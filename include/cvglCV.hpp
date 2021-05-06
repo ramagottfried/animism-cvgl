@@ -39,25 +39,7 @@ public:
         printf("cv optimization %i\n", cv::useOptimized() );
     }
     
-    void preprocess()
-    {
-        switch (m_use_preprocess) {
-            case 0:
-                preprocessBasic(); // basic image contours
-                break;
-            case 1:
-                preprocessDifference(); // delta based movement
-                break;
-            case 2:
-                preprocessCanny(); // edge contours
-                break;
-            case 3:
-                preprocessDenseFlow(); // dense optical flow (better for image)
-            default:
-                break;
-        }
-
-    }
+    void preprocess();
 
     void preprocessBasic();
     void preprocessDifference();
@@ -178,7 +160,7 @@ protected:
     double m_track_radius = 0.1;
     
     int m_color_mode = 2; 
-    int m_use_preprocess = 0;
+    int m_use_preprocess = 3;
     
     float m_canny_min = 0;
     float m_canny_max = 30;

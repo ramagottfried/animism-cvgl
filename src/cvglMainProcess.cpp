@@ -9,115 +9,6 @@ using namespace cv;
 
 
 /**
- *  initObjects()
- *  init function to setup VBOs for GL objects, must be called after context setup is complete
- */
-
-void cvglMainProcess::initObjs()
-{
-    rect = unique_ptr<cvglObject>(new cvglObject);
-    contourMesh = unique_ptr<cvglObject>(new cvglObject);
-    hullMesh = unique_ptr<cvglObject>(new cvglObject);
-    minrectMesh = unique_ptr<cvglObject>(new cvglObject);
-    flowMesh = unique_ptr<cvglObject>(new cvglObject);
-    gitchRect = unique_ptr<cvglObject>(new cvglObject);
-    
-    frameTex =  unique_ptr<cvglTexture>(new cvglTexture);
-    contourTex = unique_ptr<cvglTexture>(new cvglTexture);
-    contourTriTex = unique_ptr<cvglTexture>(new cvglTexture);
-    hullTex =  unique_ptr<cvglTexture>(new cvglTexture);
-    minrectTex =  unique_ptr<cvglTexture>(new cvglTexture);
-    
-    m_hull_rgba = vector<float>({1, 0, 1, 1});
-    m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
-    m_contour_rgba = vector<float>({0.25, 0.5, 1., 0.125});
-    m_contour_triangles_rgb = vector<float>({1, 1, 1, 0.9});
-    
-    
-    float x[] = {-1, 1, 1, -1 };
-    float y[] = {1, 1, -1, -1 };
-    rect->newObj(GL_TRIANGLES);
-    rect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
-    rect->addVertex(cvglVertex({{x[1], y[1], 0.0f},  {1.0f, 0.0f} }));
-    rect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
-    rect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
-    rect->addVertex(cvglVertex({{x[3], y[3], 0.0f},  {0.0f, 1.0f} }));
-    rect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
-    rect->endObj();
-    rect->initStaticDraw();
-    
-    
-    gitchRect->newObj(GL_TRIANGLES);
-    gitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[1], y[1], 0.0f},  {1.0f, 0.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
-    
-    gitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[3], y[3], 0.0f},  {0.0f, 1.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
-    
-    cvglRandom rand;
-    float xrange = 5;
-    float yrange = 0.25;
-    for(int i = 0 ; i < xrange; i++)
-    {
-        float minxrange =  i == 0 ? 0 : i / xrange;
-        float maxxrange =  ((i + 1) / xrange) ;
-        
-        float rx1 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
-        float ry1 = cvgl::scale( rand.uniformRand(), 0., 1., 1 - yrange, 1.);
-        
-        float minx = rx1;
-        float miny = ry1;
-        float maxx = rx1;
-        float maxy = ry1;
-        
-        float rx2 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
-        float ry2 = cvgl::scale( rand.uniformRand(), 0., 1., 0., yrange);
-        
-        minx = rx2 < minx ? rx2 : minx;
-        miny = ry2 < miny ? ry2 : miny;
-        maxx = rx2 > minx ? rx2 : maxx;
-        maxy = ry2 > miny ? ry2 : maxy;
-        
-        float rx3 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
-        float ry3 = cvgl::scale( rand.uniformRand(), 0., 1., 1 - yrange, 1.);
-        
-        minx = rx3 < minx ? rx3 : minx;
-        miny = ry3 < miny ? ry3 : miny;
-        maxx = rx3 > minx ? rx3 : maxx;
-        maxy = ry3 > miny ? ry3 : maxy;
-        
-        float w = maxx - minx;
-        float h = maxy - miny;
-            
-        float xx = cvgl::scale( rx1, 0., 1., -1., 1);
-        float yy = cvgl::scale( ry1, 0., 1., -1., 1);
-        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f}, {rx1, ry1}}));
-
-        xx = cvgl::scale( rx2, 0., 1., -1., 1);
-        yy = cvgl::scale( ry2, 0., 1., -1., 1);
-        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx2, ry2}}));
-
-        xx = cvgl::scale( rx3, 0., 1., -1., 1);
-        yy = cvgl::scale( ry3, 0., 1., -1., 1);
-        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx3, ry3}}));
-
-    }
-    gitchRect->endObj();
-
-//    gitchRect->triangulate();
-    gitchRect->initStaticDraw();
-    
-    
-    objects_initialized = true;
-    
-    context.clearColor(0, 0, 0, 1);
-    
-    cout << objects_initialized << endl;
-}
-
-/**
  virtual function called from UDP thread
  */
 void cvglMainProcess::receivedBundle( MapOSC & b )
@@ -173,18 +64,6 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         else if( addr == "/use/camera" )
         {
             m_use_camera_id = val.getInt();
-        }
-        else if( addr == "/use/preprocess" )
-        {
-            int setProcessIDX = val.getInt();
-            if( setProcessIDX != m_use_preprocess )
-            {
-                m_use_preprocess = setProcessIDX;
-                m_prev_frame.release();
-                m_prev_frame = UMat();
-            }
-
-       //     cout << "setting preprocess to " << m_use_preprocess << " " << val.getInt() << endl;
         }
         else if( addr == "/enable/contour" )
         {
@@ -310,6 +189,118 @@ void setTriangleTexcords(unique_ptr<cvglObject> & obj )
         obj->setTexCord(i, cvgl::scale( vert.position[0], -1., 1., 0., 1.), cvgl::scale( vert.position[1], -1., 1., 0., 1.));
     }
 }
+
+
+
+/**
+ *  initObjects()
+ *  init function to setup VBOs for GL objects, must be called after context setup is complete
+ */
+
+void cvglMainProcess::initObjs()
+{
+    rect = unique_ptr<cvglObject>(new cvglObject);
+    contourMesh = unique_ptr<cvglObject>(new cvglObject);
+    hullMesh = unique_ptr<cvglObject>(new cvglObject);
+    minrectMesh = unique_ptr<cvglObject>(new cvglObject);
+    flowMesh = unique_ptr<cvglObject>(new cvglObject);
+    gitchRect = unique_ptr<cvglObject>(new cvglObject);
+
+    frameTex =  unique_ptr<cvglTexture>(new cvglTexture);
+    contourTex = unique_ptr<cvglTexture>(new cvglTexture);
+    contourTriTex = unique_ptr<cvglTexture>(new cvglTexture);
+    hullTex =  unique_ptr<cvglTexture>(new cvglTexture);
+    minrectTex =  unique_ptr<cvglTexture>(new cvglTexture);
+
+    m_hull_rgba = vector<float>({1, 0, 1, 1});
+    m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
+    m_contour_rgba = vector<float>({0.25, 0.5, 1., 0.125});
+    m_contour_triangles_rgb = vector<float>({1, 1, 1, 0.9});
+
+
+    float x[] = {-1, 1, 1, -1 };
+    float y[] = {1, 1, -1, -1 };
+    rect->newObj(GL_TRIANGLES);
+    rect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
+    rect->addVertex(cvglVertex({{x[1], y[1], 0.0f},  {1.0f, 0.0f} }));
+    rect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
+    rect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
+    rect->addVertex(cvglVertex({{x[3], y[3], 0.0f},  {0.0f, 1.0f} }));
+    rect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
+    rect->endObj();
+    rect->initStaticDraw();
+
+
+    gitchRect->newObj(GL_TRIANGLES);
+    gitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
+    gitchRect->addVertex(cvglVertex({{x[1], y[1], 0.0f},  {1.0f, 0.0f} }));
+    gitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
+
+    gitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
+    gitchRect->addVertex(cvglVertex({{x[3], y[3], 0.0f},  {0.0f, 1.0f} }));
+    gitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
+
+    cvglRandom rand;
+    float xrange = 5;
+    float yrange = 0.25;
+    for(int i = 0 ; i < xrange; i++)
+    {
+        float minxrange =  i == 0 ? 0 : i / xrange;
+        float maxxrange =  ((i + 1) / xrange) ;
+
+        float rx1 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
+        float ry1 = cvgl::scale( rand.uniformRand(), 0., 1., 1 - yrange, 1.);
+
+        float minx = rx1;
+        float miny = ry1;
+        float maxx = rx1;
+        float maxy = ry1;
+
+        float rx2 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
+        float ry2 = cvgl::scale( rand.uniformRand(), 0., 1., 0., yrange);
+
+        minx = rx2 < minx ? rx2 : minx;
+        miny = ry2 < miny ? ry2 : miny;
+        maxx = rx2 > minx ? rx2 : maxx;
+        maxy = ry2 > miny ? ry2 : maxy;
+
+        float rx3 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
+        float ry3 = cvgl::scale( rand.uniformRand(), 0., 1., 1 - yrange, 1.);
+
+        minx = rx3 < minx ? rx3 : minx;
+        miny = ry3 < miny ? ry3 : miny;
+        maxx = rx3 > minx ? rx3 : maxx;
+        maxy = ry3 > miny ? ry3 : maxy;
+
+        float w = maxx - minx;
+        float h = maxy - miny;
+
+        float xx = cvgl::scale( rx1, 0., 1., -1., 1);
+        float yy = cvgl::scale( ry1, 0., 1., -1., 1);
+        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f}, {rx1, ry1}}));
+
+        xx = cvgl::scale( rx2, 0., 1., -1., 1);
+        yy = cvgl::scale( ry2, 0., 1., -1., 1);
+        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx2, ry2}}));
+
+        xx = cvgl::scale( rx3, 0., 1., -1., 1);
+        yy = cvgl::scale( ry3, 0., 1., -1., 1);
+        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx3, ry3}}));
+
+    }
+    gitchRect->endObj();
+
+//    gitchRect->triangulate();
+    gitchRect->initStaticDraw();
+
+
+    objects_initialized = true;
+
+    context.clearColor(0, 0, 0, 1);
+
+    cout << objects_initialized << endl;
+}
+
 
 void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
 {

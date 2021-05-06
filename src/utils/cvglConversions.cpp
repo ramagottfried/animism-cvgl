@@ -1,6 +1,7 @@
 #include "cvglConversions.hpp"
 
 #include <deque>
+#include <iostream>
 
 using namespace std;
 using namespace cv;
@@ -11,12 +12,12 @@ namespace cvgl
     std::vector<float> getRGBA( MapOSCArray & msg )
     {
         std::vector<float> _rgba;
-        for( auto & a : msg.getAtomVector() )
+        for( auto a : msg.getAtomVector() )
         {
             _rgba.emplace_back( a.getFloat() );
         }
         
-        for( int i = (int)_rgba.size()-1; i < 4; i++)
+        for( int i = (int)_rgba.size()-1; i < 3; i++)
         {
             _rgba.emplace_back(1);
         }
@@ -35,8 +36,8 @@ namespace cvgl
             {
                 const T& Mij = Mi[j];
                 vertexObj.addVertex( cvglVertex({
-                    static_cast<float>((Mij.x - halfScreenW) / halfScreenW),
-                    static_cast<float>(-(Mij.y - halfScreenH) / halfScreenH)
+                    {static_cast<float>((Mij.x - halfScreenW) / halfScreenW),
+                    static_cast<float>(-(Mij.y - halfScreenH) / halfScreenH)}
                 }));
             }
         }

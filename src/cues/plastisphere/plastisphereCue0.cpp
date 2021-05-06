@@ -74,5 +74,10 @@ MapOSC cvglCues::cue0( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
 
     }
 
+    out.addMessage("/delta_centroid_x", data.delta_centroid_x);
+    out.addMessage("/delta_centroid_y", data.delta_centroid_y);
+    out.addMessage("/delta_centroid_dist", data.delta_centroid_dist);
+
+
     return out;
 }
