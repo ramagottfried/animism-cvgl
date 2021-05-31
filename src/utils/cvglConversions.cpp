@@ -9,12 +9,12 @@ using namespace cv;
 namespace cvgl
 {
     
-    std::vector<float> getRGBA( MapOSCArray & msg )
+    std::vector<float> getRGBA( OSCAtomVector & msg )
     {
         std::vector<float> _rgba;
-        for( auto a : msg.getAtomVector() )
+        for( const auto& a : msg.getAtomVector() )
         {
-            _rgba.emplace_back( a.getFloat() );
+            _rgba.emplace_back( a->getFloat() );
         }
         
         for( int i = (int)_rgba.size()-1; i < 3; i++)

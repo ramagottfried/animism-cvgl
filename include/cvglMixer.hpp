@@ -59,45 +59,45 @@ struct cvglMixer
     void proc( MapOSC & b)
     {
             
-        for( auto& m : b.map )
+        for( auto& m : b.getMap() )
         {
             const std::string& addr = m.first;
-            auto& atomVec = m.second;
+            const auto& atomVec = m.second;
 
             if( addr == "/mixer/fader/1") {
-                midi_gain(1, atomVec[0].get<int32_t>() );
+                midi_gain(1, atomVec.getInt() );
             } else if( addr == "/mixer/fader/2") {
-                midi_gain(2, atomVec[0].get<int32_t>() );
+                midi_gain(2, atomVec.getInt() );
             } else if( addr == "/mixer/fader/3") {
-                midi_gain(3, atomVec[0].get<int32_t>() );
+                midi_gain(3, atomVec.getInt() );
             } else if( addr == "/mixer/fader/4") {
-                midi_gain(4, atomVec[0].get<int32_t>() );
+                midi_gain(4, atomVec.getInt() );
             } else if( addr == "/mixer/fader/5") {
-                midi_gain(5, atomVec[0].get<int32_t>() );
+                midi_gain(5, atomVec.getInt() );
             } else if( addr == "/mixer/fader/6") {
-                midi_gain(6, atomVec[0].get<int32_t>() );
+                midi_gain(6, atomVec.getInt() );
             } else if( addr == "/mixer/fader/7") {
-                midi_gain(7, atomVec[0].get<int32_t>() );
+                midi_gain(7, atomVec.getInt() );
             } else if( addr == "/mixer/fader/8") {
-                midi_gain(8, atomVec[0].get<int32_t>() );
+                midi_gain(8, atomVec.getInt() );
             } else if( addr == "/mixer/fader/main") {
-                midi_gain(9, atomVec[0].get<int32_t>() );
+                midi_gain(9, atomVec.getInt() );
             } else if( addr == "/mixer/knob/1") {
-                midi_pregain(1, atomVec[0].get<int32_t>() );
+                midi_pregain(1, atomVec.getInt() );
             } else if( addr == "/mixer/knob/2") {
-                midi_pregain(2, atomVec[0].get<int32_t>() );
+                midi_pregain(2, atomVec.getInt() );
             } else if( addr == "/mixer/knob/3") {
-                midi_pregain(3, atomVec[0].get<int32_t>() );
+                midi_pregain(3, atomVec.getInt() );
             } else if( addr == "/mixer/knob/4") {
-                midi_pregain(4, atomVec[0].get<int32_t>() );
+                midi_pregain(4, atomVec.getInt() );
             } else if( addr == "/mixer/knob/5") {
-                midi_pregain(5, atomVec[0].get<int32_t>() );
+                midi_pregain(5, atomVec.getInt() );
             } else if( addr == "/mixer/knob/6") {
-                midi_pregain(6, atomVec[0].get<int32_t>() );
+                midi_pregain(6, atomVec.getInt() );
             } else if( addr == "/mixer/knob/7") {
-                midi_pregain(7, atomVec[0].get<int32_t>() );
+                midi_pregain(7, atomVec.getInt() );
             } else if( addr == "/mixer/knob/8") {
-                midi_pregain(8, atomVec[0].get<int32_t>() );
+                midi_pregain(8, atomVec.getInt() );
             }
         }
         

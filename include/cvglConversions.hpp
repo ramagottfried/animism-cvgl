@@ -31,7 +31,7 @@ namespace cvgl
     cv::Point getNormal( cv::Point p1, cv::Point p2 );
 
     
-    std::vector<float> getRGBA( MapOSCArray & msg );
+    std::vector<float> getRGBA( OSCAtomVector& msg );
    
     
 }

@@ -199,7 +199,7 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
     {
         for( auto& at : m_state_cache["/fig_1_x"].getAtomVector() )
         {
-            fig_1_x.emplace_back( at.get<double>() );
+            fig_1_x.emplace_back( at->get<double>() );
         }
     }
     

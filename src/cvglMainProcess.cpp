@@ -44,10 +44,10 @@ void cvglMainProcess::receivedBundle( MapOSC & b )
  */
 void cvglMainProcess::setMainParams( MapOSC & b )
 {
-    for( auto& m : b.map )
+    for( const auto& m : b.getMap() )
     {
         const string& addr = m.first;
-        MapOSCArray& val = m.second;
+        const OSCAtomVector& val = m.second;
         
         if( addr == "/video/enable" )
         {
@@ -71,7 +71,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         }
         else if( addr == "/contour/color" )
         {
-            m_contour_rgba = cvgl::getRGBA(val);
+            m_contour_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
         }
         else if( addr == "/contour/width" )
         {
@@ -83,7 +83,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         }
         else if( addr == "/hull/color" )
         {
-            m_hull_rgba = cvgl::getRGBA(val);;
+            m_hull_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
         }
         else if( addr == "/hull/width" )
         {
@@ -95,7 +95,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         }
         else if( addr == "/minrect/color" )
         {
-            m_minrect_rgba = cvgl::getRGBA(val);;
+            m_minrect_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
         }
         else if( addr == "/minrect/width" )
         {
@@ -105,7 +105,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             if( val.size() == 2 )
             {
-                context.flip( val[0].getFloat(), val[1].getFloat() );
+                context.flip( val.get<float>(0), val.get<float>(1) );
             }
         }
     }

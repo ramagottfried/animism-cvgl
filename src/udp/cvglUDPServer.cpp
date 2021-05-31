@@ -77,7 +77,7 @@ void cvglUDPServer::openSendSocket()
     
     overflowMessage["/error"].appendValue("send buffer exceeded max size");
     
-    m_overflowMessage.resize( overflowMessage.getMapOSCSize() );
+    m_overflowMessage.resize( overflowMessage.getSerializedSizeInBytes() );
     
     overflowMessage.serializeIntoBuffer( m_overflowMessage.data(), m_overflowMessage.size() );
     
@@ -229,7 +229,7 @@ void cvglUDPServer::sendBundle( MapOSC & b )
     if( m_fd < 0 )
         return;
     
-    size_t len = b.getMapOSCSize();
+    size_t len = b.getSerializedSizeInBytes();
     if( len < 9 )
         return;
     

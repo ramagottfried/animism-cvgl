@@ -15,10 +15,10 @@ void cvglCV::setCVParams( MapOSC & b )
     for( auto& msg : b.getMap() )
     {
         const string& addr = msg.first;
-        MapOSCArray& m = msg.second;
+        const OSCAtomVector& m = msg.second;
         if( addr == "/use/preprocess" )
         {
-            int setProcessIDX = m.getInt();
+            int setProcessIDX = m.get<int>();
             if( setProcessIDX != m_use_preprocess )
             {
                 m_use_preprocess = setProcessIDX;

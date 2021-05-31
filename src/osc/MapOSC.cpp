@@ -1,19 +1,8 @@
 #include "MapOSC.hpp"
 
-#include <netinet/in.h>
-#include <inttypes.h>
-#include <arpa/inet.h>
-
-#include <iostream>
-
-/*
-#include "osc_bundle_iterator_s.h"
-#include "osc_message_iterator_s.h"
-#include "osc.h"
-#include "osc_util.h"
-//#include "osc_mem.h"
-*/
-
+/**
+ libo utills
+ */
 #define OSC_HEADER_SIZE 16 // bundle\0 + 8 byte timetag.
 #define OSC_IDENTIFIER "#bundle\0"
 #define OSC_IDENTIFIER_SIZE 8
@@ -126,27 +115,111 @@ size_t osc_util_getPaddingForNBytes(size_t n)
 }
 
 
-// typedef std::variant<float, double, int32_t, int64_t, char, bool, std::string> AtomVar_t;
-char MapAtom::getOSCTypeTag()
+/**
+ OSC Atom
+ */
+
+OSCAtom::OSCAtom(const OSCAtom & other) : type(other.type)
 {
-    // index matches order of types in variant template
-    switch (m_atom.index()) {
-        case 0: return 'f';
-        case 1: return 'd';
-        case 2: return 'i';
-        case 3: return 'h';
-        case 4: return 'c';
-        case 5: return (std::get<5>(m_atom) ? 'T' : 'F');
-        case 6: return 's';
-        default:
-            printf("unknown type\n");
-            return '?';
-    }
+   switch (type) {
+
+       case 'f':
+           f_val = other.f_val;
+           break;
+       case 'd':
+           d_val = other.d_val;
+           break;
+       case 'i':
+           i_val = other.i_val;
+           break;
+       case 'h':
+           l_val = other.l_val;
+           break;
+       case 'c':
+           c_val = other.c_val;
+           break;
+       case 'b':
+           b_val = other.b_val;
+           break;
+       case 's':
+           str_val = other.str_val;
+           break;
+       case '.':
+           map_val = std::make_unique<MapOSC>( *(other.map_val) );
+           break;
+       default:
+           printf("OSCAtom unhandled type %c\n", type);
+           break;
+   }
+
+
 }
 
-size_t MapAtom::getSizeInBytes()
+
+template <typename T>
+T OSCAtom::get()
 {
-    switch (getOSCTypeTag())
+    if constexpr ( std::is_same<T, std::string>::value )
+    {
+        switch (type) {
+            case 's':
+                return str_val;
+            case 'f':
+                return std::to_string(f_val);
+            case 'd':
+                return std::to_string(d_val);
+            case 'i':
+                return std::to_string(i_val);
+            case 'h':
+                return std::to_string(l_val);
+            case 'c':
+                return std::to_string(c_val);
+            case 'b':
+                return std::to_string(b_val);
+            case OSC_BUNDLE_TYPETAG:
+               return string("#bundle");
+            default:
+                return string("unhandled type");
+        }
+    }
+    else if constexpr ( std::is_same<T, MapOSC>::value )
+    {
+        if (type == OSC_BUNDLE_TYPETAG )
+            return *map_val;
+
+        return MapOSC();
+
+    }
+    else
+    {
+        switch (type) {
+            case 'f':
+                return (T)f_val;
+            case 'd':
+                return (T)d_val;
+            case 'i':
+                return (T)i_val;
+            case 'h':
+                return (T)l_val;
+            case 'c':
+                return (T)c_val;
+            case 'b':
+                return (T)b_val;
+            case 's':
+            case OSC_BUNDLE_TYPETAG:
+                return (T)0;
+            default:
+                return (T)0;
+        }
+    }
+
+}
+
+
+
+size_t OSCAtom::getSizeInBytes()
+{
+    switch ( type )
      {
          case 'f':
          case 'c':
@@ -157,15 +230,52 @@ size_t MapAtom::getSizeInBytes()
             return 8;
          case 's':
          {
-            size_t len = MapAtom::get<std::string>().length();
+            size_t len = str_val.length();
             size_t plen = osc_util_getPaddingForNBytes(len);
             return plen;
          }
+         case OSC_BUNDLE_TYPETAG:
+             return map_val->getSerializedSizeInBytes() + 4;
          default:
              return 0;
     }
 }
 
+
+/**
+ OSCAtomVector
+*/
+
+OSCAtomVector::OSCAtomVector( std::vector< std::unique_ptr<OSCAtom> > vec )
+{
+    for( size_t i = 0; i < vec.size(); i++ )
+    {
+        obj_vec.emplace_back( std::make_unique<OSCAtom>( *vec[i] ) );
+    }
+}
+
+OSCAtomVector::OSCAtomVector( const OSCAtomVector & other )
+{
+    for( size_t i = 0; i < other.obj_vec.size(); i++ )
+    {
+        obj_vec.emplace_back( std::make_unique<OSCAtom>( *other.obj_vec[i] ) );
+    }
+}
+
+
+
+
+/**
+ MapOSC
+ */
+
+MapOSC::MapOSC( const MapOSC & other )
+{
+    for( auto & it : other.address_lookup )
+    {
+        address_lookup.emplace(it.first, OSCAtomVector( it.second ) );
+    }
+}
 
 
 void MapOSC::inputOSC( long len, char * ptr )
@@ -179,26 +289,23 @@ void MapOSC::inputOSC( long len, char * ptr )
 
     while( _n < len )
     {
-        int32_t msg_size = ntoh32(*((int32_t *)(ptr + _n)));
+        size_t msg_size = ntoh32(*((int32_t *)(ptr + _n)));
 
-        int32_t addr_start = _n + 4;
-        int32_t addr_end = buf.find_first_of('\0', addr_start);
+        size_t addr_start = _n + 4;
+        size_t addr_end = buf.find_first_of('\0', addr_start);
         string addr = buf.substr(addr_start, addr_end-addr_start);
        // cout << "addr " << addr << " start " << addr_start << " end " << addr_end <<endl;
 
-        int32_t typetags_start = addr_start + osc_util_getPaddedStringLen(addr);
-        int32_t typetags_end = buf.find_first_of('\0', typetags_start);
-        string typetags = buf.substr(typetags_start, typetags_end-typetags_start);
+        size_t typetags_start = addr_start + osc_util_getPaddedStringLen(addr);
+        size_t typetags_end = buf.find_first_of('\0', typetags_start) - 1;
+        string typetags = buf.substr(typetags_start+1, typetags_end-typetags_start);
 
-        //cout << "typetags " << typetags << endl;
-
-
-        int32_t data_start = typetags_start + osc_util_getPaddedStringLen(typetags);
+        size_t data_start = typetags_start + osc_util_getPaddedStringLen(typetags);
         size_t bytes_to_next = 0;
 
         size_t natoms = typetags.length() - 1;
 
-        MapOSCArray newVec;
+        OSCAtomVector newVec;// = make_unique<OSCAtomVector>();
         newVec.reserve( natoms );
 
         char * dataPtr = ptr + data_start;
@@ -224,13 +331,20 @@ void MapOSC::inputOSC( long len, char * ptr )
                 }
                 break;
                 case 'i':
+                {
                     newVec.appendValue( (int32_t)ntoh32(*((int32_t *)(dataPtr))) );
                     bytes_to_next = 4;
-                    break;
+                }
+                break;
+                case 'h':
+                    newVec.appendValue( (int64_t)ntoh64(*((int64_t *)(dataPtr))) );
+                    bytes_to_next = 8;
+                break;
                 case 's':
                     {
-                        size_t str_end = buf.find_first_of('\0', data_start + bytes_to_next);
-                        string str = buf.substr(data_start + bytes_to_next, str_end);
+                        size_t str_start = dataPtr - ptr;
+                        size_t str_end = buf.find_first_of('\0', str_start);
+                        string str = buf.substr(str_start, str_end - str_start);
                         newVec.appendValue( str );
                         bytes_to_next = osc_util_getPaddedStringLen(str);
                     }
@@ -248,10 +362,7 @@ void MapOSC::inputOSC( long len, char * ptr )
 //                    case 'U':
 //                        osc_atom_u_setUInt16(atom_u, osc_atom_s_getUInt16(a));
 //                        break;
-                case 'h':
-                    newVec.appendValue( (int64_t)ntoh64(*((int64_t *)(dataPtr))) );
-                    bytes_to_next = 8;
-                    break;
+
 //                    case 'I':
 //                        osc_atom_u_setUInt32(atom_u, osc_atom_s_getUInt32(a));
 //                        break;
@@ -267,17 +378,10 @@ void MapOSC::inputOSC( long len, char * ptr )
                 case 'N':
                     newVec.appendValue( false );
                     break;
-//                    case OSC_BUNDLE_TYPETAG:
-//                        {
-//                            //char bndl[osc_bundle_s_getStructSize()];
-//                            //t_osc_bndl_s *b = (t_osc_bndl_s *)bndl;
-//                            t_osc_bndl_s *b = osc_atom_s_getBndl(a);
-//                            if(b){
-//                                osc_atom_u_setBndl(atom_u, osc_bundle_s_getLen(b), osc_bundle_s_getPtr(b));
-//                                osc_bundle_s_free(b);
-//                            }
-//                        }
-//                        break;
+                case OSC_BUNDLE_TYPETAG:
+                    newVec.appendValue( MapOSC( (long)ntoh32(*((int32_t *)(dataPtr))),
+                                                 dataPtr + 4 ));
+                    break;
 //                    case OSC_TIMETAG_TYPETAG:
 //                        {
 //                            osc_atom_u_setTimetag(atom_u, osc_atom_s_getTimetag(a));
@@ -289,144 +393,43 @@ void MapOSC::inputOSC( long len, char * ptr )
 //                    case OSC_BUNDLE_TYPETAG:
 //                        return getBundle() == src.getBundle();
                 default:
+                    printf("unhandled input %ld type %c %d\n", i, typetags[i], typetags[i] );
                 break;
 
             }
         }
 
-        map.emplace( addr, newVec );
+        address_lookup.emplace( addr, move(newVec) );
 
         _n += msg_size + 4;
     }
-
-/*
-    t_osc_bndl_it_s *it = osc_bndl_it_s_get(len, ptr);
-    while(osc_bndl_it_s_hasNext(it)){
-        t_osc_msg_s *m = osc_bndl_it_s_next(it);
-                    
-        MapOSCArray newVec;
-        newVec.reserve( osc_message_s_getArgCount(m) );
-        
-        t_osc_msg_it_s *mit = osc_msg_it_s_get(m);
-        
-        int i = 0;
-        while(osc_msg_it_s_hasNext(mit)){
-            t_osc_atom_s *a = osc_msg_it_s_next(mit);
-
-            switch ( osc_atom_s_getTypetag(a) )
-            {
-                case 'f':
-                    newVec.appendValue( osc_atom_s_getFloat(a) );
-                    break;
-                case 'd':
-                    newVec.appendValue( osc_atom_s_getDouble(a) );
-                    break;
-                case 'i':
-                    newVec.appendValue( osc_atom_s_getInt32(a) );
-                    break;
-                case 's':
-                    {
-                        //char buf[ strlen(osc_atom_s_getData(a)) ];
-                        //char *ptr = buf;
-                        //osc_atom_s_getString(a, 0, &ptr); // allocates memory and makes a copy
-//                        printf("test %s \n", std::string(osc_atom_s_getData(a)).c_str() );
-                        newVec.appendValue( std::string(osc_atom_s_getData(a)) );
-                        
-                     //   osc_mem_free(buf);
-                    }
-                    break;
-                case 'c':
-                    newVec.appendValue((char)osc_atom_s_getInt8(a));
-                    break;
-//                    case 'C':
-//                        osc_atom_u_setUInt8(atom_u, osc_atom_s_getUInt8(a));
-//                        break;
-//                    case 'u':
-//                        osc_atom_u_setInt16(atom_u, osc_atom_s_getInt16(a));
-//                        break;
-//                    case 'U':
-//                        osc_atom_u_setUInt16(atom_u, osc_atom_s_getUInt16(a));
-//                        break;
-                case 'h':
-                    newVec.appendValue( osc_atom_s_getInt64(a) );
-                    break;
-//                    case 'I':
-//                        osc_atom_u_setUInt32(atom_u, osc_atom_s_getUInt32(a));
-//                        break;
-//                    case 'H':
-//                        osc_atom_u_setUInt64(atom_u, osc_atom_s_getUInt64(a));
-//                        break;
-                case 'T':
-                    newVec.appendValue( true );
-                    break;
-                case 'F':
-                    newVec.appendValue( false );
-                    break;
-                case 'N':
-                    newVec.appendValue( false );
-                    break;
-//                    case OSC_BUNDLE_TYPETAG:
-//                        {
-//                            //char bndl[osc_bundle_s_getStructSize()];
-//                            //t_osc_bndl_s *b = (t_osc_bndl_s *)bndl;
-//                            t_osc_bndl_s *b = osc_atom_s_getBndl(a);
-//                            if(b){
-//                                osc_atom_u_setBndl(atom_u, osc_bundle_s_getLen(b), osc_bundle_s_getPtr(b));
-//                                osc_bundle_s_free(b);
-//                            }
-//                        }
-//                        break;
-//                    case OSC_TIMETAG_TYPETAG:
-//                        {
-//                            osc_atom_u_setTimetag(atom_u, osc_atom_s_getTimetag(a));
-//                        }
-//                        break;
-//                    case 'b':
-//                        osc_atom_u_setBlob(atom_u, a->data);
-//                        break;
-//                    case OSC_BUNDLE_TYPETAG:
-//                        return getBundle() == src.getBundle();
-                default:
-                break;
-                    
-            }
-            
-            i++;
-        }
-        osc_msg_it_s_destroy(mit);
-        
-        map.emplace( std::string(osc_message_s_getAddress(m)), newVec );
-    }
-    osc_bndl_it_s_destroy(it);
-    */
 }
 
 
-
-size_t MapOSC::getMapOSCSize()
+size_t MapOSC::getSerializedSizeInBytes() const
 {
     size_t _n = OSC_HEADER_SIZE;
-    
+
     // iterate messages in map
-    for (auto& it : map)
+    for (auto& it : address_lookup)
     {
         _n += 4;
         _n += osc_util_getPaddedStringLen( (char *)it.first.c_str() );
         _n += osc_util_getPaddingForNBytes( it.second.size() + 1 );
-        
+
         for( auto& at : it.second.getAtomVector() )
         {
-            _n += at.getSizeInBytes();
+            _n += at->getSizeInBytes();
         }
-     
+
     }
-    
+
     return _n;
 }
 
 
 
-size_t serializeVector( char *buf, size_t remaining_size, const char * address, std::vector<MapAtom>& vec )
+size_t serializeVector( char *buf, size_t remaining_size, const char * address, const vector< unique_ptr<OSCAtom> >& vec )
 {
     size_t _n = 0;
     size_t addresslen = strlen(address);
@@ -438,18 +441,18 @@ size_t serializeVector( char *buf, size_t remaining_size, const char * address, 
         return 0;
     }
     _n += num_bytes_before_data;
-    
+
     char *ptr = buf;
     memset(ptr, '\0', num_bytes_before_data);
     ptr += 4;
-    
+
     memcpy(ptr, address, addresslen);
     ptr += padded_address_len;
-    
+
     char *ttptr = ptr;
     ptr += padded_typetag_len;
     *ttptr++ = ',';
-    
+
     for( auto& at : vec)
     {
         /*
@@ -457,112 +460,159 @@ size_t serializeVector( char *buf, size_t remaining_size, const char * address, 
        {
            printf("pointer out of range? %ld size(%ld) \n", n, sizeof(ttptr) );
            break; // throw error probably
-           
+
        }
         */
-        
-        *ttptr++ = at.getOSCTypeTag();
+
+        *ttptr++ = at->typetag();
         ptr = buf + _n;
-        
-        switch (at.getOSCTypeTag()) {
+
+        switch (at->typetag()) {
             case 'f':
             {
-                float f = at.get<float>();
+                float f = at->get<float>();
                 *((int32_t *)ptr) = hton32(*((int32_t *)(&f)));
                 _n += 4;
             }
                 break;
             case 'd':
             {
-                double d = at.get<double>();
+                double d = at->get<double>();
                 *((int64_t *)ptr) = hton64(*((int64_t *)(&d)));
                 _n += 8;
             }
                 break;
             case 'c':
             {
-                char c = at.get<char>();
+                char c = at->get<char>();
                 *((int32_t *)ptr) = hton32(c);
                 _n += 4;
             }
                 break;
             case 'i':
             {
-                int32_t i = at.get<int32_t>();
+                int32_t i = at->get<int32_t>();
                 *((int32_t *)ptr) = hton32(i);
                 _n += 4;
             }
                 break;
             case 'h':
             {
-                int64_t l = at.get<int64_t>();
+                int64_t l = at->get<int64_t>();
                 *((int64_t *)ptr) = hton64(l);
                 _n += 8;
             }
+                break;
             case 's':
             {
-                const string& str = at.get<std::string>().c_str();
+                const string& str = at->get<std::string>().c_str();
                 size_t len = str.length();
                 size_t plen = osc_util_getPaddingForNBytes(len);
                 memset(ptr, '\0', plen);
                 memcpy(ptr, str.c_str(), len);
                 _n += plen;
             }
+                break;
+            case OSC_BUNDLE_TYPETAG:
+            {
+                const MapOSC& map = at->get<MapOSC>();
+
+                size_t sub_map_size = map.getSerializedSizeInBytes();
+
+                memset(ptr, '\0', sub_map_size + 4 );
+                *((int32_t *)ptr) = hton32((int32_t)sub_map_size);
+
+                char * buf_ptr = (char *)malloc(sub_map_size);
+                map.serializeIntoBuffer(buf_ptr, sub_map_size);
+
+                memcpy(ptr + 4, buf_ptr, sub_map_size);
+
+                free(buf_ptr);
+
+                _n += sub_map_size + 4;
+
+            }
+                break;
             default:
                 break;
         }
-        
+
     }
-    
+
     *((int32_t *)buf) = hton32((int32_t)_n - 4);
-    
+
     return _n;
 }
 
-/*
-t_osc_bundle_s* MapOSC::getBundle()
-{
-    size_t len = getMapOSCSize();
-    //printf("allocating %ld bytes \n", len);
-    char * ptr = (char *)osc_mem_alloc(len);
-    
-    size_t _n = 0;
-    
-    memcpy(ptr, OSC_EMPTY_HEADER, OSC_HEADER_SIZE);
-    _n += OSC_HEADER_SIZE;
-    
-    for (auto& it : map)
-    {
-        _n += serializeVector(ptr + _n, len - _n, it.first.c_str(), it.second.getAtomVector() );
-    }
-    
-   // printf("_n %ld \n", _n);
 
-    return osc_bundle_s_alloc(_n, ptr);
-   
-}
- */
-
-void MapOSC::serializeIntoBuffer(char *ptr, size_t size )
+void MapOSC::serializeIntoBuffer(char *ptr, size_t size ) const
 {
     size_t _n = 0;
-    
+
     memset(ptr, '\0', size);
     memcpy(ptr, OSC_EMPTY_HEADER, OSC_HEADER_SIZE);
     _n += OSC_HEADER_SIZE;
-    
-    for (auto& it : map)
+
+    for (auto& it : address_lookup )
     {
-        _n += serializeVector(ptr + _n,
-                              size - _n,
-                              it.first.c_str(), //address
-                              it.second.getAtomVector() //vec
+        _n += serializeVector(  ptr + _n,
+                                size - _n,
+                                it.first.c_str(), //address
+                                it.second.getAtomVector() //vec
                               );
     }
-    
+
    // printf("_n %ld \n", _n);
-   
+
+}
+
+std::string MapOSC::getSerializedString() const
+{
+    size_t len = getSerializedSizeInBytes();
+
+    string buf;
+    buf.resize(len);
+
+    serializeIntoBuffer(buf.data(), len);
+
+    return buf;
 }
 
 
+void OSCAtomVector::print(int tabs) const
+{
+    for( size_t i = 0; i < obj_vec.size(); i++ )
+    {
+        if( obj_vec[i]->typetag() == OSC_BUNDLE_TYPETAG )
+        {
+            printf("{\n");
+            obj_vec[i]->get<MapOSC>().print(tabs+1);
+
+            for( int t = 0; t < tabs; t++)
+                printf("\t");
+
+            printf("}");
+        } else {
+            printf( "%s\t", obj_vec[i]->get<string>().c_str() );
+        }
+    }
+
+    printf("\n");
+}
+
+
+
+void MapOSC::print(int tabs) const
+{
+    for( auto & it : address_lookup )
+    {
+        for( int i = 0; i < tabs; i++ )
+            printf("\t");
+
+        printf("%s :\t", it.first.c_str() );
+        it.second.print(tabs);
+    }
+
+    printf("\n");
+}
 
