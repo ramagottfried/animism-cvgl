@@ -16,6 +16,9 @@ class cvglCues
 {
 public:
     
+    void set_lambda_cues();
+
+
     MapOSC cue0(const AnalysisData& data, cvglMixer& mixer, MapOSC& b);
     MapOSC cue1(const AnalysisData& data, cvglMixer& mixer, MapOSC& b);
 

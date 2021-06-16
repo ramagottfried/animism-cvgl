@@ -26,7 +26,7 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, cvglMixer& mixer, Ma
 
             m_newCue = true;
             m_section_start = sys_clock_t::now();
-            m_cue = (cue >= 0 && cue < m_cueFunctions.size()) ? cue : 0;
+            m_cue = (cue >= 0 && cue < (int)m_cueFunctions.size()) ? cue : 0;
             
 
             m_state_cache.addMessage("/played", 0);
