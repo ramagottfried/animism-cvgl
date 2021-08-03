@@ -6,6 +6,7 @@
 #include "cvglUDPServer.hpp"
 #include "cvglCues.hpp"
 #include "cvglProfile.hpp"
+#include "MapOSC.hpp"
 
 class cvglMainProcess :  public cvglCV, public cvglUDPServer //public cvglCamera,
 {
@@ -46,6 +47,7 @@ public:
     
     inline void useCameraID( int i ){ m_use_camera_id = i; }
     
+    /*
     inline void initMixer()
     {
         MapOSC out;
@@ -53,11 +55,12 @@ public:
         std::cout << "initializing midi mixer" << std::endl;
         sendBundle( out );
     }
-    
+    */
+
 private:
     
     cvglCues m_cues;
-    cvglMixer m_mixer;
+    //cvglMixer m_mixer;
     
     AnalysisData m_data;
     

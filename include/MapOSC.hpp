@@ -12,6 +12,9 @@
 #include <Eigen/Dense>
 #endif
 
+#define OSC_BUNDLE_TYPETAG '.'
+#define OSC_TIMETAG_TYPETAG 't'
+
 class MapOSC;
 
 class OSCAtom
@@ -30,7 +33,66 @@ public:
     OSCAtom(const OSCAtom & other);
     ~OSCAtom(){}
 
-    template <typename T> T get();
+    MapOSC newMap();
+
+    template <typename T>
+    T get()
+    {
+        if constexpr ( std::is_same<T, std::string>::value )
+        {
+            switch (type) {
+                case 's':
+                    return str_val;
+                case 'f':
+                    return std::to_string(f_val);
+                case 'd':
+                    return std::to_string(d_val);
+                case 'i':
+                    return std::to_string(i_val);
+                case 'h':
+                    return std::to_string(l_val);
+                case 'c':
+                    return std::to_string(c_val);
+                case 'b':
+                    return std::to_string(b_val);
+                case OSC_BUNDLE_TYPETAG:
+                   return std::string("#bundle");
+                default:
+                    return std::string("unhandled type");
+            }
+        }
+        else if constexpr ( std::is_same<T, MapOSC>::value )
+        {
+            if (type == OSC_BUNDLE_TYPETAG )
+                return *map_val;
+
+            return newMap();
+
+        }
+        else
+        {
+            switch (type) {
+                case 'f':
+                    return (T)f_val;
+                case 'd':
+                    return (T)d_val;
+                case 'i':
+                    return (T)i_val;
+                case 'h':
+                    return (T)l_val;
+                case 'c':
+                    return (T)c_val;
+                case 'b':
+                    return (T)b_val;
+                case 's':
+                case OSC_BUNDLE_TYPETAG:
+                    return (T)0;
+                default:
+                    return (T)0;
+            }
+        }
+
+    }
 
     inline int getInt() { return (int)get<int32_t>(); }
     inline float getFloat(){ return (float)get<float>(); }
@@ -148,12 +210,12 @@ public:
 
 
     template <typename T>
-    inline T get(size_t idx = 0) const {
+    T get(size_t idx = 0) const {
         return obj_vec[idx]->get<T>();
     }
 
-    inline int getInt()const { return get<int>(); }
-    inline float getFloat()const { return get<float>(); }
+    int getInt()const { return get<int>(); }
+    float getFloat()const { return get<float>(); }
 
 
     OSCAtom& operator[](size_t idx) { return *obj_vec[idx]; }
@@ -249,6 +311,7 @@ public:
 
     const std::unordered_map<std::string, OSCAtomVector >& getMap(){ return address_lookup; }
 
+    inline size_t size() const { return address_lookup.size(); }
 
 private:
 

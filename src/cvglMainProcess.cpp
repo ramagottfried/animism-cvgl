@@ -16,7 +16,7 @@ void cvglMainProcess::receivedBundle( MapOSC & b )
     unique_lock<mutex> lock_osc(m_osc_lock);
     
     // process mixer first since the cues need to apply the pregain to the mixer faders
-    m_mixer.proc(b);
+    //m_mixer.proc(b);
     
     // then process cues in case there are additions to bundle b,
     // or overrides in case of new cue, to control the CV and GL processes
@@ -25,7 +25,7 @@ void cvglMainProcess::receivedBundle( MapOSC & b )
     // >>>> process cue function is called from UDP and CV threads -- causng some problems now
     // >>>> maybe not necessary to do data analysis here? ... seems maybe reasonable to me
     
-    MapOSC out = m_cues.procDataAndMixer(m_data, m_mixer, b);
+    MapOSC out = m_cues.procDataAndMixer(m_data, b);
    
     // on input process OSC with current data and mixer (with osc lock)
     sendBundle( out );
@@ -172,7 +172,7 @@ void cvglMainProcess::processAnalysis(const AnalysisData& data)
     
     {
         unique_lock<mutex> lock_osc(m_osc_lock);
-        out = m_cues.procDataAndMixer(data, m_mixer);
+        out = m_cues.procDataAndMixer(data);
     }
    // m_thread_pool->enqueue([this](OdotBundle b){ sendBundle( b );}, out);
 

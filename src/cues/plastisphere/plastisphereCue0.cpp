@@ -1,6 +1,6 @@
 #include "cvglCues.hpp"
 
-MapOSC cvglCues::cue0( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
+MapOSC cvglCues::cue0( const AnalysisData& data, MapOSC& b )
 {
     //b.print();
     MapOSC out;
@@ -9,14 +9,12 @@ MapOSC cvglCues::cue0( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
     const double elapsed_section = m_elapsed_section.count();
     
     
-    if( m_newCue )
+    if( isNewCue )
     {
-        mixer.set_pregain("/perc",      -6);
-        mixer.set_pregain("/gran",      -70);
-        mixer.set_pregain("/res",       -70);
-        mixer.set_pregain("/filter",    -70);
-
-        mixer.addPregainMidi(out);
+        out.addMessage("/pregain/perc",      -6);
+        out.addMessage("/pregain/gran",      -70);
+        out.addMessage("/pregain/res",       -70);
+        out.addMessage("/pregain/filter",    -70);
         
         out.addMessage("/trigger/perc/drum/trigger",  1);
         out.addMessage("/trigger/perc/drum/motor",  0);
@@ -32,7 +30,6 @@ MapOSC cvglCues::cue0( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
 
     }
     
-    mixer.applyAddGains(out);
     
     // b messages get sent to CV and GL params
     b.addMessage("/video/black",  0);

@@ -4,7 +4,7 @@
 
 // >> Need to have limits on number of voices below -- the UDP port is getting blocked when the size is too big
 
-MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
+MapOSC cvglCues::cue1( const AnalysisData& data, MapOSC& b )
 {
     using namespace cvgl;
     
@@ -14,22 +14,18 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
     const double elapsed_section = m_elapsed_section.count();
     
     
-    if( m_newCue )
+    if( isNewCue )
     {
-        mixer.set_pregain("/perc",      -12);
-        mixer.set_pregain("/gran",      -3);
-        mixer.set_pregain("/res",       -70);
-        mixer.set_pregain("/filter",    -21);
+        out.addMessage("/pregain/perc",      -12);
+        out.addMessage("/pregain/gran",      -3);
+        out.addMessage("/pregain/res",       -70);
+        out.addMessage("/pregain/filter",    -21);
      
         out.addMessage("/filter/field/direct/amp", 0);
-        
-        mixer.addPregainMidi(out);
 
 
     }
-    
-    mixer.applyAddGains(out);
-    
+
     b.addMessage("/video/black",  0);
     b.addMessage("/use/preprocess",  2);
     
@@ -69,7 +65,7 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
     
     
     size_t new_contours = data.noteOn_idx.size();
-    int32_t contour_incr = !m_state_cache.addressExists("/contour_incr") || m_newCue ? 0 : m_state_cache["/contour_incr"][0].get<int32_t>();
+    int32_t contour_incr = !m_state_cache.addressExists("/contour_incr") || isNewCue ? 0 : m_state_cache["/contour_incr"][0].get<int32_t>();
     
     contour_incr += new_contours;
     // (same as noteon/incr in cues)
@@ -114,7 +110,7 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
     */
      
     
-    if( m_newCue )
+    if( isNewCue )
     {
         out.addMessage("/perc/drum/trigger", 1);
         out.addMessage("/perc/drum/motor", 0);
@@ -178,7 +174,7 @@ MapOSC cvglCues::cue1( const AnalysisData& data, cvglMixer& mixer, MapOSC& b )
     vector<double> fig_1_y = { oct+1, -oct,    0 };
     vector<double> fig_1_x;
 
-    if( m_newCue )
+    if( isNewCue )
     {
         for( size_t i = 0; i < fig_1_y.size(); ++i )
         {

@@ -95,9 +95,13 @@ add_executable(cvgl
 )
 
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
 #target_include_directories(cvgl PRIVATE ${GLAD_DIR}/include )
 #target_include_directories(cvgl PRIVATE ${DECKLINK_SDK_INCLUDE_DIR} PRIVATE ${DECKLINK_PLATFORM_INCLUDE})
 
 
-target_link_libraries(cvgl libcvgl  )
+target_link_libraries(cvgl libcvgl)
+
+message("CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
+message("CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
 
