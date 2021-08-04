@@ -13,10 +13,16 @@ cvglCVCamera::cvglCVCamera(int index)
     
     m_opencamera = true;
     
+    cap.set(cv::CAP_PROP_FPS, 30);
+    cap.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
+    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
+
+
     m_width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
     m_height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
     
-    cap.set(cv::CAP_PROP_FPS, 30);
+    cout << "cv cam size " << m_width << " " << m_height << endl;
+
 }
 
 // opencv camera callback

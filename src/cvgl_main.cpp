@@ -14,7 +14,7 @@ int main( void )
     app.init(8888, 9999, sendIp);
 
     cvglDeckLinkCamera bm_cam(2);
-    //cvglDeckLinkCamera bm_cam2(2); 4
+    cvglDeckLinkCamera bm_cam2(4); // 2 & 4
     
     cout << "blackmagic " << bm_cam.hasCamera() << " checking cv cam" << endl;
     cvglCVCamera cvcam(0);
@@ -27,32 +27,37 @@ int main( void )
         bm_cam.start();
 
     }
-    else if( cvcam.hasCamera() )
+
+    if( bm_cam2.hasCamera() )
+    {
+       cout << "found blackmagic 4" << endl;
+       bm_cam2.setProcessFrameCallback( [&app](cv::UMat& mat) { app.processFrame(mat, 2); } );
+       bm_cam2.start();
+       //app.useCameraID(2);
+    }
+
+    if( cvcam.hasCamera() )
     {
         cout << "doing cv camera " << endl;
         cvcam.setProcessFrameCallback( [&app](cv::UMat& mat){ app.processFrame(mat, 3); } );
-        if( !bm_cam.hasCamera() )
+        cvcam.start();
+    }
+
+    if( !bm_cam.hasCamera() && !bm_cam2.hasCamera() )
+    {
+        if(cvcam.hasCamera())
         {
             app.context.setupWindow( cvcam.getWidth(), cvcam.getHeight() );
             app.useCameraID(3);
         }
-        cvcam.start();
-    }
-    else
-    {
-        app.close();
-        return -1;
+        else
+        {
+            app.close();
+            return -1;
+        }
+
     }
 
-    /*
-    if( bm_cam2.hasCamera() )
-    {
-       cout << "found blackmagic " << endl;
-       bm_cam2.setProcessFrameCallback( [&app](cv::Mat& mat) { app.processFrame(mat, 2); } );
-       bm_cam2.start();
-        app.useCameraID(2);
-    }
-     */
     
     
     

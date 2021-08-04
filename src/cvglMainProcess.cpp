@@ -438,6 +438,8 @@ void cvglMainProcess::draw()
     
     // context.printFPS();
     
+    //m_use_camera_id = m_use_camera_id == 1 ? 2 : 1;
+
     m_newframe = false;
     
 }
