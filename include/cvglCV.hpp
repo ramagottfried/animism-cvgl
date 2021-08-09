@@ -103,7 +103,8 @@ public:
     inline void setFrame( cv::UMat & frame )
     {
         m_img.release();
-        m_img = std::move(frame);
+        frame.copyTo(m_img);
+        //m_img = std::move(frame);
     }
     
     inline void gaussSigma(int k)
@@ -153,7 +154,7 @@ protected:
     float m_resize = 0.5; // { (512. / 1920), (512. / 1080.) };
     
     bool m_invert = false;
-    int m_thresh = 102;
+    double m_thresh = 102;
     float m_minsize = 0.00;
     float m_maxsize = 0.9;
     bool m_parents_only = 0;

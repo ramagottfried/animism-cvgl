@@ -17,6 +17,7 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data)
 // called from UDP input thread
 MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
 {
+    MapOSC out ;
     if( b.addressExists("/cue") )
     {
         int cue = b.getMessage("/cue").getInt();
@@ -30,19 +31,21 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
             cout << "setting new cue " << cue << " was " << m_cue << endl;
 
             m_state_cache.addMessage("/played", 0);
+
+
+            m_elapsed_section = sys_clock_t::now() - m_section_start;
+
+            out = m_cueFunctions[m_cue]( data, b );
             
         }
         
     }
-    
-    m_elapsed_section = sys_clock_t::now() - m_section_start;
-        
-    MapOSC out = m_cueFunctions[m_cue]( data, b );
+
     
     bool ret = isNewCue;
 
     // this shoud copy bundle
-    m_input = b; //OdotBundle((const OdotBundle)b);
+    m_input = MapOSC(b);
     isNewCue = false;
     
     return ret ? out : MapOSC();

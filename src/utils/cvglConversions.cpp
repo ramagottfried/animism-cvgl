@@ -36,8 +36,8 @@ namespace cvgl
             {
                 const T& Mij = Mi[j];
                 vertexObj.addVertex( cvglVertex({
-                    {static_cast<float>((Mij.x - halfScreenW) / halfScreenW),
-                    static_cast<float>(-(Mij.y - halfScreenH) / halfScreenH)}
+                    { static_cast<float>((Mij.x - halfScreenW) / halfScreenW),
+                        static_cast<float>(-(Mij.y - halfScreenH) / halfScreenH), 0}
                 }));
             }
         }

@@ -142,7 +142,7 @@ void cvglContext::setupWindow(int width, int height )
     glfwMakeContextCurrent(m_window);
     glfwSetWindowSizeCallback(m_window, global_resize_callback);
     
-    
+
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -153,6 +153,10 @@ void cvglContext::setupWindow(int width, int height )
     
     // Ensure we can capture the escape key being pressed below
     glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
+
+    // hide cursor
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -162,7 +166,7 @@ void cvglContext::setupWindow(int width, int height )
     
     glfwSetErrorCallback(context_error_callback);
     
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
     
     cout << "initializing gl with size " << width << " " << height << " " << m_window << endl;
     

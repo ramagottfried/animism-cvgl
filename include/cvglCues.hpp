@@ -26,7 +26,6 @@ public:
     cvglCues()
     {
         using namespace std::placeholders;
-        
      //   m_cueFunctions.emplace_back( bind(&cvglCues::cue0, this, _1, _2) );
      //   m_cueFunctions.emplace_back( bind(&cvglCues::cue1, this, _1, _2) );
         set_lambda_cues();
@@ -40,7 +39,7 @@ public:
     MapOSC procDataAndMixer(const AnalysisData& data, MapOSC& b);
     MapOSC procDataAndMixer(const AnalysisData& data);
 
-    bool isNewCue = false;
+    bool isNewCue = true;
 
     
 private:
@@ -52,7 +51,7 @@ private:
     
     MapOSC m_state_cache;
     
-    long m_cue = 1;
+    long m_cue = 0;
 
     timepoint_t m_section_start = sys_clock_t::now();
     duration_t m_elapsed_section;

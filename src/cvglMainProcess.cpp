@@ -65,6 +65,10 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             m_use_camera_id = val.getInt();
         }
+        else if( addr == "/overlap/cameras")
+        {
+
+        }
         else if( addr == "/enable/contour" )
         {
             m_draw_contour = val.getInt() > 0;
@@ -105,7 +109,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             if( val.size() == 2 )
             {
-                context.flip( val.get<float>(0), val.get<float>(1) );
+                context.flip( val.get<int>(0), val.get<int>(1) );
             }
         }
     }
@@ -118,13 +122,21 @@ void cvglMainProcess::setMainParams( MapOSC & b )
  */
 void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
 {
+    if( frame.empty() || !objects_initialized )
+        return;
+
+    unique_lock<mutex> lock(m_gl_lock);
+
+    if( frames.count(camera_id) != 0 )
+        frames[camera_id].release();
+
+    cv::UMat copy;
+    frame.copyTo(copy);
+
+    frames[camera_id] = std::move(copy);
+
     if( m_use_camera_id == camera_id )
     {
-
-        unique_lock<mutex> lock(m_gl_lock);
-
-        if( frame.empty() || !objects_initialized )
-            return;
 
         m_newframe = true;
         setFrame(frame); // takes ownership of frame in local storage m_img
@@ -168,7 +180,7 @@ void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
 void cvglMainProcess::processAnalysis(const AnalysisData& data)
 {
     // on new data, process with mixer (no osc lock?)
-    MapOSC out;
+    MapOSC out, b;
     
     {
         unique_lock<mutex> lock_osc(m_osc_lock);
@@ -400,7 +412,34 @@ void cvglMainProcess::draw()
     if( m_draw_frame && m_use_camera_id > 0 )
     {
         rect->bind();
-        frameTex->setTexture( getFrame().getMat(ACCESS_READ) );
+        UMat merge = getFrame();
+
+        if( frames.count(3) > 0 )
+        {
+            UMat tile;
+            frames[3].copyTo(tile);
+
+            double w = 1920 * 0.25;
+            double h = 1080 * 0.25;
+            cv::resize(frames[3], tile, Size(w,h));
+
+            UMat insetImage(merge, Rect(1920 - w, 1080 - h, w, h));
+            tile.copyTo(insetImage);
+
+
+        }
+
+//        for( auto e : frames )
+//        {
+//            if( merge.empty() ){
+//                cv::multiply(e.second, 0.5, merge);
+//            }
+//            else
+//            {
+//                cv::multiply(e.second, 0.5, mult);
+//            }
+//        }
+        frameTex->setTexture( merge.getMat(ACCESS_READ) );
         rect->draw();
     }
     

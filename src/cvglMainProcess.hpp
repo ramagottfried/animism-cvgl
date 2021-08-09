@@ -71,6 +71,7 @@ private:
     int m_use_camera_id = 1;
 //    int m_use_preprocess = 3;
 
+    std::unordered_map<int, cv::UMat> frames;
 
     std::mutex m_gl_lock, m_osc_lock;
     

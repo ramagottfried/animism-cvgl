@@ -26,6 +26,7 @@ int main( void )
         app.context.setupWindow( bm_cam.getWidth(), bm_cam.getHeight() );
         bm_cam.start();
 
+
     }
 
     if( bm_cam2.hasCamera() )

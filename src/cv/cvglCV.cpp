@@ -12,6 +12,8 @@ using namespace Eigen;
 
 void cvglCV::setCVParams( MapOSC & b )
 {
+    unique_lock<mutex> lock(m_lock);
+
     for( auto& msg : b.getMap() )
     {
         const string& addr = msg.first;
@@ -126,8 +128,11 @@ void cvglCV::preprocessBasic()
     erode( src_blur_gray, src_blur_gray, m_er_element );
     dilate( src_blur_gray, src_blur_gray, m_di_element );
     
-    threshold( src_blur_gray, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
+    threshold( src_blur_gray, threshold_output, m_thresh, 255, cv::THRESH_BINARY  ); // + cv::THRESH_OTSU
     
+    //adaptiveThreshold( src_blur_gray, threshold_output, 255,
+    //                   ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, m_thresh);
+
     Sobel(src_gray, sob, CV_32F, 1, 1);
     
 }
@@ -224,14 +229,18 @@ void cvglCV::preprocessCanny()
     Mat can;
     cv::Canny(src_blur_gray, can, m_canny_min, m_canny_max, 3);
     
+    /*
     Mat can_blur;
     GaussianBlur(can, can_blur, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
     erode( can_blur, can_blur, m_er_element );
     dilate( can_blur, can_blur, m_di_element );
-    
+    */
+
+    // previously I was bluring the edges to make larger contours, not sure if that is still worth doing maybe
+
     //    src_gray = can;
     
-    threshold( can_blur, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
+    threshold( can, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
     
     //Sobel(src_gray, sob, CV_32F, 1, 1);
     
@@ -393,6 +402,7 @@ void cvglCV::preprocessDenseFlow()
 
     if( m_prev_frame.empty() ){
         m_prev_frame = src_blur_gray.clone();
+        threshold_output = UMat();
         return;
     }
 
@@ -695,7 +705,7 @@ AnalysisData cvglCV::analyzeContour()
 
     if( threshold_output.empty() )
     {
-       // cout << "no image analyzeContour" << endl;
+        cout << "no image analyzeContour" << endl;
         return data;
     }
     
