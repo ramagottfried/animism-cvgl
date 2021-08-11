@@ -67,7 +67,11 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         }
         else if( addr == "/overlap/cameras")
         {
-
+            m_overlap_cameras = val.getFloat();
+        }
+        else if( addr == "/show/webcam_tile" )
+        {
+            m_show_webcam_tile = val.getInt() > 0;
         }
         else if( addr == "/enable/contour" )
         {
@@ -414,7 +418,7 @@ void cvglMainProcess::draw()
         rect->bind();
         UMat merge = getFrame();
 
-        if( frames.count(3) > 0 )
+        if( m_show_webcam_tile && frames.count(3) > 0 )
         {
             UMat tile;
             frames[3].copyTo(tile);
@@ -429,23 +433,15 @@ void cvglMainProcess::draw()
 
         }
 
-        if( frames.count(2) > 0 )
-        {
+        if( m_overlap_cameras > 0 && frames.count(1) > 0 && frames.count(2) > 0 )
+        {            
             UMat frame2, frame1;
-            cv::multiply(frames[1], 0.5, frame1);
-            cv::multiply(frames[2], 0.5, frame2);
+
+            cv::multiply(frames[1], 1 - m_overlap_cameras, frame1);
+            cv::multiply(frames[2], m_overlap_cameras, frame2);
             cv::add(frame2, frame1, merge);
         }
-//        for( auto e : frames )
-//        {
-//            if( merge.empty() ){
-//                cv::multiply(e.second, 0.5, merge);
-//            }
-//            else
-//            {
-//                cv::multiply(e.second, 0.5, mult);
-//            }
-//        }
+
         frameTex->setTexture( merge.getMat(ACCESS_READ) );
         rect->draw();
     }

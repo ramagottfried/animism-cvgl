@@ -40,7 +40,7 @@ void cvglCues::set_lambda_cues()
             b.addMessage("/size/min", 0.000 );
             b.addMessage("/size/max", 0.9 );
             b.addMessage("/thresh", 16 );
-            b.addMessage("/invert", 0 );
+            b.addMessage("/invert", 0 );            
 
         }
 
@@ -70,13 +70,16 @@ void cvglCues::set_lambda_cues()
 
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  3);
+
             b.addMessage("/use/camera",  1);
+            b.addMessage("/overlap/cameras", 0.0 );
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
             b.addMessage("/enable/contour", 1);
+            b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
-            cout << "use camera" << 2 << endl;
+          //  cout << "use camera" << 2 << endl;
             b.addMessage("/size/min", 0.000 );
             b.addMessage("/size/max", 0.9 );
             b.addMessage("/thresh", 41 );
@@ -174,13 +177,16 @@ void cvglCues::set_lambda_cues()
 
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  3);
+
             b.addMessage("/use/camera",  1);
+            b.addMessage("/overlap/cameras", 0.5 );
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
             b.addMessage("/enable/contour", 1);
+            b.addMessage("/contour/color", 1, 0., 0., 0.01 );
 
-            cout << "use camera" << 2 << endl;
+           // cout << "use camera" << 2 << endl;
             b.addMessage("/size/min", 0.000 );
             b.addMessage("/size/max", 0.9 );
             b.addMessage("/thresh", 41 );
@@ -269,30 +275,32 @@ void cvglCues::set_lambda_cues()
 
 
                 out.addMessage("/gran/1/motor/val", scale( abs(avg_dist_x), 0., 10,  20, 250));
-                out.addMessage("/gran/1/amp/val", norm_2 );
+                out.addMessage("/gran/1/amp/val", norm_2 * 0.5 );
 
 
                 if( avg_dist_y < 0 ) // up
                 {
+                    out.addMessage("/gran/1/rate/val", clip( scale( abs(avg_dist_y), 0., 10,  0.2, 0.1), 0.1, 0.2) );
+                    out.addMessage("/gran/1/overlap/val", clip( scale( abs(avg_dist_x), 0., 10,  20, 100), 0.1, 100) );
 
-                    out.addMessage("/gran/1/rate/val", 0.3);
-                    out.addMessage("/gran/1/overlap/val", 1);
+
 
                     //out.addMessage("/gran/1/overlap/val", 20);
 
                     out.addMessage("/fuzz/drive/val", 0.5);
                     out.addMessage("/fuzz/fat/val", 0.);
-                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 10,  0.4, 0.5), 0.4, 0.5) );
+                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 10,  0.3, 0.5), 0.3, 0.5) );
                     out.addMessage("/fuzz/amp", norm_2 );
 
                 }
                 else
                 {
-                    out.addMessage("/gran/1/rate/val", clip( scale( abs(avg_dist_y), 0., 10,  0.2, 0.1), 0.1, 0.2) );
-                    out.addMessage("/gran/1/overlap/val", clip( scale( abs(avg_dist_x), 0., 10,  20, 100), 0.1, 100) );
+
+                    out.addMessage("/gran/1/rate/val", 0.3);
+                    out.addMessage("/gran/1/overlap/val", 0.1);
 
                     out.addMessage("/fuzz/drive/val", 0.);
-                    out.addMessage("/fuzz/fat/val", 0);
+                    out.addMessage("/fuzz/fat/val", 1);
                     out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 10,  0.5, 0.6), 0.5, 0.6) );
                     out.addMessage("/fuzz/amp", norm_2 * 0.5 );
 
