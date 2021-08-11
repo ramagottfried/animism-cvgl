@@ -4,7 +4,6 @@
 #include <Eigen/Dense>
 #include <unordered_map>
 
-
 struct PixStats {
     double min = std::numeric_limits<double>::max();
     double max = 0;
@@ -34,6 +33,7 @@ struct AnalysisData
     
     // vector 1: contour id
     // vector 2: stats for each input channel
+            // note: a focus channel is added for the focus mean for each contour
     std::vector< std::vector< PixStats > >  pix_channel_stats;
     
     std::vector<cv::Point2f>            centroids;

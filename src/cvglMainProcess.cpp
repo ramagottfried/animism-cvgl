@@ -429,6 +429,13 @@ void cvglMainProcess::draw()
 
         }
 
+        if( frames.count(2) > 0 )
+        {
+            UMat frame2, frame1;
+            cv::multiply(frames[1], 0.5, frame1);
+            cv::multiply(frames[2], 0.5, frame2);
+            cv::add(frame2, frame1, merge);
+        }
 //        for( auto e : frames )
 //        {
 //            if( merge.empty() ){

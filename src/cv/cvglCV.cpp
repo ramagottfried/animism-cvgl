@@ -781,10 +781,7 @@ void cvglCV::analysisThread(AnalysisData data)
     double src_width = (double)src_color_sized_mat.size().width;
     double src_height = (double)src_color_sized_mat.size().height;
     double npix = src_width * src_height;
-    
-    vector< double > channel_means[nchans];
-    vector< double > channel_varience[nchans];
-        
+
     data.centroids.reserve( data.ncontours );
     
     const bool float_mat = src_color_sized_mat.depth() == CV_32F || src_color_sized_mat.depth() == CV_64F;

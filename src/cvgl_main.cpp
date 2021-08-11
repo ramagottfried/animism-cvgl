@@ -34,7 +34,12 @@ int main( void )
        cout << "found blackmagic 4" << endl;
        bm_cam2.setProcessFrameCallback( [&app](cv::UMat& mat) { app.processFrame(mat, 2); } );
        bm_cam2.start();
-       //app.useCameraID(2);
+
+       if( !bm_cam.hasCamera() )
+       {
+           app.context.setupWindow( bm_cam2.getWidth(), bm_cam2.getHeight() );
+           app.useCameraID(2);
+       }
     }
 
     if( cvcam.hasCamera() )

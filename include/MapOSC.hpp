@@ -274,7 +274,9 @@ public:
         if( !address_lookup.count(address) )
             address_lookup.emplace(address, OSCAtomVector());
 
-        (void)expand{0, ((void)address_lookup[address].appendValue( std::forward<Ts>(args) ), 0) ... };
+        (address_lookup[address].appendValue( std::forward<Ts>(args) ), ...);
+//        (void)expand{0, ((void)address_lookup[address].appendValue( std::forward<Ts>(args) ), 0) ... }; // (pre-c++17)
+
     }
 
     template <typename... Ts>
@@ -285,7 +287,8 @@ public:
         if( !address_lookup.count(address) )
             address_lookup.emplace(address, OSCAtomVector());
 
-        (void)expand{0, ((void)address_lookup[address].appendValue( std::forward<Ts>(args) ), 0) ... };
+        (address_lookup[address].appendValue( std::forward<Ts>(args) ), ...);
+//        (void)expand{0, ((void)address_lookup[address].appendValue( std::forward<Ts>(args) ), 0) ... }; // (pre-c++17)
     }
 
     OSCAtomVector& operator[](std::string& addr) { return address_lookup[addr]; }
