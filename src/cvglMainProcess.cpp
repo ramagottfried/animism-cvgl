@@ -188,9 +188,14 @@ void cvglMainProcess::processAnalysis(const AnalysisData& data)
     
     {
         unique_lock<mutex> lock_osc(m_osc_lock);
-        out = m_cues.procDataAndMixer(data);
+        out = m_cues.procDataAndMixer(data, b);
+
+        setCVParams(b);
+
+       // unique_lock<mutex> lock(m_gl_lock);
+        setMainParams(b);
+
     }
-   // m_thread_pool->enqueue([this](OdotBundle b){ sendBundle( b );}, out);
 
     sendBundle( out );
 
@@ -436,7 +441,7 @@ void cvglMainProcess::draw()
         if( m_overlap_cameras > 0 && frames.count(1) > 0 && frames.count(2) > 0 )
         {            
             UMat frame2, frame1;
-
+            //cout << "draw " << m_overlap_cameras << endl;
             cv::multiply(frames[1], 1 - m_overlap_cameras, frame1);
             cv::multiply(frames[2], m_overlap_cameras, frame2);
             cv::add(frame2, frame1, merge);

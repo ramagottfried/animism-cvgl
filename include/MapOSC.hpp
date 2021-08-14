@@ -97,7 +97,7 @@ public:
     inline int getInt() { return (int)get<int32_t>(); }
     inline float getFloat(){ return (float)get<float>(); }
 
-    inline char typetag() {
+    inline  char typetag() {
        if( type == 'b' )
            return b_val ? 'T' : 'F';
        else
@@ -152,6 +152,10 @@ public:
     OSCAtomVector(const std::string& val ) {  obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
     OSCAtomVector(const MapOSC & val ) {obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
 
+    inline void clear(){
+        obj_vec.clear();
+    }
+
     inline void appendValue(float val ) {   obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
     inline void appendValue(double val ) {  obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
     inline void appendValue(int32_t val ) { obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
@@ -161,6 +165,8 @@ public:
     inline void appendValue(const std::string& val ) { obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
     inline void appendValue(bool val ) { obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
     inline void appendValue(const MapOSC & val ) { obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
+
+    inline void appendValue(size_t val ) { obj_vec.emplace_back(std::make_unique<OSCAtom>((int32_t)val)); }
 
 
     template <typename Derived>
@@ -218,6 +224,10 @@ public:
     float getFloat()const { return get<float>(); }
 
 
+    char typetag(size_t idx = 0) const {
+        return obj_vec[idx]->typetag();
+    }
+
     OSCAtom& operator[](size_t idx) { return *obj_vec[idx]; }
 
     inline const std::vector< std::unique_ptr<OSCAtom> > & getAtomVector() const { return obj_vec; }
@@ -269,10 +279,13 @@ public:
     template <typename... Ts>
     void addMessage (const std::string& address, Ts&&... args)
     {
-        using expand = int[];
+     //   using expand = int[];
+
 
         if( !address_lookup.count(address) )
             address_lookup.emplace(address, OSCAtomVector());
+        else
+           address_lookup[address].clear();
 
         (address_lookup[address].appendValue( std::forward<Ts>(args) ), ...);
 //        (void)expand{0, ((void)address_lookup[address].appendValue( std::forward<Ts>(args) ), 0) ... }; // (pre-c++17)
@@ -282,10 +295,12 @@ public:
     template <typename... Ts>
     void addMessage (const char * address, Ts&&... args)
     {
-        using expand = int[];
+       // using expand = int[];
 
         if( !address_lookup.count(address) )
             address_lookup.emplace(address, OSCAtomVector());
+        else
+           address_lookup[address].clear();
 
         (address_lookup[address].appendValue( std::forward<Ts>(args) ), ...);
 //        (void)expand{0, ((void)address_lookup[address].appendValue( std::forward<Ts>(args) ), 0) ... }; // (pre-c++17)

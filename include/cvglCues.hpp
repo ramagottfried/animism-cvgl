@@ -10,7 +10,6 @@
 #include "cvglRandom.hpp"
 #include "cvglLookupFigure.hpp"
 
-using namespace Eigen;
 
 class cvglCues
 {
@@ -19,13 +18,13 @@ public:
     void set_lambda_cues();
 
 
-    MapOSC cue0(const AnalysisData& data, MapOSC& b);
-    MapOSC cue1(const AnalysisData& data, MapOSC& b);
+ //   MapOSC cue0(const AnalysisData& data, MapOSC& b);
+ //   MapOSC cue1(const AnalysisData& data, MapOSC& b);
 
     
     cvglCues()
     {
-        using namespace std::placeholders;
+     //   using namespace std::placeholders;
      //   m_cueFunctions.emplace_back( bind(&cvglCues::cue0, this, _1, _2) );
      //   m_cueFunctions.emplace_back( bind(&cvglCues::cue1, this, _1, _2) );
         set_lambda_cues();

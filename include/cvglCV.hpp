@@ -158,7 +158,7 @@ protected:
     float m_minsize = 0.00;
     float m_maxsize = 0.9;
     bool m_parents_only = 0;
-    double m_track_radius = 0.1;
+    double m_track_radius = 0.2;
     
     int m_color_mode = 2; 
     int m_use_preprocess = 3;

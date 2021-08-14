@@ -69,7 +69,7 @@ private:
     int m_cue_idx = 0;
     
     int m_use_camera_id = 1;
-    double m_overlap_cameras = 0;
+    float m_overlap_cameras = 0;
     bool m_show_webcam_tile = false;
 
     std::unordered_map<int, cv::UMat> frames;

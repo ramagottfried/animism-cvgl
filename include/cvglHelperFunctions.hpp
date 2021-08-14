@@ -39,6 +39,43 @@ inline std::vector<T> scale(const std::vector<T>& v, const T in_min, const T in_
     return ret;
 }
 
+inline double scale_clip(double v, double in_min, double in_max, double out_min, double out_max)
+{
+    double clip_min = out_min > out_max ? out_max : out_min;
+    double clip_max = out_max < out_min ? out_min : out_max;
+
+    return clip( scale( v, in_min, in_max, out_min, out_max), clip_min, clip_max);
+}
+
+inline Eigen::ArrayXd scale_clip(const Eigen::ArrayXd& v, double in_min, double in_max, double out_min, double out_max)
+{
+    double clip_min = out_min > out_max ? out_max : out_min;
+    double clip_max = out_max < out_min ? out_min : out_max;
+
+    return clip( scale( v, in_min, in_max, out_min, out_max), clip_min, clip_max);
+}
+
+
+template <typename T>
+inline std::vector<T> scale_clip(const std::vector<T>& v, const T in_min, const T in_max, const T out_min, const T out_max)
+{
+    double clip_min = out_min > out_max ? out_max : out_min;
+    double clip_max = out_max < out_min ? out_min : out_max;
+
+    T in_range = in_max - in_min;
+    T out_range = out_max - out_min;
+    std::vector<T> ret( v.size() );
+    for( auto& q : v )
+    {
+        T val = ( ((q - in_min) / in_range) * out_range) + out_min;
+        val = (val < clip_min ? clip_min : (val > clip_max ? clip_max : val));
+        ret.emplace_back(val);
+    }
+    return ret;
+}
+
+
+
 inline double sum( std::vector<double> &vec )
 {
     double _sum = 0;

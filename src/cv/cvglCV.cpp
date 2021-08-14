@@ -792,7 +792,7 @@ void cvglCV::analysisThread(AnalysisData data)
         
         
         Mat contour_mask = Mat::zeros( src_color_sized_mat.size(), CV_8UC1 );
-        drawContours(contour_mask, data.contours, i, Scalar(255), FILLED);
+        drawContours(contour_mask, data.contours, data.contour_idx[i], Scalar(255), FILLED);
         
         cv::Rect boundRect = boundingRect( contour );
         
@@ -965,7 +965,7 @@ void cvglCV::analysisThread(AnalysisData data)
     }
     
             
-    // id tracking
+    // id tracking -- this seems broken
     
     if( prev_data.centroids.size() == 0 )
     {
@@ -1334,7 +1334,7 @@ vector<PixStats> cvglCV::getStatsFloat( const Mat& src, const Mat& sobel, const 
 
     size_t size = index.size();
     if( size == 0 )
-        ;//cout << "size zero" << endl;
+        ;// cout << "size zero" << endl;
 
     for( int c = 0; c < nchans; ++c)
     {

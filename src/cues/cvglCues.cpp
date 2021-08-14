@@ -18,6 +18,7 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data)
 MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
 {
     MapOSC out ;
+    bool set = false;
     if( b.addressExists("/cue") )
     {
         int cue = b.getMessage("/cue").getInt();
@@ -32,7 +33,6 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
 
             m_state_cache.addMessage("/played", 0);
 
-
             m_elapsed_section = sys_clock_t::now() - m_section_start;
 
             out = m_cueFunctions[m_cue]( data, b );
@@ -40,13 +40,20 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
         }
         
     }
-
+    else if( b.addressExists("/set") )
+    {
+        set = true;
+    }
+    else
+    {
+        m_elapsed_section = sys_clock_t::now() - m_section_start;
+        out = m_cueFunctions[m_cue]( data, b );
+    }
     
-    bool ret = isNewCue;
 
     // this shoud copy bundle
-    m_input = MapOSC(b);
+    m_input = MapOSC(b); // acutally unused now
     isNewCue = false;
     
-    return ret ? out : MapOSC();
+    return !set ? out : MapOSC();
 }
