@@ -157,7 +157,7 @@ void cvglCues::set_lambda_cues()
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  3);
 
-            b.addMessage("/use/camera",  2);
+            b.addMessage("/use/camera",  1);
             b.addMessage("/overlap/cameras", 0.0 );
 
             b.addMessage("/enable/hull", 0);
@@ -318,6 +318,7 @@ void cvglCues::set_lambda_cues()
 
             out.addMessage("/dpo/amp/val", 1);
 
+            out.addMessage("/sine/amp", 1);
 
 
         }
@@ -809,6 +810,8 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/fuzz/pregain/dB",         -100);
             out.addMessage("/loop/pregain/dB",         -100);
             out.addMessage("/korg/pregain/dB",         -100);
+            out.addMessage("/spring/pregain/dB",       -100);
+            out.addMessage("/sine/pregain/dB",         -100);
 
             // video settings
             b.addMessage("/video/black",  1);
@@ -838,7 +841,8 @@ void cvglCues::set_lambda_cues()
 
             out.addMessage("/loop/pregain/dB",         -100);
             out.addMessage("/korg/pregain/dB",         -100);
-// spring?
+            out.addMessage("/spring/pregain/dB",         -100);
+
             out.addMessage("/sine/pregain/dB",         -100);
 
             b.addMessage("/video/black",  0);
@@ -1103,9 +1107,9 @@ void cvglCues::set_lambda_cues()
                 out.addMessage("/korg/slide/up", 5);
                 out.addMessage("/korg/q1/val", 0.9 );
                 out.addMessage("/korg/q2/val", 0.6 );
-                out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.6) );
+                out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.8) );
                 out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-                out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.5)), 0., 1., -0.8, 1));
+                out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.5)), 0., 1., -0.6, 1));
 
                 out.addMessage("/avg/mag", mag_avg );
                 out.addMessage("/avg/x", avg_dist_x);
@@ -1118,8 +1122,8 @@ void cvglCues::set_lambda_cues()
 
                 if( avg_dist_y < 0 ) // up
                 {
-                    out.addMessage("/gran/1/rate/val", clip( scale( abs(avg_dist_y), 0., 10,  0.2, 0.1), 0.1, 0.2) );
-                    out.addMessage("/gran/1/overlap/val", clip( scale( abs(avg_dist_x), 0., 10,  20, 100), 0.1, 100) );
+                    out.addMessage("/gran/1/rate/val", clip( scale( abs(avg_dist_y), 0., 8,  0.2, 0.1), 0.1, 0.2) );
+                    out.addMessage("/gran/1/overlap/val", clip( scale( abs(avg_dist_x), 0., 8,  20, 100), 0.1, 100) );
 
 
 
@@ -1127,19 +1131,19 @@ void cvglCues::set_lambda_cues()
 
                     out.addMessage("/fuzz/drive/val", 0.5);
                     out.addMessage("/fuzz/fat/val", 0.);
-                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 10,  0.3, 0.5), 0.3, 0.5) );
+                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 8,  0.3, 0.5), 0.3, 0.5) );
                     out.addMessage("/fuzz/amp", norm_2 );
 
                 }
                 else
                 {
 
-                    out.addMessage("/gran/1/rate/val", 0.3);
+                    out.addMessage("/gran/1/rate/val", 0.13);
                     out.addMessage("/gran/1/overlap/val", 0.1);
 
                     out.addMessage("/fuzz/drive/val", 0.);
                     out.addMessage("/fuzz/fat/val", 1);
-                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 10,  0.5, 0.6), 0.5, 0.6) );
+                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 8,  0.5, 0.6), 0.5, 0.6) );
                     out.addMessage("/fuzz/amp", norm_2 * 0.5 );
 
                 }
@@ -1163,8 +1167,6 @@ void cvglCues::set_lambda_cues()
             b.addMessage("/overlap/cameras",  scale(elapsed_section, 0., 10., 1., 0.5) );
             out.addMessage("/gran/pregain/dB", scale(elapsed_section, 0., 10., -70, 0.) );
             out.addMessage("/fuzz/pregain/dB",  scale(elapsed_section, 0., 10., -70, 0.) );
-
-            out.addMessage("/overlap/cameras", scale(elapsed_section, 0., 10., 1., 0.5) );
         }
 
 
@@ -1178,6 +1180,8 @@ void cvglCues::set_lambda_cues()
         MapOSC out;
         const double elapsed_section = m_elapsed_section.count();
 
+
+
         if( isNewCue )
         {
             out.addMessage("/descr", descr);
@@ -1185,17 +1189,15 @@ void cvglCues::set_lambda_cues()
 
             out.addMessage("/dpo/pregain/dB",          -100);
             out.addMessage("/dpo/sarah/pregain/dB",    -100);
-
+            out.addMessage("/loop/pregain/dB",         -100);
+            out.addMessage("/korg/pregain/dB",         0);
             out.addMessage("/gran/pregain/dB",         0);
             out.addMessage("/fuzz/pregain/dB",         0);
-
-            out.addMessage("/loop/pregain/dB",         0);
-            out.addMessage("/korg/pregain/dB",         0);
 
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  3);
 
-            b.addMessage("/use/camera",  1);
+            b.addMessage("/use/camera",  2);
             b.addMessage("/overlap/cameras", 0.5 );
 
             b.addMessage("/enable/hull", 0);
@@ -1238,6 +1240,9 @@ void cvglCues::set_lambda_cues()
 
         }
 
+        out.addMessage("/gran/1/use/position", 1);
+
+
         out.addMessage("/elapsed_section", elapsed_section );
         double area_sum = data.contour_area.sum();
         out.addMessage("/contour_area_sum", area_sum );
@@ -1277,14 +1282,6 @@ void cvglCues::set_lambda_cues()
                 double norm_mag_avg = mag_avg / 255. ;
                 double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
 
-                out.addMessage("/korg/amp", norm_2);
-                out.addMessage("/korg/slide/down", 0);
-                out.addMessage("/korg/slide/up", 5);
-                out.addMessage("/korg/q1/val", 0.9 );
-                out.addMessage("/korg/q2/val", 0.6 );
-                out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.6) );
-                out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-                out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.5)), 0., 1., -0.8, 1));
 
                 out.addMessage("/avg/mag", mag_avg );
                 out.addMessage("/avg/x", avg_dist_x);
@@ -1297,29 +1294,53 @@ void cvglCues::set_lambda_cues()
 
                 if( avg_dist_y < 0 ) // up
                 {
-                    out.addMessage("/gran/1/rate/val", clip( scale( abs(avg_dist_y), 0., 10,  0.2, 0.1), 0.1, 0.2) );
-                    out.addMessage("/gran/1/overlap/val", clip( scale( abs(avg_dist_x), 0., 10,  20, 100), 0.1, 100) );
+                    out.addMessage("/gran/1/rate/val", clip( scale( abs(avg_dist_y), 0., 8,  0.2, 0.1), 0.1, 0.2) );
+                    out.addMessage("/gran/1/overlap/val", clip( scale( abs(avg_dist_x), 0., 8,  20, 100), 0.1, 100) );
 
+                    out.addMessage("/korg/amp", norm_2);
+                    out.addMessage("/korg/slide/down", 100);
+                    out.addMessage("/korg/slide/up", 5);
+                    out.addMessage("/korg/q1/val", 0.9 );
+                    out.addMessage("/korg/q2/val", 0.6 );
+                    out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.8) );
+                    out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
+                    out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.5)), 0., 1., 0, 1));
 
 
                     //out.addMessage("/gran/1/overlap/val", 20);
 
                     out.addMessage("/fuzz/drive/val", 0.5);
                     out.addMessage("/fuzz/fat/val", 0.);
-                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 10,  0.3, 0.5), 0.3, 0.5) );
+                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 8,  0.3, 0.5), 0.3, 0.5) );
                     out.addMessage("/fuzz/amp", norm_2 );
 
+                    out.addMessage("/loop/transpose", 36);
                 }
                 else
                 {
 
-                    out.addMessage("/gran/1/rate/val", 0.3);
+                    norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 150, 0., 1.);
+
+                    out.addMessage("/gran/1/rate/val", 0.13);
                     out.addMessage("/gran/1/overlap/val", 0.1);
 
                     out.addMessage("/fuzz/drive/val", 0.);
                     out.addMessage("/fuzz/fat/val", 1);
-                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 10,  0.5, 0.6), 0.5, 0.6) );
+                    out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 8,  0.5, 0.6), 0.5, 0.6) );
                     out.addMessage("/fuzz/amp", norm_2 * 0.5 );
+
+                    out.addMessage("/korg/amp", norm_2);
+                    out.addMessage("/korg/slide/down", 100);
+                    out.addMessage("/korg/slide/up", 5);
+                    out.addMessage("/korg/q1/val", 0.9 );
+                    out.addMessage("/korg/q2/val", 0.6 );
+                    out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.8) );
+
+//                    out.addMessage("/korg/maths/speed/val", clip( scale( abs(avg_dist_y), 0., 8,  -0.8, 1), -0.8, 1) );
+                    out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
+                    out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.5)), 0., 1., -0.6, 0));
+
+                    out.addMessage("/loop/transpose", 24);
 
                 }
 
@@ -1331,7 +1352,7 @@ void cvglCues::set_lambda_cues()
         else
         {
             out.addMessage("/fuzz/amp", 0 );
-            out.addMessage("/gran/1/amp/val", 0 );
+            out.addMessage("/gran/1/amp/val", 0, 200 );
 
 
         }
