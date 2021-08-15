@@ -187,12 +187,16 @@ void cvglCues::set_lambda_cues()
 
         double sum_mag = 0, sum_area = 0, sum_x = 0, sum_y = 0;
 
+        double avg_x = 0;
+
         if( data.ncontours > 0 )
         {
             for( size_t i = 0 ; i < data.ncontours; i++ )
             {
                 double w = data.contour_area[i];
                 sum_area += w;
+
+                avg_x += data.center_x[i] * w;
 
                 if( data.pix_channel_stats[i].size() == 5 ) // focus channel is added to whatever the channel count is
                 {
@@ -208,6 +212,9 @@ void cvglCues::set_lambda_cues()
 
 
             }
+
+            out.addMessage("/korg/spat/1/az", 0);
+            out.addMessage("/korg/spat/2/az", scale(avg_x / sum_area, 0., 1., -90, 90) );
 
             //if( sum_mag > 0 )
             {
@@ -226,10 +233,10 @@ void cvglCues::set_lambda_cues()
                 out.addMessage("/korg/slide/down", 0);
                 out.addMessage("/korg/slide/up", 5);
                 out.addMessage("/korg/q1/val", 0.9 );
-                out.addMessage("/korg/q2/val", 0.6 );
-                out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -1) );
+                out.addMessage("/korg/q2/val", 0.7 ); // q-drive now at 12:00
+                out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
                 out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-                out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.25, -1));
+                out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
 
                 out.addMessage("/avg/mag", mag_avg );
                 out.addMessage("/avg/x", avg_dist_x);
@@ -330,8 +337,8 @@ void cvglCues::set_lambda_cues()
         {
             // fade in DPO
             out.addMessage("/dpo/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -70., -28) );
-            out.addMessage("/dpo/sarah/pregain/dB",  scale_clip(elapsed_section, 0., sarah_fade, -70., -12) );
-            out.addMessage("/sine/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -100., -33) );
+            out.addMessage("/dpo/sarah/pregain/dB",  scale_clip(elapsed_section, 0., sarah_fade, -70., -36) );
+            out.addMessage("/sine/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -100., -40) );
 
             //  out.addMessage("/loop/transpose",   scale(elapsed_section, 0., 10., 0., 24) );
 
@@ -360,17 +367,19 @@ void cvglCues::set_lambda_cues()
         double seq_t = fmod( elapsed_section, 30.);
 
         size_t seq_minIdx = (seq_t >= transp_seq_t ).cast<int>().sum() - 1;
-     //   size_t seq_maxIdx = transp_seq_t.size() - ( seq_t < transp_seq_t ).sum();
+        size_t seq_maxIdx = transp_seq_t.size() - ( seq_t < transp_seq_t ).sum();
 
-        double f1 = ntom( v1[ seq_minIdx ] );
-        double f2 = ntom( v2[ seq_minIdx ] );
+        double f1 = ntom( "c:5" ); // v1[ seq_minIdx ]
+        double f2 = ntom( "c:5" ); //v2[ seq_minIdx ]
 
 
         // maybe better to go more linearly
 
         size_t prev_step = m_state_cache.addressExists("/prev/seq_step") ? m_state_cache["/prev/seq_step"].getInt() : seq_minIdx;
-        int32_t f1_oct_offset = m_state_cache.addressExists("/f1_oct_offset") ? m_state_cache["/f1_oct_offset"].getInt() : 0;
-        int32_t f2_oct_offset = m_state_cache.addressExists("/f2_oct_offset") ? m_state_cache["/f2_oct_offset"].getInt() : 0;
+        double f1_offset = m_state_cache.addressExists("/f1_offset") ? m_state_cache["/f1_offset"].getInt() : 0;
+        double f2_offset = m_state_cache.addressExists("/f2_offset") ? m_state_cache["/f2_offset"].getInt() : 0;
+        double duration = m_state_cache.addressExists("/duration") ? m_state_cache["/duration"].getInt() : 0;
+
 
         out.addMessage("/cache", m_state_cache);
         if( prev_step != seq_minIdx )
@@ -378,22 +387,26 @@ void cvglCues::set_lambda_cues()
             // new step
             out.addMessage("/dpo/index1/val", m_rand_generator.uniformRand() * 0.1);
 
-            int min = scale(elapsed_section, 0, 120, 0, -5);
+      //      int min = scale(elapsed_section, 0, 120, 0, -5);
 
-            f1_oct_offset = 0;//cvgl::round(scale( m_rand_generator.uniformRand(), 0., 1, -1, 0));
-            f2_oct_offset = 0;//cvgl::round(scale( m_rand_generator.uniformRand(), 0., 1, -1, 1));
+
+            f1_offset = ftom( erb( mtof(f1), scale( m_rand_generator.uniformRand(), 0., 1, -1.3, 1.3) ) );
+            f2_offset = ftom( erb( mtof(f2), scale( m_rand_generator.uniformRand(), 0., 1, -1.3, 1.3) ) );
+
+            out.addMessage("/dpo/f1/val", f1_offset, 10000 );
+            out.addMessage("/dpo/f2/val", f2_offset, 10000 );
+
+           // f2_offset = 0;//cvgl::round(scale( m_rand_generator.uniformRand(), 0., 1, -1, 1));
             t_offset = m_rand_generator.uniformRand() * 5;
         }
 
-        out.addMessage("/dpo/f1/val", f1 + (f1_oct_offset * 12) );
-        out.addMessage("/dpo/f2/val", f2 + (f2_oct_offset * 12) );
        // out.addMessage("/dpo/index1/val", 0 );
         out.addMessage("/dpo/fold/val", fold[seq_minIdx] );
 
         m_state_cache.addMessage("/prev/seq_step", (int32_t)seq_minIdx);
-        m_state_cache.addMessage("/f1_oct_offset", f1_oct_offset);
-        m_state_cache.addMessage("/f2_oct_offset", f2_oct_offset);
-        m_state_cache.addMessage("/t_offset", t_offset);
+        m_state_cache.addMessage("/f1_offset", f1_offset);
+        m_state_cache.addMessage("/f2_offset", f2_offset);
+        m_state_cache.addMessage("/duration", duration);
 
         m_state_cache.addMessage("/prev/f1", f1);
 
@@ -501,7 +514,7 @@ void cvglCues::set_lambda_cues()
     // dpo/sine fade not working
 
     // maybe better to really do feedback with the instrument mics here?
-
+/*
     descr = "feedback view, breath starts in fl/vln, pitches in electronics"; // *
     m_cueFunctions.emplace_back([&, descr](const AnalysisData& data, MapOSC& b)->MapOSC
     {
@@ -666,7 +679,7 @@ void cvglCues::set_lambda_cues()
 
         return out;
     });
-
+*/
     // vln/fl heart for a second, then stop
     // perc clicks with thread
     // lights off -> flashlight / red

@@ -124,6 +124,24 @@ inline double mtof( double v, double a4 = 440.)
     return a4 * pow(2., (v - 69.) / 12.) ;
 }
 
+inline double ftom( double v, double a4 = 440. )
+{
+    return 69.0 + (12.0 * log2( v / a4 ));
+}
+
+/*
+inline Eigen::ArrayXd ftom( const Eigen::ArrayXd & v, double a4 = 440. )
+{
+    return 69 + (12 * log2( v / a4 ));
+}*/
+
+
+inline double erb( double center_hz, double ratio)
+{
+    const double half_bandwidth = (24.7 * ((0.00437 * center_hz) + 1)) * 0.5;
+    return center_hz + (half_bandwidth * ratio);
+}
+
 inline double tanhScale( double x, double in_min, double in_max, double curveScalar = 1 )
 {
     const double curveTanh = tanh(curveScalar);
