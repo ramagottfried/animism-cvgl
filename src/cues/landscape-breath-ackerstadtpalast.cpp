@@ -48,6 +48,10 @@ void cvglCues::set_lambda_cues()
             // video settings
             b.addMessage("/video/black",  1);
 
+            b.addMessage("/overlap/flip", 0.);
+            b.addMessage("/overlap/cameras", 0.);
+            b.addMessage("/video/flip", 1, 0);
+
         }
 
         return out;
@@ -84,6 +88,10 @@ void cvglCues::set_lambda_cues()
             b.addMessage("/enable/minrect", 0);
             b.addMessage("/enable/contour", 0);
             b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
+
+            b.addMessage("/overlap/cameras", 0.);
+            b.addMessage("/overlap/flip", 0.);
+
 
           //  cout << "use camera" << 2 << endl;
             b.addMessage("/size/min", 0.000 );
@@ -158,7 +166,9 @@ void cvglCues::set_lambda_cues()
             b.addMessage("/use/preprocess",  3);
 
             b.addMessage("/use/camera",  1);
-            b.addMessage("/overlap/cameras", 0.0 );
+
+            b.addMessage("/overlap/cameras", 0.);
+            b.addMessage("/overlap/flip", 0.);
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
@@ -232,8 +242,8 @@ void cvglCues::set_lambda_cues()
                 out.addMessage("/korg/amp", norm_2);
                 out.addMessage("/korg/slide/down", 0);
                 out.addMessage("/korg/slide/up", 5);
-                out.addMessage("/korg/q1/val", 0.9 );
-                out.addMessage("/korg/q2/val", 0.7 ); // q-drive now at 12:00
+                out.addMessage("/korg/q1/val", 0.65 );
+                out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
                 out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
                 out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
                 out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
@@ -287,12 +297,15 @@ void cvglCues::set_lambda_cues()
 
             out.addMessage("/loop/pregain/dB",         -12);
             out.addMessage("/korg/pregain/dB",         -6);
+            out.addMessage("/korg/maths/cycle", 1);
 
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  3);
 
             b.addMessage("/use/camera",  1);
             b.addMessage("/overlap/cameras", 0.0 );
+            b.addMessage("/overlap/flip", 0.);
+
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
@@ -340,7 +353,250 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/dpo/sarah/pregain/dB",  scale_clip(elapsed_section, 0., sarah_fade, -70., -36) );
             out.addMessage("/sine/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -100., -40) );
 
+
             //  out.addMessage("/loop/transpose",   scale(elapsed_section, 0., 10., 0., 24) );
+
+        }
+
+
+      /*
+        vector< vector<double> > interval_set;
+
+        interval_set.emplace_back(vector<double>{0, 12+2, 2, 12+3.86, 3.86, 12+7, 10.86});
+        interval_set.emplace_back(vector<double>{0, 24+1, 2, 24+3.16, 3.86, 12+7, -10.86});
+        interval_set.emplace_back(vector<double>{0, 2, 3.86});
+       */
+
+        vector<string> v1({     "bb:4-31",   "c:5",         "d:5+4",    "c:5-27",   "c:5-27"   });
+        vector<string> v2({     "c:5",       "b:4-12",      "b:4+20",   "d:5+4",    "c:5+45"   });
+        vector<double> fold({    0.1,       0.125,           0.12,        0.1,        0.11         });
+
+        ArrayXd transp_seq_t(5);
+        transp_seq_t <<         0,           4,             8,          10,         20;
+
+
+        double t_offset = m_state_cache.addressExists("/t_offset") ? m_state_cache["/t_offset"].getFloat() : 0;
+
+//        elapsed_section -= t_offset;
+
+        double seq_t = fmod( elapsed_section, 30.);
+
+        size_t seq_minIdx = (seq_t >= transp_seq_t ).cast<int>().sum() - 1;
+        size_t seq_maxIdx = transp_seq_t.size() - ( seq_t < transp_seq_t ).sum();
+
+        double f1 = ntom( "c:5" ); // v1[ seq_minIdx ]
+        double f2 = ntom( "c:5" ); //v2[ seq_minIdx ]
+
+
+        // maybe better to go more linearly
+
+        size_t prev_step = m_state_cache.addressExists("/prev/seq_step") ? m_state_cache["/prev/seq_step"].getInt() : seq_minIdx;
+        double f1_offset = m_state_cache.addressExists("/f1_offset") ? m_state_cache["/f1_offset"].getInt() : 0;
+        double f2_offset = m_state_cache.addressExists("/f2_offset") ? m_state_cache["/f2_offset"].getInt() : 0;
+        double duration = m_state_cache.addressExists("/duration") ? m_state_cache["/duration"].getInt() : 0;
+
+
+        out.addMessage("/cache", m_state_cache);
+        if( prev_step != seq_minIdx )
+        {
+            // new step
+            out.addMessage("/dpo/index1/val", m_rand_generator.uniformRand() * 0.1);
+
+      //      int min = scale(elapsed_section, 0, 120, 0, -5);
+
+
+            f1_offset = ftom( erb( mtof(f1), scale( m_rand_generator.uniformRand(), 0., 1, -1.3, 1.3) ) );
+            f2_offset = ftom( erb( mtof(f2), scale( m_rand_generator.uniformRand(), 0., 1, -1.3, 1.3) ) );
+
+            out.addMessage("/dpo/f1/val", f1_offset, 10000 );
+            out.addMessage("/dpo/f2/val", f2_offset, 10000 );
+
+           // f2_offset = 0;//cvgl::round(scale( m_rand_generator.uniformRand(), 0., 1, -1, 1));
+            t_offset = m_rand_generator.uniformRand() * 5;
+        }
+
+       // out.addMessage("/dpo/index1/val", 0 );
+        out.addMessage("/dpo/fold/val", fold[seq_minIdx] );
+
+        m_state_cache.addMessage("/prev/seq_step", (int32_t)seq_minIdx);
+        m_state_cache.addMessage("/f1_offset", f1_offset);
+        m_state_cache.addMessage("/f2_offset", f2_offset);
+        m_state_cache.addMessage("/duration", duration);
+
+        m_state_cache.addMessage("/prev/f1", f1);
+
+        out.addMessage("/elapsed_section", elapsed_section );
+        double area_sum = data.contour_area.sum();
+        out.addMessage("/contour_area_sum", area_sum );
+
+        double sum_mag = 0, sum_area = 0, sum_x = 0, sum_y = 0;
+
+        if( data.ncontours > 0 )
+        {
+            for( size_t i = 0 ; i < data.ncontours; i++ )
+            {
+                double w = data.contour_area[i];
+                sum_area += w;
+
+                if( data.pix_channel_stats[i].size() == 5 ) // focus channel is added to whatever the channel count is
+                {
+               //     sum_angle += data.pix_channel_stats[i][0].mean * w;
+                    sum_mag += data.pix_channel_stats[i][1].mean * w;
+                    sum_x += data.pix_channel_stats[i][2].mean * w;
+                    sum_y += data.pix_channel_stats[i][3].mean * w;
+                }
+                else
+                {
+                    out.addMessage("/nchannels", (int32_t)i, (int32_t)data.pix_channel_stats[i].size() );
+                }
+
+
+            }
+
+            //if( sum_mag > 0 )
+            {
+                double scalar = sum_area == 0 ? 1 : sum_area;
+                double mag_avg = sum_mag / scalar;
+
+                double avg_dist_x = sum_x / scalar;
+                double avg_dist_y = sum_y / scalar;
+
+                double norm_mag_avg = mag_avg / 255. ;
+                double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
+
+                out.addMessage("/korg/amp", norm_2);
+                out.addMessage("/korg/slide/down", 0);
+                out.addMessage("/korg/slide/up", 5);
+                out.addMessage("/korg/q1/val", 0.65 );
+                out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
+                out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -1) );
+                out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
+                out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.25, -1));
+
+/*
+                out.addMessage("/korg/amp", norm_2);
+                out.addMessage("/korg/slide/down", 0);
+                out.addMessage("/korg/slide/up", 5);
+                out.addMessage("/korg/q1/val", 0.9 );
+                out.addMessage("/korg/q2/val", 0.6 );
+                out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.6) );
+                out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
+                out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.5)), 0., 1., 1, -0.8));
+*/
+                out.addMessage("/avg/mag", mag_avg );
+                out.addMessage("/avg/x", avg_dist_x);
+                out.addMessage("/avg/y", avg_dist_y );
+
+// >> to do: make the sarah part gel with the drone and fuzzball
+                out.addMessage("/dpo/sarah/amp/val", norm_2, 100 );
+
+                out.addMessage("/dpo/sarah/slide/down", scale_clip(elapsed_section, 0, 300, 0, 500) );
+
+                out.addMessage("/dpo/mod_bus_phase/ms", scale(norm_mag_avg, 0., 0.5,
+                                                              scale_clip(elapsed_section, 0, 300, 1, 500),
+                                                              scale_clip(elapsed_section, 0, 120, 200, 2000)) );
+
+                out.addMessage("/dpo/mod_bus_phase/loop", 1);
+                out.addMessage("/dpo/mod_bus_phase/phasecycle", 1);
+
+                out.addMessage("/dpo/vcf1_hz/scale", scale(norm_mag_avg, 0., 0.5, -0.1, 0.8), scale(norm_mag_avg, 0., 0.5, 0.6, 1) );
+                out.addMessage("/dpo/vcf2_hz/scale", scale(norm_mag_avg, 0., 0.5, -0.3, 0.8), scale(norm_mag_avg, 0., 0.5, -0.1, 1) );
+
+                //      out.addMessage("/dpo/fold/scale", scale(norm_mag_avg, 0., 0.5, 0., 0.3), scale(norm_mag_avg, 0., 0.5, 0.1, 0.5)  );
+
+            }
+
+
+        }
+        else
+        {
+            out.addMessage("/dpo/sarah/amp/val", 0, 100 );
+            out.addMessage("/korg/amp", 0);
+
+        }
+
+
+        return out;
+    });
+
+    descr = "fuzzball at pond --> transition to flip overlay";
+    m_cueFunctions.emplace_back([&, descr](const AnalysisData& data, MapOSC& b)->MapOSC
+    {
+
+        MapOSC out;
+        double elapsed_section = m_elapsed_section.count();
+/*
+        out.addMessage("/noteOn_idx", data.noteOn_idx);
+        out.addMessage("/sustain_idx", data.sustain_idx);
+        out.addMessage("/noteOff_prev_idx", data.noteOff_prev_idx);
+        out.addMessage("/elapsed_contour", data.elapsed_contour);
+*/
+
+        if( isNewCue )
+        {
+            out.addMessage("/descr", descr);
+
+
+            out.addMessage("/dpo/pregain/dB",          -28);
+            out.addMessage("/dpo/sarah/pregain/dB",    -36);
+            out.addMessage("/gran/pregain/dB",         -100);
+            out.addMessage("/fuzz/pregain/dB",         -100);
+            out.addMessage("/spring/pregain/dB",       -100 );
+            out.addMessage("/spring/pregain/dB",       -40 );
+
+            out.addMessage("/loop/pregain/dB",         -12);
+            out.addMessage("/korg/pregain/dB",         -6);
+            out.addMessage("/korg/maths/cycle", 1);
+
+            b.addMessage("/video/black",  0);
+            b.addMessage("/use/preprocess",  3);
+
+            b.addMessage("/use/camera",  1);
+            b.addMessage("/overlap/cameras", 0.0 );
+            b.addMessage("/overlap/flip", 0.);
+
+
+            b.addMessage("/enable/hull", 0);
+            b.addMessage("/enable/minrect", 0);
+            b.addMessage("/enable/contour", 1);
+            b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
+
+          //  cout << "use camera" << 2 << endl;
+            b.addMessage("/size/min", 0.000 );
+            b.addMessage("/size/max", 0.9 );
+            b.addMessage("/thresh", 41 );
+            b.addMessage("/invert", 0 );
+
+            out.addMessage("/loop/length/ms", -1);
+            out.addMessage("/loop/retrigger/enable", 0);
+            out.addMessage("/loop/start/ratio", 0);
+            out.addMessage("/loop/transpose", 24);
+            out.addMessage("/loop/buffer/idx", 0);
+
+            out.addMessage("/dpo/intervals", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+            out.addMessage("/dpo/baseMIDI", 0);
+
+            out.addMessage("/dpo/mod_bus_phase/sync", 0);
+
+            out.addMessage("/dpo/index2/scale", 0, 0.2);
+            out.addMessage("/dpo/shape/scale", 0, 1);
+            out.addMessage("/dpo/vcf1_q/scale", -2, 0.3);
+            out.addMessage("/dpo/vcf2_q/scale", 0, 0.5);
+            out.addMessage("/dpo/sarah/slide/up", 0);
+            out.addMessage("/dpo/sarah/slide/down", 0);
+
+            out.addMessage("/dpo/amp/val", 1);
+
+            out.addMessage("/sine/amp", 1);
+
+
+        }
+
+
+        double fadetime = 30;
+        if( elapsed_section <= fadetime )
+        {
+            b.addMessage("/overlap/flip", scale_clip(elapsed_section, 0., fadetime, 0., 0.5));
 
         }
 
@@ -452,8 +708,8 @@ void cvglCues::set_lambda_cues()
                 out.addMessage("/korg/amp", norm_2);
                 out.addMessage("/korg/slide/down", 0);
                 out.addMessage("/korg/slide/up", 5);
-                out.addMessage("/korg/q1/val", 0.9 );
-                out.addMessage("/korg/q2/val", 0.6 );
+                out.addMessage("/korg/q1/val", 0.65 );
+                out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
                 out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -1) );
                 out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
                 out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.25, -1));
@@ -475,7 +731,7 @@ void cvglCues::set_lambda_cues()
 // >> to do: make the sarah part gel with the drone and fuzzball
                 out.addMessage("/dpo/sarah/amp/val", norm_2, 100 );
 
-                out.addMessage("/dpo/sarah/slide/down", scale_clip(elapsed_section, 0, 300, 0, 500) );
+                out.addMessage("/dpo/sarah/slide/down", 500 );
 
                 out.addMessage("/dpo/mod_bus_phase/ms", scale(norm_mag_avg, 0., 0.5,
                                                               scale_clip(elapsed_section, 0, 300, 1, 500),
@@ -505,181 +761,6 @@ void cvglCues::set_lambda_cues()
     });
 
 
-
-    // for feedback, cut drone, or transform it so we're not in the dream state anymore
-    // maybe make it sudden into WAHWAHWAH for feedback?
-
-    // bird loop (retrigger sometimes
-    // fade drone sine in with movement -- added faded out slide in dpo, might need to reset that to zero elsewhere
-    // dpo/sine fade not working
-
-    // maybe better to really do feedback with the instrument mics here?
-/*
-    descr = "feedback view, breath starts in fl/vln, pitches in electronics"; // *
-    m_cueFunctions.emplace_back([&, descr](const AnalysisData& data, MapOSC& b)->MapOSC
-    {
-
-        MapOSC out;
-        double elapsed_section = m_elapsed_section.count();
-
-        if( isNewCue )
-        {
-            out.addMessage("/descr", descr);
-
-
-            out.addMessage("/dpo/pregain/dB",          -28);
-            out.addMessage("/dpo/sarah/pregain/dB",    -100);
-            out.addMessage("/gran/pregain/dB",         -100);
-            out.addMessage("/fuzz/pregain/dB",         -100);
-            out.addMessage("/spring/pregain/dB",       -100);
-
-            out.addMessage("/loop/pregain/dB",         -12);
-            out.addMessage("/korg/pregain/dB",         -6);
-            out.addMessage("/sine/pregain/dB",          -33);
-
-            b.addMessage("/video/black",  0);
-            b.addMessage("/use/preprocess",  3);
-
-            b.addMessage("/use/camera",  1);
-            b.addMessage("/overlap/cameras", 0.0 );
-
-            b.addMessage("/enable/hull", 1);
-            b.addMessage("/enable/minrect", 0);
-            b.addMessage("/enable/contour", 0);
-         //  b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
-
-          //  cout << "use camera" << 2 << endl;
-            b.addMessage("/size/min", 0.0001 );
-            b.addMessage("/size/max", 0.9 );
-            b.addMessage("/thresh", 20 );
-            b.addMessage("/invert", 0 );
-
-            out.addMessage("/dpo/intervals", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
-            out.addMessage("/dpo/baseMIDI", 0);
-
-            out.addMessage("/dpo/mod_bus_phase/sync", 0);
-
-            out.addMessage("/dpo/index2/scale", 0, 0.2);
-            out.addMessage("/dpo/shape/scale", 0, 1);
-            out.addMessage("/dpo/vcf1_q/scale", -2, 0.3);
-            out.addMessage("/dpo/vcf2_q/scale", 0, 0.5);
-            out.addMessage("/dpo/sarah/slide/up", 100);
-            out.addMessage("/dpo/sarah/slide/down", 200);
-
-            out.addMessage("/dpo/amp/val", 1);
-
-            out.addMessage("/dpo/slide/up", 100);
-            out.addMessage("/dpo/slide/down", 500);
-
-            out.addMessage("/spring/feedback/val",  0.24 );
-
-
-
-        }
-
-
-
-        out.addMessage("/loop/length/ms", 3917);
-        out.addMessage("/loop/retrigger/enable", 0);
-        out.addMessage("/loop/retrigger/hz", 21);
-        out.addMessage("/loop/start/ratio", 0.067);
-        out.addMessage("/loop/transpose", 10);
-        out.addMessage("/loop/buffer/idx", 0);
-        out.addMessage("/loop/amp", 0);
-
-
-        out.addMessage("/korg/amp", 0);
-        out.addMessage("/korg/slide/down", 2000);
-        out.addMessage("/korg/slide/up", 0);
-        out.addMessage("/korg/q1/val", 0.01 );
-        out.addMessage("/korg/q2/val", 0.01 );
-        out.addMessage("/korg/maths/speed/val", -0.36 );
-        out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-        out.addMessage("/korg/maths/offset/val", 0.24 );
-
-        double sum_mag = 0, sum_area = 0, sum_x = 0, sum_y = 0;
-
-        out.addMessage("/data/sum_area", data.contour_area.sum());
-
-        if( data.ncontours > 0 )
-        {
-            for( size_t i = 0 ; i < data.ncontours; i++ )
-            {
-                double w = data.contour_area[i];
-                sum_area += w;
-
-                if( data.pix_channel_stats[i].size() == 5 ) // focus channel is added to whatever the channel count is
-                {
-               //     sum_angle += data.pix_channel_stats[i][0].mean * w;
-                    sum_mag += data.pix_channel_stats[i][1].mean * w;
-                    sum_x += data.pix_channel_stats[i][2].mean * w;
-                    sum_y += data.pix_channel_stats[i][3].mean * w;
-
-                    if( isnan(sum_mag) )
-                    {
-                        out.addMessage("/error/sum_mag", (int32_t)i,  data.pix_channel_stats[i][1].mean, w );
-
-                    }
-                }
-                else
-                {
-                    out.addMessage("/error/bad_channel_count", (int32_t)i, (int32_t)data.pix_channel_stats[i].size() );
-                }
-
-            }
-
-            out.addMessage("/data/sum_mag", sum_mag);
-
-
-            if( sum_mag > 0 )
-            {
-                double scalar = sum_area == 0 ? 1 : sum_area;
-                double mag_avg = sum_mag / scalar;
-
-                double avg_dist_x = sum_x / scalar;
-                double avg_dist_y = sum_y / scalar;
-
-                double norm_mag_avg = mag_avg / 255. ;
-                double norm_2 = clip( norm_mag_avg * 100, 0., 1.);
-
-                out.addMessage("/data/mag_avg", mag_avg);
-
-                out.addMessage("/norm_mag_avg", norm_mag_avg );
-
-                out.addMessage("/korg/amp", norm_2);
-                out.addMessage("/loop/amp", norm_2, 100);
-
-                out.addMessage("/dpo/amp/val", norm_2, 200  );
-                out.addMessage("/dpo/sarah/amp/val", norm_2, 200  );
-
-                out.addMessage("/sine/amp", norm_2, 20  );
-                //out.addMessage("/loop/retrigger/enable", 1);
-                out.addMessage("/korg/maths/speed", -0.6 ); // adjusted for 32 vector size in max
-
-           //     out.addMessage("/dpo/vcf1_hz/scale", scale(norm_mag_avg, 0., 0.5, -0.1, 0.5), scale(norm_mag_avg, 0., 0.5, 0.5, 1) );
-           //     out.addMessage("/dpo/vcf2_hz/scale", scale(norm_mag_avg, 0., 0.5, -1, 0.5), scale(norm_mag_avg, 0., 0.5, -0.5, 1) );
-
-//                double f1 = mtof( m_state_cache.addressExists("/prev/f1") ? m_state_cache["/prev/f1"].getFloat() : ntom("c:5") );
-//                out.addMessage("/loop/retrigger/hz", f1 / cvgl::round(scale(norm_mag_avg, 0., 0.5, 1, 5)) );
-
-            }
-
-
-        }
-        else
-        {
-            out.addMessage("/dpo/amp/val", 0  );
-            out.addMessage("/dpo/sarah/amp/val", 0  );
-            out.addMessage("/sine/amp", 0  );
-            out.addMessage("/loop/amp", 0, 1000);
-
-        //    out.addMessage("/spring/feedback/val", 0, 100 );
-        }
-
-
-        return out;
-    });
-*/
     // vln/fl heart for a second, then stop
     // perc clicks with thread
     // lights off -> flashlight / red
@@ -692,13 +773,15 @@ void cvglCues::set_lambda_cues()
         MapOSC out;
         const double elapsed_section = m_elapsed_section.count();
 
+
+
         if( isNewCue )
         {
             out.addMessage("/descr", descr);
 
 
-            out.addMessage("/dpo/pregain/dB",          -100);
-            out.addMessage("/dpo/sarah/pregain/dB",    -100);
+            out.addMessage("/dpo/pregain/dB",          -28);
+            out.addMessage("/dpo/sarah/pregain/dB",    -36);
             out.addMessage("/gran/pregain/dB",         0);
             out.addMessage("/gran/*/amp/val", 0);
 
@@ -706,13 +789,14 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/loop/pregain/dB",         -100);
             out.addMessage("/korg/pregain/dB",         -100);
             out.addMessage("/spring/pregain/dB",       -100);
-            out.addMessage("/sine/pregain/dB",         -100);
+            out.addMessage("/sine/pregain/dB",         -40);
 
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  3);
 
             b.addMessage("/use/camera",  1);
             b.addMessage("/overlap/cameras", 0.0 );
+            b.addMessage("/overlap/flip", 0.5);
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
@@ -722,7 +806,7 @@ void cvglCues::set_lambda_cues()
           //  cout << "use camera" << 2 << endl;
             b.addMessage("/size/min", 0.000 );
             b.addMessage("/size/max", 0.9 );
-            b.addMessage("/thresh", 41 );
+            b.addMessage("/thresh", 20 );
             b.addMessage("/invert", 0 );
 
             out.addMessage("/loop/length/ms", -1);
@@ -734,12 +818,17 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/gran/*/motor/scale", 0.001, 500.);
             out.addMessage("/gran/*/overlap/scale", 0.01, 0.8);
             out.addMessage("/gran/*/rate/scale", 15., 117.);
-            out.addMessage("/gran/*/amp/val", 1);
+            out.addMessage("/gran/*/amp/val", 0);
             out.addMessage("/gran/*/buffer/scale", 3, 9 );
             out.addMessage("/gran/send", 1);
+            m_state_cache.addMessage("/position", 0);
+            m_state_cache.addMessage("/direction", 1);
+            m_state_cache.addMessage("/min", 1);
+            m_state_cache.addMessage("/max", 0);
+
+            m_state_cache.addMessage("/prev_t", elapsed_section);
 
         }
-
 
         double sum_mag = 0, sum_area = 0, sum_x = 0, sum_y = 0;
 
@@ -765,7 +854,7 @@ void cvglCues::set_lambda_cues()
 
             }
 
-            //if( sum_mag > 0 )
+            if( sum_mag > 0 )
             {
                 double scalar = sum_area == 0 ? 1 : sum_area;
                 double mag_avg = sum_mag / scalar;
@@ -773,23 +862,87 @@ void cvglCues::set_lambda_cues()
                 double avg_dist_x = sum_x / scalar;
                 double avg_dist_y = sum_y / scalar;
 
-                double norm_mag_avg = mag_avg / 255. ;
-                double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
+                double norm_mag_avg = mag_avg / 255.0 ;
+                double norm_2 = clip( pow( norm_mag_avg, exp(-0.5)) * 100, 0.1, 1.);
+                double norm_22 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0.1, 1.);
 
                 out.addMessage("/data/norm_2", norm_2);
                 out.addMessage("/data/norm_mag_avg", norm_mag_avg);
 
-                out.addMessage("/gran/1/position", scale_clip(norm_mag_avg, 0.2, 1, 0., 1) );
-                out.addMessage("/gran/1/amp/val", norm_2);
+                double min = m_state_cache["/min"].getFloat();
+                double max = m_state_cache["/max"].getFloat();
 
-                out.addMessage("/gran/2/play", 1);
-                out.addMessage("/gran/2/retrigger", 1);
-                out.addMessage("/gran/2/ms", 4000);
-                out.addMessage("/gran/2/loop", 0);
-                out.addMessage("/gran/2/amp/val", norm_2 * norm_2 );
-             //   out.addMessage("/gran/1/motor/scale", 1 + 10 * norm_2 * norm_2, 471.);
-                out.addMessage("/gran/2/motor/scale", 0.07 + norm_2, 471.);
+                min = min > norm_mag_avg ? norm_mag_avg : min;
+                max = max < norm_mag_avg ? norm_mag_avg : max;
 
+                if( (elapsed_section - m_state_cache["/prev_t"].getFloat()) > 10 )
+                {
+                    min = 1;
+                    max = 0;
+                    m_state_cache.addMessage("/prev_t", elapsed_section);
+                }
+
+                m_state_cache.addMessage("/min", min);
+                m_state_cache.addMessage("/max", max);
+
+                double adaptive_norm_mag_avg = scale(norm_mag_avg, min, max, 0., 1.);
+                out.addMessage("/data/adaptive_norm_mag_avg", adaptive_norm_mag_avg);
+
+                double pos = m_state_cache["/position"].getFloat();
+                double direction = m_state_cache["/direction"].getFloat();
+                double step = direction * norm_2 * 0.1;
+
+                if( abs(step) > 0.01 )
+                {
+                    double next = pos + step;
+
+                    if( next > 1 ||  next < 0 )
+                    {
+                        step *= -1;
+                        m_state_cache.addMessage("/direction", direction * -1);
+
+                        next = pos + step;
+                    }
+
+                    pos = next;
+
+                    m_state_cache.addMessage("/position", pos);
+
+                }
+
+
+                out.addMessage("/gran/1/position", pos, 100 );
+                out.addMessage("/gran/3/position", pos, 100 );
+
+                double thresh = 0.3;
+                if( adaptive_norm_mag_avg > thresh )
+                {
+                    out.addMessage("/gran/3/amp/val", adaptive_norm_mag_avg, 20);
+                    out.addMessage("/gran/3/buffer/val", 9 );
+                    out.addMessage("/gran/3/overlap/val", scale(adaptive_norm_mag_avg, thresh, 1., 0.01, 1), 5);
+                    out.addMessage("/gran/3/motor/val", scale(adaptive_norm_mag_avg, thresh, 1., 20, 100) );
+                    out.addMessage("/gran/3/rate/val",   scale(adaptive_norm_mag_avg, thresh, 1., 1, 0.5) );
+
+
+                    out.addMessage("/gran/2/play", 1);
+                    out.addMessage("/gran/2/retrigger", 0);
+                    out.addMessage("/gran/2/ms", 4000);
+                    out.addMessage("/gran/2/loop", 0);
+                    out.addMessage("/gran/2/amp/val", 0 );
+                    out.addMessage("/gran/2/motor/scale", 0.07, 471.);
+
+
+                }
+                else
+                {
+//                    out.addMessage("/gran/1/amp/val", norm_2, 20);
+                }
+
+                out.addMessage("/gran/1/amp/val", adaptive_norm_mag_avg, 20);
+                out.addMessage("/gran/1/rate/val", scale(adaptive_norm_mag_avg, 0., 1., 4, 0.1) );
+                out.addMessage("/gran/1/buffer/val", 0 );
+                out.addMessage("/gran/1/overlap/val", scale(adaptive_norm_mag_avg, 0., 1., 1, 2));
+                out.addMessage("/gran/1/motor/val", scale(adaptive_norm_mag_avg, 0., 1., 20, 200));
 
 
             }
@@ -798,12 +951,27 @@ void cvglCues::set_lambda_cues()
         }
         else
         {
-            out.addMessage("/gran/1/amp/val", 0);
-            out.addMessage("/gran/2/amp/val", 0, 500);
+          //  out.addMessage("/gran/1/position", 0, 1000 );
+            out.addMessage("/gran/1/amp/val", 0, 20);
+            out.addMessage("/gran/2/amp/val", 0, 200);
+            out.addMessage("/gran/3/amp/val", 0, 20);
+            out.addMessage("/gran/3/motor/scale", 0.0001, 20);
+
             out.addMessage("/gran/2/motor/scale", 10 + m_rand_generator.uniformRand() * 10, 471.);
 
         }
 
+        double fadetime = 10;
+        if( elapsed_section <= (fadetime + 1) )
+        {
+            // fade in DPO
+            out.addMessage("/dpo/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -70., -28) );
+            out.addMessage("/dpo/sarah/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -36, -70.) );
+            out.addMessage("/sine/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -40, -70) );
+        }
+
+
+        out.addMessage("/cache", m_state_cache);
 
         return out;
     });
@@ -828,13 +996,14 @@ void cvglCues::set_lambda_cues()
 
             // video settings
             b.addMessage("/video/black",  1);
+            b.addMessage("/overlap/flip", 0.);
 
         }
 
         return out;
     });
 
-    descr = "cut to heart, cam 2 -- no electronics";
+    descr = "heart, cam 2 -- no electronics";
     m_cueFunctions.emplace_back([&, descr](const AnalysisData& data, MapOSC& b)->MapOSC
     {
 
@@ -863,6 +1032,8 @@ void cvglCues::set_lambda_cues()
 
             b.addMessage("/use/camera",  2);
             b.addMessage("/overlap/cameras", 0. );
+            b.addMessage("/overlap/flip", 0.);
+
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
@@ -1186,7 +1357,7 @@ void cvglCues::set_lambda_cues()
         return out;
     });
 
-    descr = "lungs"; // *
+    descr = "lungs -> next cue on final inbreath"; // *
     m_cueFunctions.emplace_back([&, descr](const AnalysisData& data, MapOSC& b)->MapOSC
     {
 
@@ -1206,6 +1377,11 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/korg/pregain/dB",         0);
             out.addMessage("/gran/pregain/dB",         0);
             out.addMessage("/fuzz/pregain/dB",         0);
+
+            out.addMessage("/korg/maths/cycle", 1);
+
+            out.addMessage("/korg/amp", 0);
+            out.addMessage("/fuzz/amp", 0);
 
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  3);
@@ -1248,7 +1424,9 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/fuzz/pan/val", 0.);
             out.addMessage("/fuzz/amp", 1);
 
-
+            m_state_cache.addMessage("/min", 1);
+            m_state_cache.addMessage("/max", 0);
+            m_state_cache.addMessage("/prev_t", elapsed_section);
 
 
         }
@@ -1296,6 +1474,28 @@ void cvglCues::set_lambda_cues()
                 double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
 
 
+
+                double min = m_state_cache["/min"].getFloat();
+                double max = m_state_cache["/max"].getFloat();
+
+                min = min > norm_mag_avg ? norm_mag_avg : min;
+                max = max < norm_mag_avg ? norm_mag_avg : max;
+
+                if( (elapsed_section - m_state_cache["/prev_t"].getFloat()) > 10 )
+                {
+                    min = 1;
+                    max = 0;
+                    m_state_cache.addMessage("/prev_t", elapsed_section);
+                }
+
+                m_state_cache.addMessage("/min", min);
+                m_state_cache.addMessage("/max", max);
+
+                double adaptive_norm_mag_avg = scale(norm_mag_avg, min, max, 0., 1.);
+                out.addMessage("/data/adaptive_norm_mag_avg", adaptive_norm_mag_avg);
+
+
+
                 out.addMessage("/avg/mag", mag_avg );
                 out.addMessage("/avg/x", avg_dist_x);
                 out.addMessage("/avg/y", avg_dist_y );
@@ -1313,8 +1513,8 @@ void cvglCues::set_lambda_cues()
                     out.addMessage("/korg/amp", norm_2);
                     out.addMessage("/korg/slide/down", 100);
                     out.addMessage("/korg/slide/up", 5);
-                    out.addMessage("/korg/q1/val", 0.9 );
-                    out.addMessage("/korg/q2/val", 0.6 );
+                    out.addMessage("/korg/q1/val", 0.65 );
+                    out.addMessage("/korg/q2/val", 0.68 );
                     out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.8) );
                     out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
                     out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.5)), 0., 1., 0, 1));
@@ -1345,8 +1545,8 @@ void cvglCues::set_lambda_cues()
                     out.addMessage("/korg/amp", norm_2);
                     out.addMessage("/korg/slide/down", 100);
                     out.addMessage("/korg/slide/up", 5);
-                    out.addMessage("/korg/q1/val", 0.9 );
-                    out.addMessage("/korg/q2/val", 0.6 );
+                    out.addMessage("/korg/q1/val", 0.65 );
+                    out.addMessage("/korg/q2/val", 0.68 );
                     out.addMessage("/korg/maths/speed/val", scale(norm_mag_avg, 0., 0.5, 0.1, -0.8) );
 
 //                    out.addMessage("/korg/maths/speed/val", clip( scale( abs(avg_dist_y), 0., 8,  -0.8, 1), -0.8, 1) );
@@ -1366,6 +1566,7 @@ void cvglCues::set_lambda_cues()
         {
             out.addMessage("/fuzz/amp", 0 );
             out.addMessage("/gran/1/amp/val", 0, 200 );
+            out.addMessage("/korg/amp", 0 );
 
 
         }
@@ -1382,6 +1583,16 @@ void cvglCues::set_lambda_cues()
         MapOSC out;
         const double elapsed_section = m_elapsed_section.count();
 
+
+        if( elapsed_section <= 10. )
+        {
+            b.addMessage("/overlap/cameras",  scale(elapsed_section, 0., 10., 0.5, 0.) );
+        }
+        else
+        {
+            b.addMessage("/overlap/cameras",  0 );
+        }
+
         if( isNewCue )
         {
             out.addMessage("/descr", descr);
@@ -1391,93 +1602,57 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/dpo/sarah/pregain/dB",    -100);
             out.addMessage("/gran/pregain/dB",         -100);
             out.addMessage("/fuzz/pregain/dB",         -100);
-
-            out.addMessage("/loop/pregain/dB",         0);
+            out.addMessage("/loop/pregain/dB",         -100);
             out.addMessage("/korg/pregain/dB",         -100);
+            out.addMessage("/spring/pregain/dB",       -100);
+            out.addMessage("/sine/pregain/dB",         -100);
 
             b.addMessage("/video/black",  0);
             b.addMessage("/use/preprocess",  0);
 
             b.addMessage("/use/camera",  1);
-            b.addMessage("/overlap/cameras", 0.0 );
+            b.addMessage("/overlap/cameras", 0.5 );
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
             b.addMessage("/enable/contour", 0);
-            b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
-
-          //  cout << "use camera" << 2 << endl;
-            b.addMessage("/size/min", 0.000 );
-            b.addMessage("/size/max", 0.9 );
-            b.addMessage("/thresh", 41 );
-            b.addMessage("/invert", 0 );
-
-            out.addMessage("/loop/length/ms", -1);
-            out.addMessage("/loop/retrigger/enable", 0);
-            out.addMessage("/loop/start/ratio", 0);
-            out.addMessage("/loop/transpose", 24);
-            out.addMessage("/loop/buffer/idx", 0);
 
         }
-
-        out.addMessage("/elapsed_section", elapsed_section );
-        double area_sum = data.contour_area.sum();
-        out.addMessage("/contour_area_sum", area_sum );
 
 
         return out;
 
     });
 
-    // end
-    descr = "landscape, hand sun rise with bells (fade out from board, acoustic sound only)";
+
+    // >> black
+
+
+    descr = "end black";
     m_cueFunctions.emplace_back([&, descr](const AnalysisData& data, MapOSC& b)->MapOSC
     {
 
         MapOSC out;
-        const double elapsed_section = m_elapsed_section.count();
-
         if( isNewCue )
         {
             out.addMessage("/descr", descr);
-
 
             out.addMessage("/dpo/pregain/dB",          -100);
             out.addMessage("/dpo/sarah/pregain/dB",    -100);
             out.addMessage("/gran/pregain/dB",         -100);
             out.addMessage("/fuzz/pregain/dB",         -100);
-
-            out.addMessage("/loop/pregain/dB",         0);
+            out.addMessage("/loop/pregain/dB",         -100);
             out.addMessage("/korg/pregain/dB",         -100);
+            out.addMessage("/spring/pregain/dB",       -100);
+            out.addMessage("/sine/pregain/dB",         -100);
 
-            b.addMessage("/video/black",  0);
-            b.addMessage("/use/preprocess",  0);
-
-            b.addMessage("/use/camera",  1);
-            b.addMessage("/overlap/cameras", 0.0 );
-
-            b.addMessage("/enable/hull", 0);
-            b.addMessage("/enable/minrect", 0);
-            b.addMessage("/enable/contour", 0);
-            b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
-
-            b.addMessage("/size/min", 0.000 );
-            b.addMessage("/size/max", 0.9 );
-            b.addMessage("/thresh", 41 );
-            b.addMessage("/invert", 0 );
-
-            out.addMessage("/loop/length/ms", -1);
-            out.addMessage("/loop/retrigger/enable", 0);
-            out.addMessage("/loop/start/ratio", 0);
-            out.addMessage("/loop/transpose", 24);
-            out.addMessage("/loop/buffer/idx", 0);
+            // video settings
+            b.addMessage("/video/black",  1);
 
         }
 
         return out;
-
     });
-
 }
 
 
@@ -1589,3 +1764,180 @@ m_cueFunctions.emplace_back([&](const AnalysisData& data, MapOSC& b)->MapOSC
     return out;
 });
  */
+
+
+
+// for feedback, cut drone, or transform it so we're not in the dream state anymore
+// maybe make it sudden into WAHWAHWAH for feedback?
+
+// bird loop (retrigger sometimes
+// fade drone sine in with movement -- added faded out slide in dpo, might need to reset that to zero elsewhere
+// dpo/sine fade not working
+
+// maybe better to really do feedback with the instrument mics here?
+/*
+descr = "feedback view, breath starts in fl/vln, pitches in electronics"; // *
+m_cueFunctions.emplace_back([&, descr](const AnalysisData& data, MapOSC& b)->MapOSC
+{
+
+    MapOSC out;
+    double elapsed_section = m_elapsed_section.count();
+
+    if( isNewCue )
+    {
+        out.addMessage("/descr", descr);
+
+
+        out.addMessage("/dpo/pregain/dB",          -28);
+        out.addMessage("/dpo/sarah/pregain/dB",    -100);
+        out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/fuzz/pregain/dB",         -100);
+        out.addMessage("/spring/pregain/dB",       -100);
+
+        out.addMessage("/loop/pregain/dB",         -12);
+        out.addMessage("/korg/pregain/dB",         -6);
+        out.addMessage("/sine/pregain/dB",          -33);
+
+        b.addMessage("/video/black",  0);
+        b.addMessage("/use/preprocess",  3);
+
+        b.addMessage("/use/camera",  1);
+        b.addMessage("/overlap/cameras", 0.0 );
+
+        b.addMessage("/enable/hull", 1);
+        b.addMessage("/enable/minrect", 0);
+        b.addMessage("/enable/contour", 0);
+     //  b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
+
+      //  cout << "use camera" << 2 << endl;
+        b.addMessage("/size/min", 0.0001 );
+        b.addMessage("/size/max", 0.9 );
+        b.addMessage("/thresh", 20 );
+        b.addMessage("/invert", 0 );
+
+        out.addMessage("/dpo/intervals", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+        out.addMessage("/dpo/baseMIDI", 0);
+
+        out.addMessage("/dpo/mod_bus_phase/sync", 0);
+
+        out.addMessage("/dpo/index2/scale", 0, 0.2);
+        out.addMessage("/dpo/shape/scale", 0, 1);
+        out.addMessage("/dpo/vcf1_q/scale", -2, 0.3);
+        out.addMessage("/dpo/vcf2_q/scale", 0, 0.5);
+        out.addMessage("/dpo/sarah/slide/up", 100);
+        out.addMessage("/dpo/sarah/slide/down", 200);
+
+        out.addMessage("/dpo/amp/val", 1);
+
+        out.addMessage("/dpo/slide/up", 100);
+        out.addMessage("/dpo/slide/down", 500);
+
+        out.addMessage("/spring/feedback/val",  0.24 );
+
+
+
+    }
+
+
+
+    out.addMessage("/loop/length/ms", 3917);
+    out.addMessage("/loop/retrigger/enable", 0);
+    out.addMessage("/loop/retrigger/hz", 21);
+    out.addMessage("/loop/start/ratio", 0.067);
+    out.addMessage("/loop/transpose", 10);
+    out.addMessage("/loop/buffer/idx", 0);
+    out.addMessage("/loop/amp", 0);
+
+
+    out.addMessage("/korg/amp", 0);
+    out.addMessage("/korg/slide/down", 2000);
+    out.addMessage("/korg/slide/up", 0);
+    out.addMessage("/korg/q1/val", 0.01 );
+    out.addMessage("/korg/q2/val", 0.01 );
+    out.addMessage("/korg/maths/speed/val", -0.36 );
+    out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
+    out.addMessage("/korg/maths/offset/val", 0.24 );
+
+    double sum_mag = 0, sum_area = 0, sum_x = 0, sum_y = 0;
+
+    out.addMessage("/data/sum_area", data.contour_area.sum());
+
+    if( data.ncontours > 0 )
+    {
+        for( size_t i = 0 ; i < data.ncontours; i++ )
+        {
+            double w = data.contour_area[i];
+            sum_area += w;
+
+            if( data.pix_channel_stats[i].size() == 5 ) // focus channel is added to whatever the channel count is
+            {
+           //     sum_angle += data.pix_channel_stats[i][0].mean * w;
+                sum_mag += data.pix_channel_stats[i][1].mean * w;
+                sum_x += data.pix_channel_stats[i][2].mean * w;
+                sum_y += data.pix_channel_stats[i][3].mean * w;
+
+                if( isnan(sum_mag) )
+                {
+                    out.addMessage("/error/sum_mag", (int32_t)i,  data.pix_channel_stats[i][1].mean, w );
+
+                }
+            }
+            else
+            {
+                out.addMessage("/error/bad_channel_count", (int32_t)i, (int32_t)data.pix_channel_stats[i].size() );
+            }
+
+        }
+
+        out.addMessage("/data/sum_mag", sum_mag);
+
+
+        if( sum_mag > 0 )
+        {
+            double scalar = sum_area == 0 ? 1 : sum_area;
+            double mag_avg = sum_mag / scalar;
+
+            double avg_dist_x = sum_x / scalar;
+            double avg_dist_y = sum_y / scalar;
+
+            double norm_mag_avg = mag_avg / 255. ;
+            double norm_2 = clip( norm_mag_avg * 100, 0., 1.);
+
+            out.addMessage("/data/mag_avg", mag_avg);
+
+            out.addMessage("/norm_mag_avg", norm_mag_avg );
+
+            out.addMessage("/korg/amp", norm_2);
+            out.addMessage("/loop/amp", norm_2, 100);
+
+            out.addMessage("/dpo/amp/val", norm_2, 200  );
+            out.addMessage("/dpo/sarah/amp/val", norm_2, 200  );
+
+            out.addMessage("/sine/amp", norm_2, 20  );
+            //out.addMessage("/loop/retrigger/enable", 1);
+            out.addMessage("/korg/maths/speed", -0.6 ); // adjusted for 32 vector size in max
+
+       //     out.addMessage("/dpo/vcf1_hz/scale", scale(norm_mag_avg, 0., 0.5, -0.1, 0.5), scale(norm_mag_avg, 0., 0.5, 0.5, 1) );
+       //     out.addMessage("/dpo/vcf2_hz/scale", scale(norm_mag_avg, 0., 0.5, -1, 0.5), scale(norm_mag_avg, 0., 0.5, -0.5, 1) );
+
+//                double f1 = mtof( m_state_cache.addressExists("/prev/f1") ? m_state_cache["/prev/f1"].getFloat() : ntom("c:5") );
+//                out.addMessage("/loop/retrigger/hz", f1 / cvgl::round(scale(norm_mag_avg, 0., 0.5, 1, 5)) );
+
+        }
+
+
+    }
+    else
+    {
+        out.addMessage("/dpo/amp/val", 0  );
+        out.addMessage("/dpo/sarah/amp/val", 0  );
+        out.addMessage("/sine/amp", 0  );
+        out.addMessage("/loop/amp", 0, 1000);
+
+    //    out.addMessage("/spring/feedback/val", 0, 100 );
+    }
+
+
+    return out;
+});
+*/

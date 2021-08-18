@@ -67,7 +67,11 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         }
         else if( addr == "/overlap/cameras")
         {
-            m_overlap_cameras = val.getFloat();
+            m_overlap_cameras = cvgl::clip( val.getFloat(), 0., 1.);
+        }
+        else if( addr == "/overlap/flip")
+        {
+            m_overlap_flip = cvgl::clip( val.getFloat(), 0., 1.);
         }
         else if( addr == "/show/webcam_tile" )
         {
@@ -142,8 +146,21 @@ void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
     if( m_use_camera_id == camera_id )
     {
 
+        if( m_overlap_flip > 0 )
+        {
+            UMat frame1(frame), flipped, merge;
+            cv::flip(frame1, flipped, 1);
+            cv::addWeighted(frame1, 1.0-m_overlap_flip, flipped, m_overlap_flip, 0.0, merge);
+            setFrame(merge); // takes ownership of frame in local storage m_img
+
+        }
+        else
+        {
+            setFrame(frame); // takes ownership of frame in local storage m_img
+
+        }
+
         m_newframe = true;
-        setFrame(frame); // takes ownership of frame in local storage m_img
 
 
         AnalysisData data;
@@ -440,12 +457,14 @@ void cvglMainProcess::draw()
 
         if( m_overlap_cameras > 0 && frames.count(1) > 0 && frames.count(2) > 0 )
         {            
-            UMat frame2, frame1;
+            //UMat frame2, frame1;
             //cout << "draw " << m_overlap_cameras << endl;
-            cv::multiply(frames[1], 1 - m_overlap_cameras, frame1);
-            cv::multiply(frames[2], m_overlap_cameras, frame2);
-            cv::add(frame2, frame1, merge);
+
+
+            cv::addWeighted(frames[1], 1.0-m_overlap_cameras, frames[2], m_overlap_cameras, 0.0, merge);
+
         }
+
 
         frameTex->setTexture( merge.getMat(ACCESS_READ) );
         rect->draw();
