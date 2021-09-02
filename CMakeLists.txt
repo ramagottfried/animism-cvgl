@@ -87,8 +87,8 @@ list(APPEND LIB_LIST libcvgl)
 add_executable(cvgl
    # src/cues/plastisphere/plastisphereCue0.cpp
    # src/cues/plastisphere/plastisphereCue1.cpp
-    src/cues/landscape-breath-ackerstadtpalast.cpp
-
+#    src/cues/landscape-breath-ackerstadtpalast.cpp
+    src/cues/animism-cues.cpp
     src/cvgl_main.cpp
     src/cvglMainProcess.cpp
     src/cues/cvglCues.cpp

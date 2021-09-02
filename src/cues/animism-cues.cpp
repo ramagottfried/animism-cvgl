@@ -27,6 +27,133 @@ void cvglCues::set_lambda_cues()
 
     string descr, next_cue;
 
+    descr = "test grass dev";
+    next_cue = "";
+    m_cueFunctions.emplace_back([&, descr, next_cue](const AnalysisData& data, MapOSC& b)->MapOSC
+    {
+
+        MapOSC out;
+        if( isNewCue )
+        {
+            out.addMessage("/descr", descr);
+            out.addMessage("/next_cue", next_cue);
+
+            out.addMessage("/dpo/pregain/dB",          -100);
+            out.addMessage("/dpo/sarah/pregain/dB",    0);
+            out.addMessage("/gran/pregain/dB",         -100);
+            out.addMessage("/fuzz/pregain/dB",         -100);
+            out.addMessage("/loop/pregain/dB",         -100);
+            out.addMessage("/korg/pregain/dB",         -100);
+            out.addMessage("/spring/pregain/dB",       -100);
+            out.addMessage("/sine/pregain/dB",         -100);
+
+            b.addMessage("/video/black", 0);
+            b.addMessage("/use/preprocess",  0);
+
+            b.addMessage("/size/min", 0.00001 );
+            b.addMessage("/size/max", 0.01 );
+            b.addMessage("/thresh", 44 );
+            b.addMessage("/invert", 0 );
+
+
+            b.addMessage("/use/camera",  1);
+            b.addMessage("/overlap/cameras", 0.0 );
+
+            b.addMessage("/enable/hull", 0);
+            b.addMessage("/enable/minrect", 0);
+            b.addMessage("/enable/contour", 1);
+            b.addMessage("/contour/color", 0., 0.83, 0.334, 0.2 );
+
+            b.addMessage("/overlap/cameras", 0.);
+            b.addMessage("/overlap/flip", 0.);
+
+
+
+            out.addMessage("/dpo/intervals", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+            out.addMessage("/dpo/baseMIDI", 0);
+
+            out.addMessage("/dpo/mod_bus_phase/sync", 0);
+
+            out.addMessage("/dpo/index1/val", 0.38);
+            out.addMessage("/dpo/index2/val", 0.68);
+            out.addMessage("/dpo/shape/val", 0.29);
+            out.addMessage("/dpo/vcf1_q/scale", -2, 0.3);
+            out.addMessage("/dpo/vcf2_q/scale", 0, 0.5);
+            out.addMessage("/dpo/sarah/slide/up", 0);
+            out.addMessage("/dpo/sarah/slide/down", 0);
+
+            out.addMessage("/dpo/amp/val", 1);
+            out.addMessage("/dpo/sarah/amp/val", 1);
+
+            m_state_cache.addMessage("/min", 1);
+            m_state_cache.addMessage("/max", 0);
+
+            m_state_cache.addMessage("/dmin", 1);
+            m_state_cache.addMessage("/dmax", 0);
+
+        }
+
+
+      //  out.addMessage("/data/start", data.start_time);
+
+
+        if( data.ncontours > 0 && data.delta_centroid_dist.size() > 0 )
+        {
+
+            out.addMessage("/data/delta", data.delta_centroid_dist);
+            out.addMessage("/data/dur", data.elapsed_contour);
+
+            double min = m_state_cache["/min"].getFloat();
+            double max = m_state_cache["/max"].getFloat();
+
+            double this_min = data.contour_area.minCoeff();
+            double this_max = data.contour_area.maxCoeff();
+
+            min = min > this_min ? this_min : min;
+            max = max < this_max ? this_max : max;
+
+            m_state_cache.addMessage("/min", min);
+            m_state_cache.addMessage("/max", max);
+
+            double dmin = m_state_cache["/dmin"].getFloat();
+            double dmax = m_state_cache["/dmax"].getFloat();
+
+            double this_dmin = data.delta_centroid_dist.minCoeff();
+            double this_dmax = data.delta_centroid_dist.maxCoeff();
+
+            dmin = dmin > this_dmin ? this_dmin : dmin;
+            dmax = dmax < this_dmax ? this_dmax : dmax;
+
+            m_state_cache.addMessage("/dmin", dmin);
+            m_state_cache.addMessage("/dmax", dmax);
+
+
+            double centroid_dist_avg = data.delta_centroid_dist.mean();
+            double area_avg = data.contour_area.mean();
+
+            out.addMessage("/dpo/f2/val", (int32_t)scale(area_avg, min, max, 127, 90), 20);
+            out.addMessage("/dpo/index1/val", scale(area_avg, min, max, 0.4, 0.8));
+            out.addMessage("/dpo/sarah/amp/val", scale(centroid_dist_avg, dmin, dmax, 0.00, 1));
+
+            out.addMessage("/dpo/vcf1_hz/val", scale(area_avg, min, max, -0.3, 0));
+            out.addMessage("/dpo/vcf2_hz/val", scale(area_avg, min, max, 0, 0.8));
+
+            out.addMessage("/dpo/vcf1_q/val", scale(area_avg, min, max, -1, 0.8));
+            out.addMessage("/dpo/vcf2_q/val", scale(area_avg, min, max, -1, 0.8));
+
+
+        }
+        else
+        {
+            out.addMessage("/dpo/sarah/amp/val", 0);
+        }
+
+
+
+        return out;
+    });
+
+
     descr = "start black";
     next_cue = "on cue, in unison with fl/vln";
     m_cueFunctions.emplace_back([&, descr, next_cue](const AnalysisData& data, MapOSC& b)->MapOSC

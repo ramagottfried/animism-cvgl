@@ -1087,6 +1087,7 @@ void cvglCV::analysisThread(AnalysisData data)
     
 }
 
+//typedef std::chrono::milliseconds ms_t;
 
 void cvglCV::analysisTracking(AnalysisData& data, const AnalysisData& prev_data)
 {
@@ -1099,26 +1100,33 @@ void cvglCV::analysisTracking(AnalysisData& data, const AnalysisData& prev_data)
         auto prev_ref = prev_data.id_idx.find( data.id[i] );
         if( prev_ref != prev_data.id_idx.end() && prev_data.ncontours > 0 )
         {
+
             // found id in previous frame, can be used to get delta
             int prev_idx = prev_ref->second;
+
             double dx = data.centroid_x(i) - prev_data.centroid_x(prev_idx);
             double dy = data.centroid_y(i) - prev_data.centroid_y(prev_idx);
+
             data.delta_centroid_x(i) = dx;
             data.delta_centroid_y(i) = dy;
-            data.delta_centroid_dist(i) = sqrt( dx*dx + dy*dy );
-                        
+            data.delta_centroid_dist(i) = sqrt( dx*dx + dy*dy );                        
             data.start_centroid_x(i) = prev_data.start_centroid_x(prev_idx);
-            data.start_centroid_y(i) = prev_data.start_centroid_y(prev_idx);
-            
+            data.start_centroid_y(i) = prev_data.start_centroid_y(prev_idx);            
             data.start_time[i] = prev_data.start_time[prev_idx];
-            
-            data.elapsed_contour = (time_now - data.start_time[i]).count();
+            std::chrono::duration<float> dur = time_now - data.start_time[i];
+            data.elapsed_contour(i) = dur.count();
+
+
         }
         else
         {
-            data.start_time[i] = time_now;
             data.start_centroid_x(i) = data.centroid_x(i);
             data.start_centroid_y(i) = data.centroid_y(i);
+            data.delta_centroid_dist(i) = 0;
+            data.delta_centroid_x(i) = 0;
+            data.delta_centroid_y(i) = 0;
+            data.start_time[i] = time_now;
+            data.elapsed_contour(i) = 0;
         }
         
     }

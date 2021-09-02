@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.14.1, 2021-08-19T12:41:23. -->
+<!-- Written by QtCreator 4.14.1, 2021-09-01T16:08:21. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -148,6 +148,7 @@
       <valuelist type="QVariantList" key="CMakeProjectManager.MakeStep.BuildTargets">
        <value type="QString">all</value>
       </valuelist>
+      <value type="QString" key="CMakeProjectManager.MakeStep.CMakeArguments">-j12</value>
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Build</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.MakeStep</value>
