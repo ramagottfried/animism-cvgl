@@ -18,6 +18,11 @@ public:
     
     // globals
     
+    void setVignette(float x, float y, float r);
+
+    GLint vignette_attr_idx = -1;
+    glm::vec4 vignette_xyr_aspect;
+
     std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh, gitchRect;
     std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex;
     

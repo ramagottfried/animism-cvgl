@@ -61,6 +61,10 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             m_draw_black = val.getInt() > 0;
         }
+        else if( addr == "/vignette/xyr" )
+        {
+           setVignette( val.get<float>(0), val.get<float>(1), val.get<float>(2) );
+        }
         else if( addr == "/use/camera" )
         {
             m_use_camera_id = val.getInt();
@@ -228,7 +232,13 @@ void setTriangleTexcords(unique_ptr<cvglObject> & obj )
     }
 }
 
-
+void cvglMainProcess::setVignette(float x, float y, float r)
+{
+    if( r > 0 )
+    {
+        vignette_xyr_aspect = glm::vec4(1 - x, y / context.getAspectRatio(), r / context.getAspectRatio(), context.getAspectRatio() );
+    }
+}
 
 /**
  *  initObjects()
@@ -237,6 +247,17 @@ void setTriangleTexcords(unique_ptr<cvglObject> & obj )
 
 void cvglMainProcess::initObjs()
 {
+
+    vignette_attr_idx = context.getShaderAttrLocation("vignette_xyr_aspect");
+
+    cout << "found attr vignette " << vignette_attr_idx << endl;
+
+    setVignette(0.5, 0.5, 1);
+
+    //glm::vec4 vignette_xyr_aspect(0.5, 0.25, 1, context.getAspectRatio() );
+    //glUniform4fv( vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
+
+
     rect = unique_ptr<cvglObject>(new cvglObject);
     contourMesh = unique_ptr<cvglObject>(new cvglObject);
     hullMesh = unique_ptr<cvglObject>(new cvglObject);
@@ -435,6 +456,8 @@ void cvglMainProcess::draw()
         return;
     }
     
+    glUniform4fv( vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
+
     if( m_draw_frame && m_use_camera_id > 0 )
     {
         rect->bind();

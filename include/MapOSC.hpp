@@ -232,7 +232,7 @@ public:
 
     inline const std::vector< std::unique_ptr<OSCAtom> > & getAtomVector() const { return obj_vec; }
 
-    inline std::vector<char> typetags()
+    inline std::vector<char> typetags() const
     {
         std::vector<char> tags;
         for( auto& it : obj_vec )

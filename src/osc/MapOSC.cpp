@@ -235,39 +235,44 @@ void MapOSC::inputOSC( long len, char * ptr )
         size_t addr_start = _n + 4;
         size_t addr_end = buf.find_first_of('\0', addr_start);
         string addr = buf.substr(addr_start, addr_end-addr_start);
-       // cout << "addr " << addr << " start " << addr_start << " end " << addr_end <<endl;
+
 
         size_t typetags_start = addr_start + osc_util_getPaddedStringLen(addr);
-        size_t typetags_end = buf.find_first_of('\0', typetags_start) - 1;
-        string typetags = buf.substr(typetags_start+1, typetags_end-typetags_start);
+        size_t typetags_end = buf.find_first_of('\0', typetags_start);
+        string typetags = buf.substr(typetags_start, typetags_end-typetags_start);
 
         size_t data_start = typetags_start + osc_util_getPaddedStringLen(typetags);
         size_t bytes_to_next = 0;
 
         size_t natoms = typetags.length() - 1;
 
+    //    printf("typetagstart %ld tags %s natoms %ld datastart %ld\n", typetags_start, typetags.c_str(), natoms, data_start);
+
+
         OSCAtomVector newVec;// = make_unique<OSCAtomVector>();
         newVec.reserve( natoms );
 
         char * dataPtr = ptr + data_start;
 
-        for( size_t i = 0; i < typetags.length(); i++)
+
+        for( size_t i = 0; i < natoms; i++)
         {
             dataPtr += bytes_to_next;
 
-            switch ( typetags[i] )
+            switch ( typetags[i+1] )
             {
                 case 'f':
                 {
-                    uint32_t i = ntoh32(*((uint32_t *)(dataPtr)));
-                    newVec.appendValue( *((float *)&i) );
+                    uint32_t ui_ptr = ntoh32(*((uint32_t *)(dataPtr)));
+                    newVec.appendValue( *((float *)&ui_ptr) );
                     bytes_to_next = 4;
                 }
                 break;
                 case 'd':
                 {
-                    uint64_t i = ntoh64(*((uint64_t *)(dataPtr)));
-                    newVec.appendValue( *((double *)&i) );
+                    uint64_t ui_ptr = ntoh64(*((uint64_t *)(dataPtr)));
+                    double d = *((double *)&ui_ptr);
+                    newVec.appendValue( d );
                     bytes_to_next = 8;
                 }
                 break;

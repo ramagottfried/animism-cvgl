@@ -84,7 +84,10 @@ target_link_libraries(libcvgl ${LIB_LIST}  )
 
 list(APPEND LIB_LIST libcvgl)
 
+file(GLOB RES_FILES src/*.fs src/*.vs )
+
 add_executable(cvgl
+    ${RES_FILES}
    # src/cues/plastisphere/plastisphereCue0.cpp
    # src/cues/plastisphere/plastisphereCue1.cpp
 #    src/cues/landscape-breath-ackerstadtpalast.cpp
@@ -104,4 +107,5 @@ target_link_libraries(cvgl libcvgl)
 
 message("CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
 message("CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
+message("Shders found ${RES_FILES}")
 

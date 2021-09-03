@@ -1,7 +1,10 @@
 #version 330 core
 
 in vec2 Texcoord;
-in float Time;
+
+uniform vec4 vignette_xyr_aspect;
+
+uniform float time;
 
 uniform sampler2D tex;
 out vec4 outColor;
@@ -19,7 +22,36 @@ float gold_noise(vec2 xy, float seed)
 
 void main()
 {
-    outColor = texture( tex, Texcoord );
+
+    if( vignette_xyr_aspect.z == 1 )
+    {
+        outColor = texture( tex, Texcoord );
+    }
+    else
+    {
+        float xfade = 0.05;
+        float dx = vignette_xyr_aspect.x - Texcoord.x;
+        float dy = vignette_xyr_aspect.y - (Texcoord.y / vignette_xyr_aspect.w);
+        float dist = sqrt(dx*dx + dy*dy);
+
+        if( dist < vignette_xyr_aspect.z )
+        {
+            outColor = texture( tex, Texcoord );
+        }
+        else if( (dist - vignette_xyr_aspect.z) <= xfade )
+        {
+            float fade = (dist - vignette_xyr_aspect.z) / xfade;
+
+            outColor = texture( tex, Texcoord ) * vec4(1, 1, 1, 1 - fade * fade * fade);
+
+        }
+        else
+        {
+            outColor = vec4(0,0,0,1);
+        }
+    }
+
+
    /*
     outColor.r = gold_noise(Texcoord, Time*1.1);
     outColor.g = gold_noise(Texcoord, Time*1.7);

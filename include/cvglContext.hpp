@@ -38,6 +38,11 @@ public:
     
     inline GLuint getShader(){ return m_shaderProgram; }
     
+    inline GLuint getShaderAttrLocation(const char *name)
+    {
+        return glGetUniformLocation(m_shaderProgram, name );
+    }
+
     inline bool isActive()
     {
         return (glfwGetCurrentContext() != NULL);
@@ -49,12 +54,32 @@ public:
         glClearColor(r, g, b, a);
     }
     
+    inline void resetTransform()
+    {
+        glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
+        m_update_transform_matrix = false;
+    }
+
+    inline glm::mat4 getTransform()
+    {
+        return m_transform_matrix;
+    }
+
+    inline float getScaleX()
+    {
+        return m_x_scale;
+    }
+
+    inline float getScaleY()
+    {
+        return m_y_scale;
+    }
+
     inline void clear()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         if( m_update_transform_matrix ){
-            glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
-            m_update_transform_matrix = false;
+            resetTransform();
         }
     }
     
@@ -113,6 +138,9 @@ public:
     }
     
     inline bool isClosing() { return m_should_close; }
+
+    inline double getAspectRatio(){ return m_aspectRatio; }
+
 
 private:
     

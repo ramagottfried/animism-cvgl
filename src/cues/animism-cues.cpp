@@ -33,6 +33,10 @@ void cvglCues::set_lambda_cues()
     {
 
         MapOSC out;
+
+        const double elapsed_section = m_elapsed_section.count();
+
+
         if( isNewCue )
         {
             out.addMessage("/descr", descr);
@@ -51,8 +55,8 @@ void cvglCues::set_lambda_cues()
             b.addMessage("/use/preprocess",  0);
 
             b.addMessage("/size/min", 0.00001 );
-            b.addMessage("/size/max", 0.01 );
-            b.addMessage("/thresh", 44 );
+            b.addMessage("/size/max", 1 );
+            b.addMessage("/thresh", 60 );
             b.addMessage("/invert", 0 );
 
 
@@ -85,11 +89,22 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/dpo/amp/val", 1);
             out.addMessage("/dpo/sarah/amp/val", 1);
 
+
+            out.addMessage("/led/1/spread", 2);
+            out.addMessage("/led/1/amp", 1);
+            out.addMessage("/led/rand/pos/hz", 2.5);
+            out.addMessage("/led/rand/pos/range", 29, 88);
+            out.addMessage("/led/rand/pos/snapshot", 100);
+
+
             m_state_cache.addMessage("/min", 1);
             m_state_cache.addMessage("/max", 0);
 
             m_state_cache.addMessage("/dmin", 1);
             m_state_cache.addMessage("/dmax", 0);
+
+            m_state_cache.addMessage("/prev_t", elapsed_section);
+
 
         }
 
@@ -103,43 +118,64 @@ void cvglCues::set_lambda_cues()
             out.addMessage("/data/delta", data.delta_centroid_dist);
             out.addMessage("/data/dur", data.elapsed_contour);
 
+
+            // adaptive range
+
+            double range_reset_s = 10;
+
+            double area_sum = data.contour_area.sum();
+            double dist_sum = data.delta_centroid_dist.sum();
+
             double min = m_state_cache["/min"].getFloat();
             double max = m_state_cache["/max"].getFloat();
 
-            double this_min = data.contour_area.minCoeff();
-            double this_max = data.contour_area.maxCoeff();
+//            double this_min = data.contour_area.minCoeff();
+//            double this_max = data.contour_area.maxCoeff();
 
-            min = min > this_min ? this_min : min;
-            max = max < this_max ? this_max : max;
+            min = min > area_sum ? area_sum : min;
+            max = max < area_sum ? area_sum : max;
 
-            m_state_cache.addMessage("/min", min);
-            m_state_cache.addMessage("/max", max);
 
             double dmin = m_state_cache["/dmin"].getFloat();
             double dmax = m_state_cache["/dmax"].getFloat();
 
-            double this_dmin = data.delta_centroid_dist.minCoeff();
-            double this_dmax = data.delta_centroid_dist.maxCoeff();
+        //    double this_dmin = data.delta_centroid_dist.minCoeff();
+        //    double this_dmax = data.delta_centroid_dist.maxCoeff();
 
-            dmin = dmin > this_dmin ? this_dmin : dmin;
-            dmax = dmax < this_dmax ? this_dmax : dmax;
+            dmin = dmin > dist_sum ? dist_sum : dmin;
+            dmax = dmax < dist_sum ? dist_sum : dmax;
 
+
+            if( (elapsed_section - m_state_cache["/prev_t"].getFloat()) > range_reset_s )
+            {
+//                min = 1;
+//                max = 0;
+                dmin = 1;
+                dmax = 0;
+                m_state_cache.addMessage("/prev_t", elapsed_section);
+            }
+
+            m_state_cache.addMessage("/min", min);
+            m_state_cache.addMessage("/max", max);
             m_state_cache.addMessage("/dmin", dmin);
             m_state_cache.addMessage("/dmax", dmax);
 
 
-            double centroid_dist_avg = data.delta_centroid_dist.mean();
-            double area_avg = data.contour_area.mean();
 
-            out.addMessage("/dpo/f2/val", (int32_t)scale(area_avg, min, max, 127, 90), 20);
-            out.addMessage("/dpo/index1/val", scale(area_avg, min, max, 0.4, 0.8));
-            out.addMessage("/dpo/sarah/amp/val", scale(centroid_dist_avg, dmin, dmax, 0.00, 1));
 
-            out.addMessage("/dpo/vcf1_hz/val", scale(area_avg, min, max, -0.3, 0));
-            out.addMessage("/dpo/vcf2_hz/val", scale(area_avg, min, max, 0, 0.8));
+         //   double centroid_dist_avg = data.delta_centroid_dist.mean();
+         //   double area_avg = data.contour_area.mean();
 
-            out.addMessage("/dpo/vcf1_q/val", scale(area_avg, min, max, -1, 0.8));
-            out.addMessage("/dpo/vcf2_q/val", scale(area_avg, min, max, -1, 0.8));
+            out.addMessage("/dpo/f2/val", scale(dist_sum, 0, 1, 135, 50), 20);
+            out.addMessage("/dpo/index1/val", scale(area_sum, 0, 1, 0.4, 0.8) + scale(dist_sum, 0, 1, 0.2, 0.8), 20);
+
+            out.addMessage("/dpo/sarah/amp/val", dist_sum * dist_sum  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+
+            out.addMessage("/dpo/vcf1_hz/val", scale(area_sum, min, max, -0.3, 0));
+            out.addMessage("/dpo/vcf2_hz/val", scale(area_sum, min, max, 0, 0.8));
+
+            out.addMessage("/dpo/vcf1_q/val", scale(area_sum, min, max, -1, 0.8));
+            out.addMessage("/dpo/vcf2_q/val", scale(area_sum, min, max, -1, 0.8));
 
 
         }
@@ -149,8 +185,92 @@ void cvglCues::set_lambda_cues()
         }
 
 
+        out.addMessage("/cache", m_state_cache);
 
         return out;
+    });
+
+
+    descr = "vignette";
+    m_cueFunctions.emplace_back([&, descr, next_cue](const AnalysisData& data, MapOSC& b)->MapOSC
+    {
+        MapOSC out;
+        if( isNewCue )
+        {
+            out.addMessage("/descr", descr);
+            out.addMessage("/next_cue", next_cue);
+
+            b.addMessage("/use/camera",  1);
+            b.addMessage("/video/black", 0);
+
+            b.addMessage("/enable/hull", 0);
+            b.addMessage("/enable/minrect", 0);
+            b.addMessage("/enable/contour", 0);
+
+            b.addMessage("/vignette/xyr", 0.5, 0.5, 0.5 );
+
+        }
+
+        const double elapsed_section = m_elapsed_section.count();
+
+        double dur1 = 45;
+        double dur2 = 30 + dur1;
+        //double dur3 = 10 + dur2;
+
+        if( elapsed_section <= dur1 )
+        {
+
+            double t = scale_clip( elapsed_section, 0, dur1, 0., 1. );
+            double ease = easeInOutSine(t);
+            float rad = scale(ease, 0, 1, 1, 0.1);
+            float x =   0.5;
+            float y =   scale(ease*ease*ease*ease*ease, 0, 1, 0.5, 0.185); //0.185
+
+            b.addMessage("/vignette/xyr", x, y, rad );
+            out.addMessage("/rad", rad);
+            out.addMessage("/y", y);
+
+        }
+        else if( elapsed_section <= dur2 )
+        {
+
+            double t = scale_clip( elapsed_section, dur1, dur2, 0., 1. );
+            double ease = easeInSine(t);
+
+            float rad = scale(ease*ease, 0, 1, 0.1, 2) ;
+            float x =   0.5;
+            float y =   scale(ease, 0, 1, 0.185, 3.085); //1.2
+
+            b.addMessage("/vignette/xyr", x, y, rad );
+        }
+        /*
+        else if( elapsed_section <= dur2 )
+        {
+
+            double t = scale_clip( elapsed_section, dur1, dur2, 0., 1. );
+            double ease = easeInOutSine(t);
+
+            float rad = 0.1 ;
+            float x =   0.5;
+            float y =   scale(ease, 0, 1, 0.185, 0.9); //1.2
+
+            b.addMessage("/vignette/xyr", x, y, rad );
+        }
+        else if( elapsed_section <= dur3 )
+        {
+
+            double t = scale_clip( elapsed_section, dur2, dur3, 0., 1. );
+            double ease = easeInOutSine(t);
+
+            float rad = scale(ease, 0, 1, 0.1, 0.9) ;
+            float x =   0.5;
+            float y =   scale(ease, 0, 1, 0.9, 1.8);
+
+            b.addMessage("/vignette/xyr", x, y, rad );
+        }
+        */
+
+        return out;;
     });
 
 

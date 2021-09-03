@@ -182,4 +182,35 @@ std::vector<T> aseq(T from, T to, T step = 1)
     return ret;
 }
 
+inline double easeInOutQuad(double x)
+{
+    return x < 0.5 ? 2 * x * x : 1 - pow(-2 * x + 2, 2) / 2;
+}
+
+inline double easeInOutSine(double x)
+{
+    return -(cos(M_PI * x) - 1) * 0.5;
+}
+
+inline double easeInSine(double x)
+{
+     return 1 - cos((x * M_PI) * 0.5);
+}
+
+inline double easeOutSine(double x)
+{
+     return sin((x * M_PI) * 0.5);
+}
+
+inline double easeInExpo(double x)
+{
+    return x == 0 ? 0 : pow(2, 10 * x - 10);
+}
+
+inline double easeOutExpo(double x)
+{
+    return x == 1 ? 1 : 1 - pow(2, -10 * x);
+
+}
+
 }
