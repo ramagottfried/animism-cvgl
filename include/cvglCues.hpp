@@ -10,6 +10,9 @@
 #include "cvglRandom.hpp"
 #include "cvglLookupFigure.hpp"
 
+#ifndef CUE_FILE_NAMES
+#define CUE_FILE_NAMES "test"
+#endif
 
 class cvglCues
 {
@@ -24,6 +27,13 @@ public:
     
     cvglCues()
     {
+        // not doing this right now but maybe at somepoint, could be a way to dynamically load
+        // all the cues without having to manually type them in the header file.
+
+
+     //   cout << "****** CUE_FILE_NAMES ***** " << CUE_FILE_NAMES << endl;
+
+
      //   using namespace std::placeholders;
      //   m_cueFunctions.emplace_back( bind(&cvglCues::cue0, this, _1, _2) );
      //   m_cueFunctions.emplace_back( bind(&cvglCues::cue1, this, _1, _2) );

@@ -3,10 +3,11 @@
 in vec2 Texcoord;
 
 uniform vec4 vignette_xyr_aspect;
-
 uniform float time;
-
 uniform sampler2D tex;
+ float thresh_w = 0.9;
+ float thresh_b = 0.1;
+
 out vec4 outColor;
 
 float rand(vec2 co){
@@ -20,12 +21,64 @@ float gold_noise(vec2 xy, float seed)
     return fract(tan(distance(xy*PHI, xy)*seed)*xy.x);
 }
 
+
+mat4 brightnessMatrix( float brightness )
+{
+    return mat4( 1, 0, 0, 0,
+                 0, 1, 0, 0,
+                 0, 0, 1, 0,
+                 brightness, brightness, brightness, 1 );
+}
+
+mat4 contrastMatrix( float contrast )
+{
+    float t = ( 1.0 - contrast ) / 2.0;
+
+    return mat4( contrast, 0, 0, 0,
+                 0, contrast, 0, 0,
+                 0, 0, contrast, 0,
+                 t, t, t, 1 );
+
+}
+
+mat4 saturationMatrix( float saturation )
+{
+    vec3 luminance = vec3( 0.3086, 0.6094, 0.0820 );
+
+    float oneMinusSat = 1.0 - saturation;
+
+    vec3 red = vec3( luminance.x * oneMinusSat );
+    red+= vec3( saturation, 0, 0 );
+
+    vec3 green = vec3( luminance.y * oneMinusSat );
+    green += vec3( 0, saturation, 0 );
+
+    vec3 blue = vec3( luminance.z * oneMinusSat );
+    blue += vec3( 0, 0, saturation );
+
+    return mat4( red,     0,
+                 green,   0,
+                 blue,    0,
+                 0, 0, 0, 1 );
+}
+
+
 void main()
 {
 
+    vec4 tex_samp = texture( tex, Texcoord );
+
+/*
+    float luma = sqrt( 0.299*tex_samp.r*tex_samp.r + 0.587*tex_samp.g*tex_samp.g + 0.114*tex_samp.b*tex_samp.b );
+
+    if( luma >= thresh_w )
+        tex_samp = pow(tex_samp, vec4(0.2, 0.2, 0.2, 1) );
+    else if ( luma <= thresh_b )
+        tex_samp = pow(tex_samp, vec4(5, 5, 5, 1) );
+*/
     if( vignette_xyr_aspect.z == 1 )
     {
-        outColor = texture( tex, Texcoord );
+        outColor = tex_samp;
     }
     else
     {
@@ -36,13 +89,13 @@ void main()
 
         if( dist < vignette_xyr_aspect.z )
         {
-            outColor = texture( tex, Texcoord );
+            outColor = tex_samp;
         }
         else if( (dist - vignette_xyr_aspect.z) <= xfade )
         {
             float fade = (dist - vignette_xyr_aspect.z) / xfade;
 
-            outColor = texture( tex, Texcoord ) * vec4(1, 1, 1, 1 - fade * fade * fade);
+            outColor = tex_samp * vec4(1, 1, 1, 1 - fade * fade * fade);
 
         }
         else

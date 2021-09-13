@@ -65,7 +65,7 @@ void cvglCues::set_lambda_cues()
 
             b.addMessage("/enable/hull", 0);
             b.addMessage("/enable/minrect", 0);
-            b.addMessage("/enable/contour", 1);
+            b.addMessage("/enable/contour", 0);
             b.addMessage("/contour/color", 0., 0.83, 0.334, 0.2 );
 
             b.addMessage("/overlap/cameras", 0.);
@@ -190,8 +190,32 @@ void cvglCues::set_lambda_cues()
         return out;
     });
 
+    descr = "pre-vignette";
+    next_cue = "vignette";
+    m_cueFunctions.emplace_back([&, descr, next_cue](const AnalysisData& data, MapOSC& b)->MapOSC
+    {
+        MapOSC out;
+        if( isNewCue )
+        {
+            out.addMessage("/descr", descr);
+            out.addMessage("/next_cue", next_cue);
+
+            b.addMessage("/use/camera",  1);
+            b.addMessage("/video/black", 0);
+
+            b.addMessage("/enable/hull", 0);
+            b.addMessage("/enable/minrect", 0);
+            b.addMessage("/enable/contour", 0);
+
+            b.addMessage("/vignette/xyr", 0.5, 0.5, 1 );
+
+        }
+
+        return out;;
+    });
 
     descr = "vignette";
+    next_cue = "black";
     m_cueFunctions.emplace_back([&, descr, next_cue](const AnalysisData& data, MapOSC& b)->MapOSC
     {
         MapOSC out;
