@@ -8,7 +8,7 @@
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
 
-class cvglMainProcess :  public cvglCV, public cvglUDPServer //public cvglCamera,
+class cvglMainProcess :  public cvglCV, public cvglUDPServer
 {
     
 public:

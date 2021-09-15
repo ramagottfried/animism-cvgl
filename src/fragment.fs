@@ -63,10 +63,20 @@ mat4 saturationMatrix( float saturation )
 }
 
 
+vec3 czm_saturation(vec3 rgb, float adjustment)
+{
+    // Algorithm from Chapter 16 of OpenGL Shading Language
+    const vec3 W = vec3(0.2125, 0.7154, 0.0721);
+    vec3 intensity = vec3(dot(rgb, W));
+    return mix(intensity, rgb, adjustment);
+}
+
 void main()
 {
 
-    vec4 tex_samp = texture( tex, Texcoord );
+    vec4 tex_samp = texture( tex, Texcoord ) * contrastMatrix(1.6);
+
+    tex_samp = vec4( czm_saturation(tex_samp.rgb, 1.2), 1);
 
 /*
     float luma = sqrt( 0.299*tex_samp.r*tex_samp.r + 0.587*tex_samp.g*tex_samp.g + 0.114*tex_samp.b*tex_samp.b );

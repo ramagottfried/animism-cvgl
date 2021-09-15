@@ -10,7 +10,8 @@ set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 
 
 # setup BlackMagic
-set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 11.7")
+#set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 11.7")
+set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 12.1")
 set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Linux" )
 set(DECKLINK_SDK_INCLUDE_DIR "${DECKLINK_SDK}/Linux/include" )
 
@@ -85,7 +86,7 @@ target_link_libraries(libcvgl ${LIB_LIST}  )
 list(APPEND LIB_LIST libcvgl)
 
 file(GLOB RES_FILES src/*.fs src/*.vs )
-file(GLOB CUE_FILES src/cues/*.cpp)
+file(GLOB CUE_FILES src/cues/animism*.cpp)
 
 add_executable(cvgl
     ${RES_FILES}
