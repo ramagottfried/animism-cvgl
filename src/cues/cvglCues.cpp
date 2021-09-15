@@ -21,14 +21,13 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
     bool set = false;
     if( b.addressExists("/cue") )
     {
-        int cue = b.getMessage("/cue").getInt();
-        if( cue != m_cue )
+        string cue = b["/cue"].get<string>();
+        if( cue != m_cue && m_cueFunctions.count(cue) > 0 )
         {
-
+            m_cue = cue;
             isNewCue = true;
+
             m_section_start = sys_clock_t::now();
-            m_cue = (cue >= 0 && cue < (int)m_cueFunctions.size()) ? cue : 0;
-            
             cout << "setting new cue " << cue << " was " << m_cue << endl;
 
             m_state_cache.addMessage("/played", 0);

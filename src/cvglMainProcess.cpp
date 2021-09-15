@@ -7,6 +7,12 @@
 using namespace std;
 using namespace cv;
 
+void cvglMainProcess::initCues()
+{
+    MapOSC bndl;
+    bndl.addMessage("/init/cueNames", m_cues.getCueNames() );
+    sendBundle(bndl);
+}
 
 /**
  virtual function called from UDP thread
@@ -451,11 +457,12 @@ void cvglMainProcess::draw()
 
     if( m_draw_black )
     {
+        context.clearColor(0, 0, 0, 1);
         context.drawAndPoll();
         m_newframe = false;
         return;
     }
-    
+
     glUniform4fv( vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
 
     if( m_draw_frame && m_use_camera_id > 0 )

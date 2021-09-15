@@ -4,9 +4,10 @@
 #include "cvglCV.hpp"
 #include "cvglObject.hpp"
 #include "cvglUDPServer.hpp"
-#include "cvglCues.hpp"
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
+#include "AnimismCues.hpp"
+
 
 class cvglMainProcess :  public cvglCV, public cvglUDPServer
 {
@@ -47,6 +48,7 @@ public:
     void draw();
     void initObjs();
     
+    void initCues();
     
 //    std::vector<float> getRGBA( const OdotMessage & msg );
     
@@ -64,7 +66,7 @@ public:
 
 private:
     
-    cvglCues m_cues;
+    AnimismCues m_cues;
     //cvglMixer m_mixer;
     
     AnalysisData m_data;

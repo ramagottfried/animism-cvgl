@@ -4,10 +4,10 @@ project(cvgl)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 
+set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
 
 # setup BlackMagic
 #set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 11.7")
@@ -73,6 +73,7 @@ add_library(libcvgl STATIC
     src/utils/cvglHelperFunctions.cpp
     src/utils/cvglRandom.cpp
     src/utils/cvglLookupFigure.cpp
+    src/cues/cvglCues.cpp
 
     ${GLAD_DIR}/src/glad.c
     ${BLACKMAGIC_PLATFORM_SOURCES}
@@ -86,21 +87,19 @@ target_link_libraries(libcvgl ${LIB_LIST}  )
 list(APPEND LIB_LIST libcvgl)
 
 file(GLOB RES_FILES src/*.fs src/*.vs )
-file(GLOB CUE_FILES src/cues/animism*.cpp)
+file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 
 add_executable(cvgl
     ${RES_FILES}
-   # src/cues/plastisphere/plastisphereCue0.cpp
-   # src/cues/plastisphere/plastisphereCue1.cpp
-#    src/cues/landscape-breath-ackerstadtpalast.cpp
-    src/cues/animism-cues.cpp
+    ${CUE_FILES}
     src/cvgl_main.cpp
     src/cvglMainProcess.cpp
-    src/cues/cvglCues.cpp
 )
 
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
+target_include_directories(cvgl PUBLIC ${CUE_DIR})
+
 #target_include_directories(cvgl PRIVATE ${GLAD_DIR}/include )
 #target_include_directories(cvgl PRIVATE ${DECKLINK_SDK_INCLUDE_DIR} PRIVATE ${DECKLINK_PLATFORM_INCLUDE})
 

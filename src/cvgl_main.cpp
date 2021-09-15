@@ -81,8 +81,8 @@ int main( void )
     
     app.initObjs();
     
-    //app.initMixer();
-    
+    app.initCues();
+
     cout << "starting draw loop " << endl;
 
     // main GL loop`
