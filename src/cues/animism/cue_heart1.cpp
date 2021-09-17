@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_wire_slug(cueArgs args)
+MapOSC cue_heart1(cueArgs args)
 {
 
     MapOSC out;

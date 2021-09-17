@@ -6,9 +6,6 @@ using namespace Eigen;
 MapOSC cue_grass( cueArgs args )
 {
 
-    string descr = "test grass dev";
-    string next_cue = "";
-
     MapOSC out;
     MapOSC &b = args.b;
     AnalysisData data = args.data;
@@ -17,9 +14,6 @@ MapOSC cue_grass( cueArgs args )
 
     if( isNewCue )
     {
-        out.addMessage("/descr", descr);
-        out.addMessage("/next_cue", next_cue);
-
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    0);
         out.addMessage("/gran/pregain/dB",         -100);
