@@ -35,18 +35,33 @@
 
  */
 
+typedef std::chrono::system_clock sys_clock_t;
+typedef std::chrono::time_point<sys_clock_t> timepoint_t;
+typedef std::chrono::duration<double> duration_t;
 
+struct cueArgs {
+    MapOSC& cache;
+    const AnalysisData& data;
+    MapOSC& b;
+    cvglRandom& randGen;
+    timepoint_t startTime;
+    duration_t elapsed_section;
+    bool isNewCue = true;
+};
 
 
 class cvglCues
 {
 public:
 
-    typedef std::chrono::system_clock sys_clock_t;
-    typedef std::chrono::time_point<sys_clock_t> timepoint_t;
-    typedef std::chrono::duration<double> duration_t;
+    typedef std::function< MapOSC(cueArgs) > cueFunction_t;
 
-    typedef std::function< MapOSC(const AnalysisData&, MapOSC&) > cueFunction_t;
+    struct LabeledCue {
+        cueFunction_t fn;
+        string descr;
+        string next_cue;
+    };
+
 
     /**
      processes data and input settings, outputs OSC bundle to send to audio process
@@ -68,8 +83,16 @@ public:
         return cuenames;
     }
 
+    void setCue(string label, string descr, string next_cue, cueFunction_t fn)
+    {
+        m_cueFunctions.emplace(label, LabeledCue({ fn, descr, next_cue}) );
+    }
+
+
 protected:
-    
+
+
+
     MapOSC m_state_cache;
     
     string m_cue = "0";
@@ -77,7 +100,7 @@ protected:
     timepoint_t m_section_start = sys_clock_t::now();
     duration_t m_elapsed_section;
     
-    unordered_map<string, cueFunction_t> m_cueFunctions;
+    unordered_map<string, LabeledCue> m_cueFunctions;
     
     cvglRandom m_rand_generator;
 

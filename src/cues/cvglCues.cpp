@@ -7,10 +7,17 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data)
     
     m_elapsed_section = sys_clock_t::now() - m_section_start;
     
-    MapOSC out = m_cueFunctions[m_cue]( data, m_input );
+    MapOSC out = m_cueFunctions[m_cue].fn(
+            cueArgs({ m_state_cache,
+                      data,
+                      m_input,
+                      m_rand_generator,
+                      m_section_start,
+                      m_elapsed_section
+                    }));
     
     isNewCue = false;
-    
+
     return out;
 }
 
@@ -34,8 +41,19 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
 
             m_elapsed_section = sys_clock_t::now() - m_section_start;
 
-            out = m_cueFunctions[m_cue]( data, b );
-            
+            out = m_cueFunctions[m_cue].fn(
+                    cueArgs({
+                                  m_state_cache,
+                                  data,
+                                  b,
+                                  m_rand_generator,
+                                  m_section_start,
+                                  m_elapsed_section
+                              }));
+           // out = m_cueFunctions[m_cue]( data, b );
+
+            out.addMessage("/descr", m_cueFunctions[m_cue].descr);
+            out.addMessage("/next_cue", m_cueFunctions[m_cue].next_cue);
         }
         
     }
@@ -46,7 +64,16 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
     else
     {
         m_elapsed_section = sys_clock_t::now() - m_section_start;
-        out = m_cueFunctions[m_cue]( data, b );
+        //out = m_cueFunctions[m_cue]( data, b );
+        out = m_cueFunctions[m_cue].fn(
+                cueArgs({
+                              m_state_cache,
+                              data,
+                              b,
+                              m_rand_generator,
+                              m_section_start,
+                              m_elapsed_section
+                          }));
     }
     
 

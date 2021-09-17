@@ -3,17 +3,14 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC AnimismCues::cue_black_silent( const AnalysisData& data, MapOSC& b)
+MapOSC cue_black_silent(cueArgs args)
 {
 
-    string descr = "start black";
-    string next_cue = "0A - first sound with ensemble";
-
     MapOSC out;
-    if( isNewCue )
+    MapOSC &b = args.b;
+
+    if( args.isNewCue )
     {
-        out.addMessage("/descr", descr);
-        out.addMessage("/next_cue", next_cue);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);

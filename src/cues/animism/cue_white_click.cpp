@@ -3,17 +3,16 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC AnimismCues::cue_white_click( const AnalysisData& data, MapOSC& b)
+MapOSC cue_white_click(cueArgs args)
 {
-
-    string descr = "camera 1 white + click";
-    string next_cue = "";
-
     MapOSC out;
+    MapOSC &b = args.b;
+    AnalysisData data = args.data;
+    const double elapsed_section = args.elapsed_section.count();
+    bool isNewCue = args.isNewCue;
+
     if( isNewCue )
     {
-        out.addMessage("/descr", descr);
-        out.addMessage("/next_cue", next_cue);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);

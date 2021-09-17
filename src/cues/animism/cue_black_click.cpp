@@ -3,18 +3,14 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC AnimismCues::cue_black_click( const AnalysisData& data, MapOSC& b)
+MapOSC cue_black_click(cueArgs args)
 {
 
-    string descr = "start black click";
-    string next_cue = "0B white screen on cam 1";
-
     MapOSC out;
-    if( isNewCue )
-    {
-        out.addMessage("/descr", descr);
-        out.addMessage("/next_cue", next_cue);
+    MapOSC &b = args.b;
 
+    if( args.isNewCue )
+    {
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);

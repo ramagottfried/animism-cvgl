@@ -3,15 +3,17 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
+MapOSC cue_wire_slug(cueArgs args)
 {
 
     string descr = "wire slug on leaf, high light levels, lower aperature, for more focus";
     string next_cue = "";
 
     MapOSC out;
-
-    const double elapsed_section = m_elapsed_section.count();
+    MapOSC &b = args.b;
+    AnalysisData data = args.data;
+    const double elapsed_section = args.elapsed_section.count();
+    bool isNewCue = args.isNewCue;
 
     if( isNewCue )
     {
@@ -79,13 +81,13 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
         out.addMessage("/led/rand/pos/snapshot", 100);
 
 
-        m_state_cache.addMessage("/min", 1);
-        m_state_cache.addMessage("/max", 0);
+        args.cache.addMessage("/min", 1);
+        args.cache.addMessage("/max", 0);
 
-        m_state_cache.addMessage("/dmin", 1);
-        m_state_cache.addMessage("/dmax", 0);
+        args.cache.addMessage("/dmin", 1);
+        args.cache.addMessage("/dmax", 0);
 
-        m_state_cache.addMessage("/prev_t", elapsed_section);
+        args.cache.addMessage("/prev_t", elapsed_section);
 
 
     }
@@ -108,8 +110,8 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
         double area_sum = data.contour_area.sum();
         double dist_sum = data.delta_centroid_dist.sum();
 
-        double min = m_state_cache["/min"].getFloat();
-        double max = m_state_cache["/max"].getFloat();
+        double min = args.cache["/min"].getFloat();
+        double max = args.cache["/max"].getFloat();
 
 //            double this_min = data.contour_area.minCoeff();
 //            double this_max = data.contour_area.maxCoeff();
@@ -118,8 +120,8 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
         max = max < area_sum ? area_sum : max;
 
 
-        double dmin = m_state_cache["/dmin"].getFloat();
-        double dmax = m_state_cache["/dmax"].getFloat();
+        double dmin = args.cache["/dmin"].getFloat();
+        double dmax = args.cache["/dmax"].getFloat();
 
     //    double this_dmin = data.delta_centroid_dist.minCoeff();
     //    double this_dmax = data.delta_centroid_dist.maxCoeff();
@@ -128,19 +130,19 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
         dmax = dmax < dist_sum ? dist_sum : dmax;
 
 
-        if( (elapsed_section - m_state_cache["/prev_t"].getFloat()) > range_reset_s )
+        if( (elapsed_section - args.cache["/prev_t"].getFloat()) > range_reset_s )
         {
 //                min = 1;
 //                max = 0;
             dmin = 1;
             dmax = 0;
-            m_state_cache.addMessage("/prev_t", elapsed_section);
+            args.cache.addMessage("/prev_t", elapsed_section);
         }
 
-        m_state_cache.addMessage("/min", min);
-        m_state_cache.addMessage("/max", max);
-        m_state_cache.addMessage("/dmin", dmin);
-        m_state_cache.addMessage("/dmax", dmax);
+        args.cache.addMessage("/min", min);
+        args.cache.addMessage("/max", max);
+        args.cache.addMessage("/dmin", dmin);
+        args.cache.addMessage("/dmax", dmax);
 
 
 
@@ -167,7 +169,7 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
     }
 
 
-    out.addMessage("/cache", m_state_cache);
+    out.addMessage("/cache", args.cache);
 
     return out;
 }
