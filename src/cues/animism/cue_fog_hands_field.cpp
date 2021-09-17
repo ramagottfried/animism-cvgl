@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_fog_hands(cueArgs args)
+MapOSC cue_fog_hands_field(cueArgs args)
 {
     MapOSC out;
     MapOSC &b = args.b;
@@ -34,7 +34,6 @@ MapOSC cue_fog_hands(cueArgs args)
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);
 
-
         b.addMessage("/use/preprocess",  0);
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
@@ -42,7 +41,30 @@ MapOSC cue_fog_hands(cueArgs args)
         b.addMessage("/thresh", 41 );
         b.addMessage("/invert", 0 );
 
+        out.addMessage("/loop/amp", 1);
+        out.addMessage("/loop/length/ms", -1);
+        out.addMessage("/loop/retrigger/enable", 0);
+        out.addMessage("/loop/start/ratio", 0);
+        out.addMessage("/loop/transpose", 0);
+        out.addMessage("/loop/buffer/idx", 0);
+        out.addMessage("/loop/retrigger/click", 1);
+
+
     }
+
+    double fadetime = 30;
+    if( elapsed_section <= fadetime )
+    {
+        // transition, to sped up version
+        out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, -6., 0) );
+        out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 100., 0) );
+    }
+
+
+    out.addMessage("/elapsed_section", elapsed_section );
+
+    double area_sum = data.contour_area.sum();
+    out.addMessage("/contour_area_sum", area_sum );
 
 
     return out;

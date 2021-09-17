@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_white_click(cueArgs args)
+MapOSC cue_cam1_silent(cueArgs args)
 {
     MapOSC out;
     MapOSC &b = args.b;

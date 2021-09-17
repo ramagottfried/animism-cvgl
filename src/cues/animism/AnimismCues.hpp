@@ -3,16 +3,27 @@
 #include "cvglCues.hpp"
 
 MapOSC cue_black_silent(cueArgs args);
+MapOSC cue_cam1_silent(cueArgs args);
+
+MapOSC cue_cam1_silent(cueArgs args);
+MapOSC cue_cam2_silent(cueArgs args);
+
 MapOSC cue_black_click(cueArgs args);
-MapOSC cue_white_click(cueArgs args);
-MapOSC cue_white_silent(cueArgs args);
+
+MapOSC cue_cam1_click(cueArgs args);
+
 MapOSC cue_wire_slug(cueArgs args);
 
 MapOSC cue_fog_hands(cueArgs args);
+MapOSC cue_fog_hands_field(cueArgs args);
 
 MapOSC cue_grass(cueArgs args);
 
 MapOSC cue_heart1(cueArgs args);
+MapOSC cue_lungs(cueArgs args);
+
+
+MapOSC cue_string_creature(cueArgs args);
 
 
 class AnimismCues : public cvglCues
@@ -52,7 +63,7 @@ public:
         setCue("0B",
                "camera 1 white + click",
                "",
-               &cue_white_click ); // what is the click?
+               &cue_cam1_click ); // what is the click?
 
         setCue("1A",
                "wire slug on leaf, high light levels, lower aperature, for more focus",
@@ -97,7 +108,7 @@ public:
         setCue("1I",
                "brass section",
                "leaf surrouded by gel",
-               &cue_white_silent ); // no electronics... just change of camera
+               &cue_cam1_silent ); // no electronics... just change of camera
 
         setCue("1J",
                "leaf surrouded by gel",
@@ -124,35 +135,35 @@ public:
                &cue_black_silent );
 
         setCue("3B",
+               "fog-hands (snares)",
                "fog-hands",
-               "fog-hands + strings",
-               &cue_fog_hands ); // cam 2, live processing of ensemble?
+               &cue_cam2_silent ); // cam 2, live processing of ensemble?
 
         setCue("3C",
-               "fog-hands + strings",
+               "fog-hands + strings + field rec? but no plants",
                "cam 1, origami",
-               &cue_fog_hands ); // cam 2, live processing of ensemble?
+               &cue_fog_hands_field ); // cam 2, live processing of ensemble?
 
         setCue("3D",
-               "cam 1, origami, brass section",
+               "cam 1, origami, brass section, field rec cut",
                "percussion enters",
-               &cue_white_silent );
+               &cue_cam1_silent ); // transition to double image
 
         setCue("3E",
-               "brass + perc",
+               "brass + perc with string creature",
                "transition to heartbeat",
-               &cue_white_silent );
+               &cue_string_creature ); // add field rec?
 
         setCue("3F",
                "transition to heartbeat",
                "heartbeat, scene 4",
-               &cue_white_silent );
+               &cue_cam1_silent );
     }
 
     void setScene4()
     {
         setCue("4A",
-               "start black",
+               "start black, quickly move cam 1 to heart",
                "cut to heart video",
                &cue_black_silent );
 
@@ -179,12 +190,12 @@ public:
         setCue("4F",
                "desync -> lungs",
                "lungs",
-               &cue_heart1 );
+               &cue_lungs );
 
         setCue("4G",
                "lungs",
                "landscape, scene 5",
-               &cue_heart1 );
+               &cue_lungs );
 
 
     }

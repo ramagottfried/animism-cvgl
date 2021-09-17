@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_fog_hands(cueArgs args)
+MapOSC cue_cam1_click(cueArgs args)
 {
     MapOSC out;
     MapOSC &b = args.b;
@@ -20,31 +20,21 @@ MapOSC cue_fog_hands(cueArgs args)
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
+        out.addMessage("/spring/pregain/dB",       -100);
+        out.addMessage("/sine/pregain/dB",         -100);
 
+        // video settings
         b.addMessage("/video/black",  0);
-
-        b.addMessage("/use/camera",  2);
-        b.addMessage("/overlap/cameras", 0.0 );
-
-        b.addMessage("/enable/hull", 0);
-        b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 0);
-        b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
-
-        b.addMessage("/overlap/cameras", 0.);
-        b.addMessage("/overlap/flip", 0.);
-
-
         b.addMessage("/use/preprocess",  0);
-      //  cout << "use camera" << 2 << endl;
-        b.addMessage("/size/min", 0.000 );
-        b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 41 );
+
+        b.addMessage("/size/min", 0.00001 );
+        b.addMessage("/size/max", 1 );
+        b.addMessage("/thresh", 60 );
         b.addMessage("/invert", 0 );
+
+        b.addMessage("/use/camera",  1);
 
     }
 
-
     return out;
-
 }

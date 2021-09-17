@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_white_silent(cueArgs args)
+MapOSC cue_cam2_silent(cueArgs args)
 {
     MapOSC out;
     MapOSC &b = args.b;
@@ -32,7 +32,7 @@ MapOSC cue_white_silent(cueArgs args)
         b.addMessage("/thresh", 60 );
         b.addMessage("/invert", 0 );
 
-        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/camera",  2);
 
     }
 
