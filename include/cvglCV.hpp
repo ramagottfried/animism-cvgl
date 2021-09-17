@@ -166,7 +166,7 @@ protected:
     float m_canny_min = 0;
     float m_canny_max = 30;
     
-    int m_gauss_sigma = 3;
+    int m_gauss_sigma = 5;
     int m_gauss_ksize = m_gauss_sigma*5;
     cv::Mat m_er_element = cv::getStructuringElement( cv::MORPH_RECT, cv::Size(1,1), cv::Point(0,0) );
     cv::Mat m_di_element = getStructuringElement( cv::MORPH_RECT, cv::Size(1,1), cv::Point(0,0) );

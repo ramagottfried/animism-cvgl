@@ -7,7 +7,7 @@ MapOSC AnimismCues::cue_black_silent( const AnalysisData& data, MapOSC& b)
 {
 
     string descr = "start black";
-    string next_cue = "A - first sound";
+    string next_cue = "0A - first sound with ensemble";
 
     MapOSC out;
     if( isNewCue )

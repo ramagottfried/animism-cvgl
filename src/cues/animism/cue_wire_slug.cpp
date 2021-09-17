@@ -6,7 +6,7 @@ using namespace Eigen;
 MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
 {
 
-    string descr = "test grass dev";
+    string descr = "wire slug on leaf, high light levels, lower aperature, for more focus";
     string next_cue = "";
 
     MapOSC out;
@@ -19,8 +19,8 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
         out.addMessage("/next_cue", next_cue);
 
         out.addMessage("/dpo/pregain/dB",          -100);
-        out.addMessage("/dpo/sarah/pregain/dB",    0);
-        out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/dpo/sarah/pregain/dB",    -100);
+        out.addMessage("/gran/pregain/dB",         0);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
@@ -28,24 +28,32 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
         out.addMessage("/sine/pregain/dB",         -100);
 
         b.addMessage("/video/black", 0);
-        b.addMessage("/use/preprocess",  0);
-
-        b.addMessage("/size/min", 0.00001 );
-        b.addMessage("/size/max", 1 );
-        b.addMessage("/thresh", 60 );
-        b.addMessage("/invert", 0 );
-
-
-        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/camera",  2);
         b.addMessage("/overlap/cameras", 0.0 );
+        b.addMessage("/overlap/flip", 0.);
+
+        /*
+        b.addMessage("/use/preprocess", 0);
+        b.addMessage("/size/min", 0.0001 );
+        b.addMessage("/size/max", 1 );
+        b.addMessage("/thresh", 107 );
+        */
+
+
+        b.addMessage("/use/preprocess", 1);
+        b.addMessage("/size/min", 0.0001 );
+        b.addMessage("/size/max", 1 );
+        b.addMessage("/thresh", 10 );
+
+        b.addMessage("/invert", 0 );
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 0);
+        b.addMessage("/enable/contour", 2);
         b.addMessage("/contour/color", 0., 0.83, 0.334, 0.2 );
+        b.addMessage("/contour_triangles/color", 0.821, 1, 0.785, 0.05 );
 
-        b.addMessage("/overlap/cameras", 0.);
-        b.addMessage("/overlap/flip", 0.);
+     //   b.addMessage("/hull/color", 0., 0.83, 0.334, 1 );
 
         out.addMessage("/dpo/intervals", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
         out.addMessage("/dpo/baseMIDI", 0);
@@ -89,7 +97,7 @@ MapOSC AnimismCues::cue_wire_slug(const AnalysisData &data, MapOSC &b)
     if( data.ncontours > 0 && data.delta_centroid_dist.size() > 0 )
     {
 
-        out.addMessage("/data/delta", data.delta_centroid_dist);
+        out.addMessage("/data/spikiness", data.defect_count.sum() ); //data.hull_area.mean() - data.contour_area.mean()
         out.addMessage("/data/dur", data.elapsed_contour);
 
 

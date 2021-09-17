@@ -165,6 +165,8 @@ void cvglContext::setupWindow(int width, int height )
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT,  GL_NICEST);
     
+    //glEnable(GL_FRAMEBUFFER_SRGB);
+
     glfwSetErrorCallback(context_error_callback);
     
     glfwSwapInterval(1);

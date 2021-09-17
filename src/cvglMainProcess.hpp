@@ -72,8 +72,6 @@ private:
     AnalysisData m_data;
     
     cvglProfile profile;
-
-    int m_cue_idx = 0;
     
     int m_use_camera_id = 1;
     float m_overlap_cameras = 0;
@@ -96,7 +94,7 @@ private:
     bool m_draw_minrect = true;
     
     std::vector<float> m_contour_rgba;
-    std::vector<float> m_contour_triangles_rgb;
+    std::vector<float> m_contour_triangles_rgba;
 
     std::vector<float> m_hull_rgba;
     std::vector<float> m_minrect_rgba;

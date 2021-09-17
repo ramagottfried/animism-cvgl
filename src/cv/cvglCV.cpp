@@ -965,7 +965,7 @@ void cvglCV::analysisThread(AnalysisData data)
     }
     
             
-    // id tracking -- this seems broken
+    // id tracking
     
     if( prev_data.centroids.size() == 0 )
     {

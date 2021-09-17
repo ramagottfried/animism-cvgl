@@ -7,7 +7,7 @@ MapOSC AnimismCues::cue_black_click( const AnalysisData& data, MapOSC& b)
 {
 
     string descr = "start black click";
-    string next_cue = "B white";
+    string next_cue = "0B white screen on cam 1";
 
     MapOSC out;
     if( isNewCue )

@@ -89,11 +89,34 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         }
         else if( addr == "/enable/contour" )
         {
-            m_draw_contour = val.getInt() > 0;
+            int setting = val.getInt();
+            switch(setting)
+            {
+            case 1:
+                m_draw_contour = true;
+                m_draw_contour_triangles = false;
+                break;
+            case 2:
+                m_draw_contour = false;
+                m_draw_contour_triangles = true;
+                break;
+            case 3:
+                m_draw_contour = true;
+                m_draw_contour_triangles = true;
+                break;
+            default:
+                m_draw_contour = false;
+                m_draw_contour_triangles = false;
+                break;
+            }
         }
         else if( addr == "/contour/color" )
         {
             m_contour_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
+        }
+        else if( addr == "/contour_triangles/color" )
+        {
+            m_contour_triangles_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
         }
         else if( addr == "/contour/width" )
         {
@@ -280,7 +303,7 @@ void cvglMainProcess::initObjs()
     m_hull_rgba = vector<float>({1, 0, 1, 1});
     m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
     m_contour_rgba = vector<float>({0.25, 0.5, 1., 0.125});
-    m_contour_triangles_rgb = vector<float>({1, 1, 1, 0.9});
+    m_contour_triangles_rgba = vector<float>({1, 1, 1, 0.1});
 
 
     float x[] = {-1, 1, 1, -1 };
@@ -377,7 +400,7 @@ void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
     for( auto& c : analysis.contours )
         npoints += (c.cols * c.rows);
     
-    if( m_draw_contour ){
+    if( m_draw_contour || m_draw_contour_triangles){
         contourMesh->clear();
         contourMesh->reserve( npoints );
     }
@@ -397,7 +420,7 @@ void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
     for( size_t i = 0 ; i < analysis.contour_idx.size(); i++ )
     {
         
-        if( m_draw_contour )
+        if( m_draw_contour || m_draw_contour_triangles )
         {
             cvgl::pointMatToVertex( analysis.contours[ analysis.contour_idx[i] ], contourMesh, analysis.halfW, analysis.halfH );
             contourMesh->triangulate();
@@ -509,9 +532,10 @@ void cvglMainProcess::draw()
     
     if( m_draw_contour_triangles )
     {
+        contourMesh->bind();
         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-        contourTriTex->setTexture(m_contour_triangles_rgb);
-        contourMesh->draw(GL_TRIANGLES);
+        contourTriTex->setTexture(m_contour_triangles_rgba);
+        contourMesh->draw(GL_TRIANGLE_STRIP);
         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
     }
     
