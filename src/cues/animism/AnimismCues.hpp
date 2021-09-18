@@ -2,6 +2,8 @@
 
 #include "cvglCues.hpp"
 
+MapOSC cue_nothing(cueArgs args);
+
 MapOSC cue_black_silent(cueArgs args);
 MapOSC cue_cam1_silent(cueArgs args);
 
@@ -12,19 +14,23 @@ MapOSC cue_black_click(cueArgs args);
 
 MapOSC cue_cam1_click(cueArgs args);
 
+
 MapOSC cue_wire_slug(cueArgs args);
 
-MapOSC cue_fog_hands(cueArgs args);
-MapOSC cue_fog_hands_field(cueArgs args);
 
-MapOSC cue_grass(cueArgs args);
+MapOSC cue_fog_hands_field(cueArgs args);
+MapOSC cue_fog_hands(cueArgs args);
+MapOSC cue_origami_bioplastic_mirror(cueArgs args);
+
+MapOSC cue_string_creature(cueArgs args);
+
 
 MapOSC cue_heart1(cueArgs args);
 MapOSC cue_lungs(cueArgs args);
 
 
-MapOSC cue_string_creature(cueArgs args);
 
+MapOSC cue_grass(cueArgs args);
 
 class AnimismCues : public cvglCues
 {
@@ -36,8 +42,11 @@ public:
         m_cue = "-1";
 
         setScene1();
+
         //  Scene 2 is without camera or electronics
+
         setScene3();
+        setScene4();
 
 
         setCue("5D",
@@ -102,13 +111,14 @@ public:
 
         setCue("1H",
                "slug rips apart",
-               "brass section",
+               "cut to cam1, origami all white",
                &cue_wire_slug ); // maybe no change here? cresc in ensemble
 
         setCue("1I",
-               "brass section",
-               "leaf surrouded by gel",
+               "origami, overexposed & out of focus, gradually focus in, then pan down to goldleaf, then pan to thread on white paper",
+               "cut to cam2, leaf surrouded by gel (prepare cam2 during brass/origami section!)",
                &cue_cam1_silent ); // no electronics... just change of camera
+// add field recording here?
 
         setCue("1J",
                "leaf surrouded by gel",
@@ -122,7 +132,7 @@ public:
 
         setCue("1L",
                "singing D",
-               "scene 2",
+               "scene 3 (no electronics or camear in scene 2)",
                &cue_black_silent ); // silent electronics
     }
 
@@ -131,25 +141,24 @@ public:
     {
         setCue("3A",
                "start black, shhh",
-               "fog-hands",
+               "fog-hands (cam2)",
                &cue_black_silent );
 
         setCue("3B",
                "fog-hands (snares), start black, hands on black, fog, moving very slowly and cloudlike, grandually becoming bigger and bigger",
                "fog-hands",
-               &cue_fog_hands_field ); // cam 2, live processing of ensemble?
+               &cue_fog_hands_field );
 
         setCue("3C",
                "fog-hands + strings + field rec? but no plants",
                "cam 1, origami",
-               &cue_fog_hands_field ); // cam 2, live processing of ensemble?
+               &cue_fog_hands ); // continuing field recording
 
         setCue("3D", // first cut field recording when brass enters, then fade back in ? or change type of field rec
                "brass section (+ field rec?), cam1 white -> origami -> bioplastic skin / becoming mirrored -> dome thread",
                "percussion enters",
-               &cue_cam1_silent ); // transition to double image
+               &cue_origami_bioplastic_mirror ); // transition to double image
 // add field recording to scene 1??
-
 
 
         setCue("3E",

@@ -31,11 +31,12 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
         string cue = b["/cue"].get<string>();
         if( cue != m_cue && m_cueFunctions.count(cue) > 0 )
         {
+            cout << "setting new cue " << cue << " was " << m_cue << endl;
+
             m_cue = cue;
             isNewCue = true;
 
             m_section_start = sys_clock_t::now();
-            cout << "setting new cue " << cue << " was " << m_cue << endl;
 
             m_state_cache.addMessage("/played", 0);
 

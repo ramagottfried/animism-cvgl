@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_fog_hands(cueArgs args)
+MapOSC cue_origami_bioplastic_mirror(cueArgs args)
 {
     MapOSC out;
     MapOSC &b = args.b;
@@ -23,7 +23,7 @@ MapOSC cue_fog_hands(cueArgs args)
 
         b.addMessage("/video/black",  0);
 
-        b.addMessage("/use/camera",  2);
+        b.addMessage("/use/camera",  1);
         b.addMessage("/overlap/cameras", 0.0 );
 
         b.addMessage("/enable/hull", 0);
@@ -49,6 +49,15 @@ MapOSC cue_fog_hands(cueArgs args)
         out.addMessage("/loop/transpose", 0);
         out.addMessage("/loop/buffer/idx", 0);
     }
+
+    double fadetime = 30;
+    if( elapsed_section <= fadetime )
+    {
+        out.addMessage("/loop/pregain/dB",  scale_clip(elapsed_section, 0., 10, 0, -12) );
+        b.addMessage("/overlap/flip", scale_clip(elapsed_section, 10., fadetime, 0., 0.5));
+
+    }
+
 
 
     return out;

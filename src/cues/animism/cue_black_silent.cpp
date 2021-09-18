@@ -26,7 +26,6 @@ MapOSC cue_black_silent(cueArgs args)
 
         b.addMessage("/overlap/flip", 0.);
         b.addMessage("/overlap/cameras", 0.);
-        b.addMessage("/video/flip", 1, 0);
 
     }
 
