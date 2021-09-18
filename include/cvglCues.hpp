@@ -46,7 +46,7 @@ struct cueArgs {
     cvglRandom& randGen;
     timepoint_t startTime;
     duration_t elapsed_section;
-    bool isNewCue = true;
+    bool isNewCue = false;
 };
 
 

@@ -135,29 +135,32 @@ public:
                &cue_black_silent );
 
         setCue("3B",
-               "fog-hands (snares)",
+               "fog-hands (snares), start black, hands on black, fog, moving very slowly and cloudlike, grandually becoming bigger and bigger",
                "fog-hands",
-               &cue_cam2_silent ); // cam 2, live processing of ensemble?
+               &cue_fog_hands_field ); // cam 2, live processing of ensemble?
 
         setCue("3C",
                "fog-hands + strings + field rec? but no plants",
                "cam 1, origami",
                &cue_fog_hands_field ); // cam 2, live processing of ensemble?
 
-        setCue("3D",
-               "cam 1, origami, brass section, field rec cut",
+        setCue("3D", // first cut field recording when brass enters, then fade back in ? or change type of field rec
+               "brass section (+ field rec?), cam1 white -> origami -> bioplastic skin / becoming mirrored -> dome thread",
                "percussion enters",
                &cue_cam1_silent ); // transition to double image
+// add field recording to scene 1??
+
+
 
         setCue("3E",
-               "brass + perc with string creature",
+               "dome thread (with tuba and 808)",
                "transition to heartbeat",
                &cue_string_creature ); // add field rec?
 
         setCue("3F",
-               "transition to heartbeat",
+               "dome thread (with tuba and 808), transitioning to heartbeat",
                "heartbeat, scene 4",
-               &cue_cam1_silent );
+               &cue_string_creature );
     }
 
     void setScene4()
