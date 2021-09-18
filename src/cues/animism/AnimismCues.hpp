@@ -25,7 +25,9 @@ MapOSC cue_origami_bioplastic_mirror(cueArgs args);
 MapOSC cue_string_creature(cueArgs args);
 
 
-MapOSC cue_heart1(cueArgs args);
+MapOSC cue_heart_fadein(cueArgs args);
+MapOSC cue_heart_continued(cueArgs args);
+
 MapOSC cue_lungs(cueArgs args);
 
 
@@ -75,7 +77,7 @@ public:
                &cue_cam1_click ); // what is the click?
 
         setCue("1A",
-               "wire slug on leaf, high light levels, lower aperature, for more focus",
+               "wire slug on leaf, light from behind, raised up to be more depth angle",
                "leaf-creature",
                &cue_wire_slug ); // *
 
@@ -182,22 +184,22 @@ public:
         setCue("4B",
                "heart",
                "heart",
-               &cue_heart1 );
+               &cue_heart_fadein );
 
         setCue("4C",
                "heart",
                "heart",
-               &cue_heart1 );
+               &cue_heart_continued );
 
         setCue("4D",
                "heart",
                "heart",
-               &cue_heart1 );
+               &cue_heart_continued );
 
         setCue("4E",
                "heart",
                "heart",
-               &cue_heart1 );
+               &cue_heart_continued );
 
         setCue("4F",
                "desync -> lungs",

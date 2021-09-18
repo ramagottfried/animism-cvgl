@@ -23,6 +23,7 @@ MapOSC cue_black_silent(cueArgs args)
 
         // video settings
         b.addMessage("/video/black",  1);
+        b.addMessage("/use/camera",  1);
 
         b.addMessage("/overlap/flip", 0.);
         b.addMessage("/overlap/cameras", 0.);
