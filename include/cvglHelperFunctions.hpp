@@ -18,7 +18,8 @@ inline Eigen::ArrayXd clip(const Eigen::ArrayXd& v, double min, double max)
 
 inline double scale(double v, double in_min, double in_max, double out_min, double out_max)
 {
-    return (( (v - in_min) / (in_max - in_min) ) * (out_max - out_min)) + out_min;
+    const double in_range = in_max - in_min;
+    return (( (v - in_min) / (in_range == 0 ? 1 : in_range) ) * (out_max - out_min)) + out_min;
 }
 
 inline Eigen::ArrayXd scale(const Eigen::ArrayXd& v, double in_min, double in_max, double out_min, double out_max)

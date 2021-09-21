@@ -9,14 +9,15 @@ MapOSC cue_wire_slug(cueArgs args)
     MapOSC out;
     MapOSC &b = args.b;
     AnalysisData data = args.data;
-    const double elapsed_section = args.elapsed_section.count();
+    double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
+    MapOSC& cache = args.cache;
 
     if( isNewCue )
     {
 
-        out.addMessage("/dpo/pregain/dB",          -6);
-        out.addMessage("/dpo/sarah/pregain/dB",    0);
+        out.addMessage("/dpo/pregain/dB",          -24);
+        out.addMessage("/dpo/sarah/pregain/dB",    -12);
         out.addMessage("/gran/pregain/dB",         0);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
@@ -71,10 +72,20 @@ MapOSC cue_wire_slug(cueArgs args)
         out.addMessage("/dpo/vcf1_q/val", 1);
         out.addMessage("/dpo/vcf2_q/val", 0.478);
 
-        args.cache.addMessage("/min", 1);
-        args.cache.addMessage("/max", 0);
-        args.cache.addMessage("/prev_t", elapsed_section);
+        cache.addMessage("/min", 1);
+        cache.addMessage("/max", 0);
+        cache.addMessage("/prev_t", elapsed_section);
 
+
+
+        out.addMessage("/gran/*/motor/scale", 2.04, 500.);
+        out.addMessage("/gran/*/overlap/scale", 0.02, 1.);
+        out.addMessage("/gran/*/rate/scale", 15., 117.);
+        out.addMessage("/gran/*/amp/val", 0);
+        out.addMessage("/gran/*/buffer/scale", 3, 16 );
+        out.addMessage("/gran/send", 1);
+        cache.addMessage("/position", 0);
+        cache.addMessage("/direction", 1);
 
     }
 
@@ -90,14 +101,14 @@ MapOSC cue_wire_slug(cueArgs args)
 
         double area_sum = data.contour_area.sum();
 
-        double min = args.cache["/min"].getFloat();
-        double max = args.cache["/max"].getFloat();
+        double min = cache["/min"].getFloat();
+        double max = cache["/max"].getFloat();
 
         min = min > area_sum ? area_sum : min;
         max = max < area_sum ? area_sum : max;
 
-        args.cache.addMessage("/min", min);
-        args.cache.addMessage("/max", max);
+        cache.addMessage("/min", min);
+        cache.addMessage("/max", max);
 
 
      //   double centroid_dist_avg = data.delta_centroid_dist.mean();
@@ -125,34 +136,40 @@ MapOSC cue_wire_slug(cueArgs args)
         out.addMessage("/dpo/f2/val", floor(scale(ease, 0, 1, 138, 120)) );
 
 
-        out.addMessage("/dpo/index1/val", scale_clip(ease, 0, 1, 0.505, 0.52) ); //+ scale(area_sum, 0, 1, 0.2, 0.8), 20
+        out.addMessage("/dpo/index1/val", scale_clip(ease, 0, 1, 0.505, 0.516) ); //+ scale(area_sum, 0, 1, 0.2, 0.8), 20
 
+        double amp_thresh = 0.25;
         double dpo_amp = ease;//pow(area_sum_norm, 1.15);
-        if( dpo_amp < 0.5 ){
-            out.addMessage("/dpo/sarah/amp/val", dpo_amp ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
-            out.addMessage("/dpo/amp/val", dpo_amp  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
-        } else {
-            out.addMessage("/dpo/sarah/amp/val", (1 - dpo_amp) * 0.5 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
-            out.addMessage("/dpo/amp/val", 0  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+       // if( dpo_amp < amp_thresh ){
+            out.addMessage("/dpo/sarah/amp/val", dpo_amp, 20 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+            out.addMessage("/dpo/amp/val", dpo_amp, 20  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+        /*} else {
+            out.addMessage("/dpo/sarah/amp/val", (1 - dpo_amp) * amp_thresh, 20 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+            out.addMessage("/dpo/amp/val", 0, 20  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
         }
-
+*/
 
         out.addMessage("/dpo/vcf1_hz/val", -area_sum_norm );
         out.addMessage("/dpo/vcf2_hz/val", scale(area_sum_norm, 0, 1, 0.6, 0.8));
 
+        out.addMessage("/gran/1/amp/val", dpo_amp, 100 );
 
+        double lfo3 = scale( fmod( elapsed_section, 20.), 0, 20, 0., 1);
+        out.addMessage("/gran/1/position", scale(area_sum_norm, 0., 1, 0.04382, 0.14), 100 );
 
 
     }
     else
     {
-        out.addMessage("/dpo/sarah/amp/val", 0);
-        out.addMessage("/dpo/amp/val", 0);
+        out.addMessage("/dpo/sarah/amp/val", 0, 20);
+        out.addMessage("/dpo/amp/val", 0, 20);
+        out.addMessage("/gran/1/amp/val", 0, 100 );
+
 
     }
 
 
-    out.addMessage("/cache", args.cache);
+    out.addMessage("/cache", cache);
 
     return out;
 }
