@@ -30,9 +30,31 @@ MapOSC cue_heart_continued(cueArgs args);
 
 MapOSC cue_lungs(cueArgs args);
 
-
+MapOSC cue_fuzzball_fadein( cueArgs args );
+MapOSC cue_fuzzball( cueArgs args );
 
 MapOSC cue_grass(cueArgs args);
+
+MapOSC cue_moon_hands(cueArgs args);
+
+MapOSC cue_antlers( cueArgs args );
+MapOSC cue_burdock_roll_out(cueArgs args);
+
+MapOSC cue_pond_edge( cueArgs args );
+MapOSC cue_underwater( cueArgs args );
+MapOSC cue_underwater_deep( cueArgs args );
+MapOSC cue_floating_fisheye_blinks(cueArgs args);
+
+
+MapOSC cue_forest( cueArgs args );
+MapOSC cue_branch_rips_and_falls(cueArgs args);
+MapOSC cue_forest_frogs( cueArgs args );
+MapOSC cue_forest_loops( cueArgs args );
+
+MapOSC cue_slow_sunburst( cueArgs args );
+MapOSC cue_slow_sunburst_noise_start( cueArgs args );
+MapOSC cue_slow_sunburst_distortion( cueArgs args );
+MapOSC cue_vignette_circle_drop( cueArgs args );
 
 class AnimismCues : public cvglCues
 {
@@ -41,30 +63,27 @@ public:
 
     AnimismCues()
     {
-        m_cue = "-1";
+        m_cue = "0B";
+
+        setCue("-1",
+               "start black",
+               "0A - first sound with ensemble",
+               &cue_black_silent );
 
         setScene1();
 
-        //  Scene 2 is without camera or electronics
+        // Scene 2 is without camera or electronics
+        // (Scene 1 ends black)
 
         setScene3();
         setScene4();
-
-
-        setCue("5D",
-               "grass tests",
-               "",
-               &cue_wire_slug );
+        setScene5();
 
     }
 
 
     void setScene1()
     {
-        setCue("-1",
-               "start black",
-               "0A - first sound with ensemble",
-               &cue_black_silent );
 
         setCue("0A",
                "start black click",
@@ -208,9 +227,120 @@ public:
 
         setCue("4G",
                "lungs",
-               "landscape, scene 5",
+               "landscape, scene 5, holding breath",
                &cue_lungs );
 
+
+    }
+
+
+    void setScene5()
+    {
+        setCue("5A",
+               "holding breath",
+               "fuzzball",
+               &cue_fuzzball_fadein );
+
+        setCue("5B",
+               "fuzzball",
+               "grass creature",
+               &cue_fuzzball );
+
+        setCue("5C",
+               "grass creature",
+               "fuzzball continues on",
+               &cue_grass ); // fade out field recording here?
+
+        setCue("5D",
+               "fuzzball continues on",
+               "moonrise with birds",
+               &cue_fuzzball ); // fade field recording back in ?
+
+        setCue("5E",
+               "moonrise with birds",
+               "antler creature",
+               &cue_moon_hands ); // contour filter?
+
+        setCue("5F",
+               "antler creature",
+               "burdock/corona children roll out",
+               &cue_antlers ); // something like grass...
+
+        setCue("5G",
+               "burdock/corona children roll out",
+               "fuzzball continues on",
+               &cue_burdock_roll_out );
+
+        setCue("5H",
+               "fuzzball continues on",
+               "at water's edge",
+               &cue_fuzzball_fadein );
+
+        setCue("5I",
+               "at water's edge",
+               "underwater",
+               &cue_pond_edge ); // with drones? maybe quiet noisy texture drone...
+                // respond to light on water?? not sure if this is possible with the camera angle
+
+        setCue("5J",
+               "underwater",
+               "in the deep black",
+               &cue_underwater );
+
+        setCue("5K",
+               "in the deep black",
+               "floating fish eye blinks",
+               &cue_underwater_deep );
+
+        setCue("5L",
+               "floating fish eye blinks",
+               "descend into the forest",
+               &cue_floating_fisheye_blinks );
+
+        // maybe the sun is not too too bright, so that it is more climatic later
+        setCue("5M",
+               "descend into the forest, sun gets brighter, then wind picks up as we go deeper into the woods",
+               "branch rips off and falls",
+               &cue_forest );
+
+        setCue("5N",
+               "branch rips off and falls (fade in field recording? or add 5Nb for fall?)",
+               "frogs and other pond and forest creatures",
+               &cue_branch_rips_and_falls );
+
+        setCue("5O",
+               "frogs and other pond and forest creatures",
+               "natural sounds begin to loop",
+               &cue_forest_frogs );
+
+        // slowly fade in different types of mirror images?
+        // might work better than pure mirror fragments
+        // could also pre-record this part and make hardcore forwards/backwards loops etc.
+        setCue("5P",
+               "natural sounds begin to loop",
+               "slow spectral sunburst",
+               &cue_forest_loops );
+
+        // then fade out mirrors when sunburst comes in?
+        setCue("5Q",
+               "slow spectral sunburst",
+               "increasingly dissonant becoming white noise",
+               &cue_slow_sunburst );
+
+        setCue("5R",
+               "increasingly dissonant becoming white noise",
+               "distortion fuzz",
+               &cue_slow_sunburst_noise_start );
+
+        setCue("5S",
+               "distortion fuzz of ensemble becoming white noise",
+               "screen vignette with trumpet solo",
+               &cue_slow_sunburst_distortion );
+
+        setCue("5T",
+               "screen vignette with trumpet solo, circle falls to ground for screen drop, prepare for puppet performance (electronics end here)",
+               "screen drop",
+               &cue_vignette_circle_drop );
 
     }
 };

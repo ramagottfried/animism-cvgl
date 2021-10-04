@@ -2,8 +2,14 @@
 
 in vec2 Texcoord;
 
+uniform float gamma;
+uniform float contrast;
+uniform float saturation;
+uniform float brightness;
+
 uniform vec4 vignette_xyr_aspect;
 uniform float time;
+
 uniform sampler2D tex;
  float thresh_w = 0.9;
  float thresh_b = 0.1;
@@ -32,12 +38,12 @@ mat4 brightnessMatrix( float brightness )
 
 mat4 contrastMatrix( float contrast )
 {
-    float t = ( 1.0 - contrast ) / 2.0;
+    float t = ( 1.0 - contrast );// / 2.0;
 
     return mat4( contrast, 0, 0, 0,
                  0, contrast, 0, 0,
                  0, 0, contrast, 0,
-                 t, t, t, 1 );
+                 1, 1, 1, 1 );
 
 }
 
@@ -63,20 +69,34 @@ mat4 saturationMatrix( float saturation )
 }
 
 
-vec3 czm_saturation(vec3 rgb, float adjustment)
+vec4 brightnessContrast(vec4 value, float brightness, float contrast)
+{
+    return vec4((value.rgb - 0.5) * contrast + 0.5 + brightness, value.a);
+}
+
+vec4 czm_saturation(vec4 value, float adjustment)
 {
     // Algorithm from Chapter 16 of OpenGL Shading Language
     const vec3 W = vec3(0.2125, 0.7154, 0.0721);
-    vec3 intensity = vec3(dot(rgb, W));
-    return mix(intensity, rgb, adjustment);
+    vec3 intensity = vec3(dot(value.rgb, W));
+    return vec4( mix(intensity, value.rgb, adjustment), value.a);
+}
+
+vec4 gammaCorrection(vec4 value, float param)
+{
+    return vec4( pow( value.rgb, vec3(1. / param)), value.a);
 }
 
 void main()
 {
 
-    vec4 tex_samp = texture( tex, Texcoord );// * contrastMatrix(1.6);
+    vec4 tex_samp = texture( tex, Texcoord );
 
-   // tex_samp = vec4( czm_saturation(tex_samp.rgb, 1.2), tex_samp.a);
+    tex_samp = brightnessContrast(tex_samp, brightness, contrast);
+
+    tex_samp = czm_saturation(tex_samp, saturation);
+
+    tex_samp = gammaCorrection(tex_samp, gamma);
 
 /*
     float luma = sqrt( 0.299*tex_samp.r*tex_samp.r + 0.587*tex_samp.g*tex_samp.g + 0.114*tex_samp.b*tex_samp.b );

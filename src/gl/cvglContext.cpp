@@ -4,7 +4,7 @@
 
 using namespace std;
 
-
+/*
 void cvglContext::set_time_uniform(float t)
 {
     if( m_timeAttrib > -1 )
@@ -12,6 +12,16 @@ void cvglContext::set_time_uniform(float t)
         glUniform1fv(m_timeAttrib, 1, &t );
     }
 }
+
+void cvglContext::set_contrast_uniform(float x)
+{
+    if( m_contrastAttr > -1 )
+    {
+        glUniform1fv(m_contrastAttr, 1, &x );
+
+    }
+}
+*/
 
 void cvglContext::resize_callback(int w, int h)
 {
@@ -268,7 +278,7 @@ int cvglContext::loadShaders(const char * vertex_src, const char * fragment_src)
         cout << "failed to find m_scaleAttrib " << endl;
         //    return 0;
     }
-
+/*
     m_timeAttrib = glGetUniformLocation(m_shaderProgram, "time");
     if( m_timeAttrib == -1 )
     {
@@ -276,7 +286,20 @@ int cvglContext::loadShaders(const char * vertex_src, const char * fragment_src)
         //    return 0;
     }
     
-    
+    m_contrastAttr = glGetUniformLocation(m_shaderProgram, "contrast");
+    if( m_contrastAttr == -1 )
+    {
+        cout << "failed to find m_contrastAttr " << endl;
+        //    return 0;
+    }
+
+    m_saturationAttr = glGetUniformLocation(m_shaderProgram, "saturation");
+    if( m_saturationAttr == -1 )
+    {
+        cout << "failed to find m_saturationAttr " << endl;
+        //    return 0;
+    }
+*/
     glBindFragDataLocation(m_shaderProgram, 0, "outColor");
     
     glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);

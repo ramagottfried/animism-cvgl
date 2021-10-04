@@ -21,10 +21,12 @@ public:
     
     void setVignette(float x, float y, float r);
 
-    GLint vignette_attr_idx = -1;
+    GLint vignette_attr_idx = -1, gamma_attr_idx = -1, contrast_attr_idx = -1, brightness_attr_idx = -1, saturation_attr_idx = -1;
+
+    float contrast = 1, brightness = 0, saturation = 1, gamma = 1;
     glm::vec4 vignette_xyr_aspect;
 
-    std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh, gitchRect;
+    std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh, glitchRect;
     std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex;
     
     bool objects_initialized = false;
@@ -104,6 +106,9 @@ private:
     float m_contour_line_thickness = 1;
         
     bool m_contour_analysis = true;
+
+    float m_contrast = 1;
+    float m_saturation = 1;
 };
 
 

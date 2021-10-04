@@ -157,7 +157,7 @@ private:
 
     GLint m_transformAttrib = 0;
     glm::mat4 m_transform_matrix = glm::scale( glm::mat4(1.0f), glm::vec3(m_x_scale, m_y_scale, 1.0f) );// glm::mat4(1.0f);
-    GLint m_timeAttrib = 0;
+
     
     bool m_should_close = false;
 

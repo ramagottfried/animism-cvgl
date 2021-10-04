@@ -146,13 +146,30 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             m_minrect_line_thickness = val.getFloat();
         }
-        if( addr == "/video/flip" )
+        else if( addr == "/video/flip" )
         {
             if( val.size() == 2 )
             {
                 context.flip( val.get<int>(0), val.get<int>(1) );
             }
         }
+        else if( addr == "/brightness")
+        {
+            brightness = val.getFloat();
+        }
+        else if( addr == "/contrast")
+        {
+            contrast = val.getFloat();
+        }
+        else if( addr == "/saturation")
+        {
+            saturation = val.getFloat();
+        }
+        else if( addr == "/gamma")
+        {
+            gamma = val.getFloat();
+        }
+
     }
 }
 
@@ -278,11 +295,18 @@ void cvglMainProcess::initObjs()
 {
 
     vignette_attr_idx = context.getShaderAttrLocation("vignette_xyr_aspect");
+    contrast_attr_idx = context.getShaderAttrLocation("contrast");
+    brightness_attr_idx = context.getShaderAttrLocation("brightness");
+    saturation_attr_idx = context.getShaderAttrLocation("saturation");
+    gamma_attr_idx = context.getShaderAttrLocation("gamma");
 
     cout << "found attr vignette " << vignette_attr_idx << endl;
+    cout << "found attr contrast " << contrast_attr_idx << endl;
+    cout << "found attr brightness " << brightness_attr_idx << endl;
+    cout << "found attr saturation " << saturation_attr_idx << endl;
+
 
     setVignette(0.5, 0.5, 1);
-
     //glm::vec4 vignette_xyr_aspect(0.5, 0.25, 1, context.getAspectRatio() );
     //glUniform4fv( vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
 
@@ -292,7 +316,7 @@ void cvglMainProcess::initObjs()
     hullMesh = unique_ptr<cvglObject>(new cvglObject);
     minrectMesh = unique_ptr<cvglObject>(new cvglObject);
     flowMesh = unique_ptr<cvglObject>(new cvglObject);
-    gitchRect = unique_ptr<cvglObject>(new cvglObject);
+    glitchRect = unique_ptr<cvglObject>(new cvglObject);
 
     frameTex =  unique_ptr<cvglTexture>(new cvglTexture);
     contourTex = unique_ptr<cvglTexture>(new cvglTexture);
@@ -319,25 +343,28 @@ void cvglMainProcess::initObjs()
     rect->initStaticDraw();
 
 
-    gitchRect->newObj(GL_TRIANGLES);
-    gitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[1], y[1], 0.0f},  {1.0f, 0.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
+    glitchRect->newObj(GL_TRIANGLES);
+    glitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
+    glitchRect->addVertex(cvglVertex({{x[1], y[1], 0.0f},  {1.0f, 0.0f} }));
+    glitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
 
-    gitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[3], y[3], 0.0f},  {0.0f, 1.0f} }));
-    gitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
+    glitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
+    glitchRect->addVertex(cvglVertex({{x[3], y[3], 0.0f},  {0.0f, 1.0f} }));
+    glitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
 
     cvglRandom rand;
-    float xrange = 5;
-    float yrange = 0.25;
-    for(int i = 0 ; i < xrange; i++)
-    {
-        float minxrange =  i == 0 ? 0 : i / xrange;
-        float maxxrange =  ((i + 1) / xrange) ;
+    float nTriangles = 50;
+    float yrange = 0.4;
+    float overlap = 4;
+    float xRatio = 1. / nTriangles;
 
-        float rx1 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
-        float ry1 = cvgl::scale( rand.uniformRand(), 0., 1., 1 - yrange, 1.);
+    for(int i = 0 ; i < nTriangles; i++)
+    {
+        float minxrange =  (i == 0 ? 0 : (i-overlap) * xRatio);
+        float maxxrange =  ((i + 1 + overlap) * xRatio);
+
+        float rx1 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange) ;
+        float ry1 = cvgl::scale( rand.uniformRand(), 0., 1., 0, yrange);
 
         float minx = rx1;
         float miny = ry1;
@@ -353,7 +380,7 @@ void cvglMainProcess::initObjs()
         maxy = ry2 > miny ? ry2 : maxy;
 
         float rx3 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
-        float ry3 = cvgl::scale( rand.uniformRand(), 0., 1., 1 - yrange, 1.);
+        float ry3 = cvgl::scale( rand.uniformRand(), 0., 1., 0, yrange);
 
         minx = rx3 < minx ? rx3 : minx;
         miny = ry3 < miny ? ry3 : miny;
@@ -365,21 +392,21 @@ void cvglMainProcess::initObjs()
 
         float xx = cvgl::scale( rx1, 0., 1., -1., 1);
         float yy = cvgl::scale( ry1, 0., 1., -1., 1);
-        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f}, {rx1, ry1}}));
+        glitchRect->addVertex(cvglVertex({{xx, yy, 0.0f}, {rx1-w, 1-ry1}}));
 
         xx = cvgl::scale( rx2, 0., 1., -1., 1);
         yy = cvgl::scale( ry2, 0., 1., -1., 1);
-        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx2, ry2}}));
+        glitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx2-w, 1-ry2}}));
 
         xx = cvgl::scale( rx3, 0., 1., -1., 1);
         yy = cvgl::scale( ry3, 0., 1., -1., 1);
-        gitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx3, ry3}}));
+        glitchRect->addVertex(cvglVertex({{xx, yy, 0.0f},  {rx3-w, 1-ry3}}));
 
     }
-    gitchRect->endObj();
+    glitchRect->endObj();
 
-//    gitchRect->triangulate();
-    gitchRect->initStaticDraw();
+//    glitchRect->triangulate();
+    glitchRect->initStaticDraw();
 
 
     objects_initialized = true;
@@ -486,12 +513,17 @@ void cvglMainProcess::draw()
         return;
     }
 
-    glUniform4fv( vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
+    glUniform4fv(vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
+    glUniform1fv(contrast_attr_idx, 1, &contrast );
+    glUniform1fv(brightness_attr_idx, 1, &brightness );
+    glUniform1fv(saturation_attr_idx, 1, &saturation );
+    glUniform1fv(gamma_attr_idx, 1, &gamma );
 
+    UMat merge;
     if( m_draw_frame && m_use_camera_id > 0 )
     {
         rect->bind();
-        UMat merge = getFrame();
+        merge = getFrame();
 
         if( m_show_webcam_tile && frames.count(3) > 0 )
         {
@@ -554,8 +586,12 @@ void cvglMainProcess::draw()
         minrectMesh->draw(GL_TRIANGLE_STRIP);
     }
     
+    glitchRect->bind();
+    frameTex->setTexture( merge.getMat(ACCESS_READ) );
+    glitchRect->draw();
+
     context.drawAndPoll();
-    
+
     // context.printFPS();
     
     //m_use_camera_id = m_use_camera_id == 1 ? 2 : 1;
