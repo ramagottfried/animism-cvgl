@@ -63,7 +63,7 @@ public:
 
     AnimismCues()
     {
-        m_cue = "0B";
+        m_cue = "5P";
 
         setCue("-1",
                "start black",

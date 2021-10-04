@@ -22,7 +22,9 @@ public:
     void setVignette(float x, float y, float r);
 
     GLint vignette_attr_idx = -1, gamma_attr_idx = -1, contrast_attr_idx = -1, brightness_attr_idx = -1, saturation_attr_idx = -1;
+    GLint transform_attr_idx = -1;
 
+    float rotateTriangles = 0;
     float contrast = 1, brightness = 0, saturation = 1, gamma = 1;
     glm::vec4 vignette_xyr_aspect;
 
@@ -95,6 +97,8 @@ private:
     bool m_draw_hull = true;
     bool m_draw_minrect = true;
     
+    bool m_draw_glitch_triangles = true;
+
     std::vector<float> m_contour_rgba;
     std::vector<float> m_contour_triangles_rgba;
 

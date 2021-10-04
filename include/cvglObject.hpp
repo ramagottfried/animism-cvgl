@@ -42,6 +42,13 @@ public:
         m_vertices[idx].texcoord[1] = v;
     }
     
+    void setPosition( int idx, float x, float y, float z )
+    {
+        m_vertices[idx].position[0] = x;
+        m_vertices[idx].position[1] = y;
+        m_vertices[idx].position[2] = z;
+    }
+
 private:
     cvglVAO m_VAO;
     GLuint m_draw_mode = GL_STREAM_DRAW;

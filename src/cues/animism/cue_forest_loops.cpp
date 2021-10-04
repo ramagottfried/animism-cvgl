@@ -39,14 +39,14 @@ MapOSC cue_forest_loops( cueArgs args )
         out.addMessage("/sine/pregain/dB",  -70);
 
         b.addMessage("/video/black",  0);
-        b.addMessage("/use/preprocess",  3);
+        b.addMessage("/use/preprocess", 0);
 
         b.addMessage("/use/camera",  1);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);
 
-        b.addMessage("/enable/hull", 0);
+        b.addMessage("/enable/hull", 1);
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 1);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
@@ -54,8 +54,8 @@ MapOSC cue_forest_loops( cueArgs args )
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 41 );
-        b.addMessage("/invert", 0 );
+        b.addMessage("/thresh", 0 );
+        b.addMessage("/invert", 40 );
 
         out.addMessage("/loop/length/ms", -1);
         out.addMessage("/loop/retrigger/enable", 0);

@@ -294,6 +294,7 @@ void cvglMainProcess::setVignette(float x, float y, float r)
 void cvglMainProcess::initObjs()
 {
 
+    transform_attr_idx = context.getShaderAttrLocation("transform_matrix");
     vignette_attr_idx = context.getShaderAttrLocation("vignette_xyr_aspect");
     contrast_attr_idx = context.getShaderAttrLocation("contrast");
     brightness_attr_idx = context.getShaderAttrLocation("brightness");
@@ -344,13 +345,6 @@ void cvglMainProcess::initObjs()
 
 
     glitchRect->newObj(GL_TRIANGLES);
-    glitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
-    glitchRect->addVertex(cvglVertex({{x[1], y[1], 0.0f},  {1.0f, 0.0f} }));
-    glitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
-
-    glitchRect->addVertex(cvglVertex({{x[2], y[2], 0.0f},  {1.0f, 1.0f} }));
-    glitchRect->addVertex(cvglVertex({{x[3], y[3], 0.0f},  {0.0f, 1.0f} }));
-    glitchRect->addVertex(cvglVertex({{x[0], y[0], 0.0f},  {0.0f, 0.0f} }));
 
     cvglRandom rand;
     float nTriangles = 50;
@@ -406,7 +400,7 @@ void cvglMainProcess::initObjs()
     glitchRect->endObj();
 
 //    glitchRect->triangulate();
-    glitchRect->initStaticDraw();
+   // glitchRect->initStaticDraw();
 
 
     objects_initialized = true;
@@ -473,7 +467,40 @@ void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
         }
 
         
-        
+        if( m_draw_glitch_triangles )
+        {
+            float dist_thresh = 0.4;
+            size_t nTris = glitchRect->getSize();
+            cout << "nTris " << nTris << endl;
+            for( size_t j = 0; j < nTris; j++ )
+            {
+                auto vertex = glitchRect->getVertex(j);
+                float vert_x = vertex.position[0];
+                float vert_y = vertex.position[1];
+
+                auto x = analysis.centroid_x(i);
+                auto y = analysis.centroid_y(i);
+
+                float dx = x - vert_x;
+                float dy = y - vert_y;
+
+                cout << dx << " >>> " << dy << endl;
+                if( abs(dx) < dist_thresh )
+                {
+                    vert_x += dx;
+                }
+
+                if( abs(dy) < dist_thresh )
+                {
+                    vert_y += dy;
+                  //  vertex.texcoord[1] += dy;
+                }
+
+                glitchRect->setPosition(j, x, y, 0 );
+
+            }
+        }
+
     }
     
     
@@ -518,6 +545,7 @@ void cvglMainProcess::draw()
     glUniform1fv(brightness_attr_idx, 1, &brightness );
     glUniform1fv(saturation_attr_idx, 1, &saturation );
     glUniform1fv(gamma_attr_idx, 1, &gamma );
+
 
     UMat merge;
     if( m_draw_frame && m_use_camera_id > 0 )
@@ -586,9 +614,22 @@ void cvglMainProcess::draw()
         minrectMesh->draw(GL_TRIANGLE_STRIP);
     }
     
-    glitchRect->bind();
-    frameTex->setTexture( merge.getMat(ACCESS_READ) );
-    glitchRect->draw();
+    if( m_draw_glitch_triangles )
+    {
+        glitchRect->bind();
+        /*
+        rotateTriangles = fmod(rotateTriangles + 1, 360);
+
+        glm::mat4 transform = context.getTransform();
+        glm::mat4 rotationMatrix = glm::rotate(transform, glm::radians(rotateTriangles), glm::vec3(0.0, 0.0, 1.0));
+        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &rotationMatrix[0][0]);
+    */
+        frameTex->setTexture( merge.getMat(ACCESS_READ) );
+        glitchRect->draw();
+
+      //  glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
+    }
+
 
     context.drawAndPoll();
 
