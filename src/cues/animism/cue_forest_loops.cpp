@@ -15,13 +15,17 @@ MapOSC cue_forest_loops( cueArgs args )
     //MapOSC& m_state_cache = args.cache;
     //cvglRandom& m_rand_generator = args.randGen;
 
-    double fadetime = 10;
+    double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
         // transition, to sped up version
        // out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, 0., -12));
         out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., -6));
         out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 0., 12) );
+
+      //  b.addMessage("/big_triangle/x", scale( cvgl::easeInOutSine( scale(elapsed_section, 0., fadetime, 0., 1.)),0., 1., -1, 0) );
+        b.addMessage("/big_triangle/alpha", cvgl::easeInSine( scale(elapsed_section, 0., 10, 0., 1.)) );
+        b.addMessage("/big_triangle2/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime, 0., 0.75)) );
 
     }
 
@@ -39,23 +43,23 @@ MapOSC cue_forest_loops( cueArgs args )
         out.addMessage("/sine/pregain/dB",  -70);
 
         b.addMessage("/video/black",  0);
-        b.addMessage("/use/preprocess", 0);
 
         b.addMessage("/use/camera",  1);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);
 
-        b.addMessage("/enable/hull", 1);
+        b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 1);
+        b.addMessage("/enable/contour", 0);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
       //  cout << "use camera" << 2 << endl;
-        b.addMessage("/size/min", 0.000 );
+        b.addMessage("/use/preprocess", 3);
+        b.addMessage("/size/min", 0.0001 );
         b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 0 );
-        b.addMessage("/invert", 40 );
+        b.addMessage("/thresh", 10.0 );
+        b.addMessage("/invert", 0 );
 
         out.addMessage("/loop/length/ms", -1);
         out.addMessage("/loop/retrigger/enable", 0);
@@ -99,48 +103,18 @@ MapOSC cue_forest_loops( cueArgs args )
 
         }
 
-        out.addMessage("/korg/spat/1/az", 0);
-        out.addMessage("/korg/spat/2/az", scale(avg_x / sum_area, 0., 1., -90, 90) );
+        out.addMessage("/flow/x", sum_x);
+        out.addMessage("/flow/y", sum_y);
 
-        //if( sum_mag > 0 )
-        {
-            double scalar = sum_area == 0 ? 1 : sum_area;
-            double mag_avg = sum_mag / scalar;
-
-
-            /*
-                        double avg_dist_x = sum_x / scalar;
-                        double avg_dist_y = sum_y / scalar;
-
-                        out.addMessage("/avg/mag", mag_avg );
-                        out.addMessage("/avg/x", avg_dist_x);
-                        out.addMessage("/avg/y", avg_dist_y );
-            */
-
-
-            double norm_mag_avg = mag_avg / 255. ;
-            double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
-
-            out.addMessage("/data/norm_mag_avg", norm_mag_avg);
-
-            out.addMessage("/korg/amp", norm_2);
-            out.addMessage("/korg/slide/down", 0);
-            out.addMessage("/korg/slide/up", 5);
-            out.addMessage("/korg/q1/val", 0.65 );
-            out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
-            out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
-            out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-            out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
-     }
-
+       // b.addMessage("/offset/triangles/x", sum_x * 0.1);
 
     }
     else
     {
-        out.addMessage("/korg/amp", 0);
 
     }
 
+    b.addMessage("/triangle/interact/x", data.centroid_x);
 
     return out;
 }

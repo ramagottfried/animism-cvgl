@@ -6,6 +6,8 @@ uniform float gamma;
 uniform float contrast;
 uniform float saturation;
 uniform float brightness;
+uniform float scale_alpha;
+
 
 uniform vec4 vignette_xyr_aspect;
 uniform float time;
@@ -98,6 +100,7 @@ void main()
 
     tex_samp = gammaCorrection(tex_samp, gamma);
 
+    tex_samp.a *= scale_alpha;
 /*
     float luma = sqrt( 0.299*tex_samp.r*tex_samp.r + 0.587*tex_samp.g*tex_samp.g + 0.114*tex_samp.b*tex_samp.b );
 

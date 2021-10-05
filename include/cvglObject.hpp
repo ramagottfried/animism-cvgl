@@ -35,18 +35,23 @@ public:
     void addVertexIndexArray( std::vector<GLuint> idx );
     void rewriteVerticesWithIds( std::vector<GLuint> idx );
     
-    cvglVertex & getVertex(int idx){ return m_vertices[idx]; }
+    inline cvglVertex getVertex(int idx){ return m_vertices[idx]; }
     
-    void setTexCord( int idx, float u, float v ){
+    inline void setTexCord( int idx, float u, float v ){
         m_vertices[idx].texcoord[0] = u;
         m_vertices[idx].texcoord[1] = v;
     }
     
-    void setPosition( int idx, float x, float y, float z )
+    inline void setPosition( int idx, float x, float y, float z )
     {
         m_vertices[idx].position[0] = x;
         m_vertices[idx].position[1] = y;
         m_vertices[idx].position[2] = z;
+    }
+
+    inline void setVertex( int idx, cvglVertex vert )
+    {
+        m_vertices[idx] = vert;
     }
 
 private:

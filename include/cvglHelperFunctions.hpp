@@ -16,6 +16,11 @@ inline Eigen::ArrayXd clip(const Eigen::ArrayXd& v, double min, double max)
     return v.unaryExpr([&](double x){return clip(x, min, max); });
 }
 
+inline double wrap(double x, double x_min, double x_max)
+{
+    return fmod( fmod((x - x_min), (x_max - x_min)) + (x_max - x_min), (x_max - x_min)) + x_min;
+}
+
 inline double scale(double v, double in_min, double in_max, double out_min, double out_max)
 {
     const double in_range = in_max - in_min;
