@@ -89,6 +89,8 @@ vec4 gammaCorrection(vec4 value, float param)
     return vec4( pow( value.rgb, vec3(1. / param)), value.a);
 }
 
+const vec4 luma_coef = vec4(0.299, 0.587, 0.114, 0.);
+
 void main()
 {
 
@@ -101,14 +103,12 @@ void main()
     tex_samp = gammaCorrection(tex_samp, gamma);
 
     tex_samp.a *= scale_alpha;
-/*
-    float luma = sqrt( 0.299*tex_samp.r*tex_samp.r + 0.587*tex_samp.g*tex_samp.g + 0.114*tex_samp.b*tex_samp.b );
 
-    if( luma >= thresh_w )
-        tex_samp = pow(tex_samp, vec4(0.2, 0.2, 0.2, 1) );
-    else if ( luma <= thresh_b )
-        tex_samp = pow(tex_samp, vec4(5, 5, 5, 1) );
-*/
+    float luma = dot(tex_samp, luma_coef);
+
+    // luma to alpha
+    tex_samp = vec4( tex_samp.rgb, luma*luma);
+
     if( vignette_xyr_aspect.z == 1 )
     {
         outColor = tex_samp;

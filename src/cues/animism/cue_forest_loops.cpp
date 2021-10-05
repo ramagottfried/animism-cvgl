@@ -25,7 +25,7 @@ MapOSC cue_forest_loops( cueArgs args )
 
       //  b.addMessage("/big_triangle/x", scale( cvgl::easeInOutSine( scale(elapsed_section, 0., fadetime, 0., 1.)),0., 1., -1, 0) );
         b.addMessage("/big_triangle/alpha", cvgl::easeInSine( scale(elapsed_section, 0., 10, 0., 1.)) );
-        b.addMessage("/big_triangle2/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime, 0., 0.75)) );
+        b.addMessage("/big_triangle2/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime, 0., 1.)) );
 
     }
 
@@ -60,6 +60,7 @@ MapOSC cue_forest_loops( cueArgs args )
         b.addMessage("/size/max", 0.9 );
         b.addMessage("/thresh", 10.0 );
         b.addMessage("/invert", 0 );
+
 
         out.addMessage("/loop/length/ms", -1);
         out.addMessage("/loop/retrigger/enable", 0);

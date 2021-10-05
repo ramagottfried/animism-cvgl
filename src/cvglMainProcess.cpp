@@ -178,7 +178,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
             const auto& vec = val.getAtomVector();
             for( const auto& v : vec )
             {
-                triCollision(v->getFloat(), 0);
+         //       triCollision(v->getFloat(), 0);
             }
 
         }
@@ -296,89 +296,12 @@ void cvglMainProcess::processAnalysis(const AnalysisData& data)
 
 }
 
-void setTriangleTexcords(unique_ptr<cvglObject> & obj )
-{
-    for( size_t i = 0; i < obj->getSize(); i++  )
-    {
-        cvglVertex vert = obj->getVertex(i);
-
-        obj->setTexCord(i, cvgl::scale( vert.position[0], -1., 1., 0., 1.), cvgl::scale( vert.position[1], -1., 1., 0., 1.));
-    }
-}
-
 void cvglMainProcess::setVignette(float x, float y, float r)
 {
     if( r > 0 )
     {
         vignette_xyr_aspect = glm::vec4(1 - x, y / context.getAspectRatio(), r / context.getAspectRatio(), context.getAspectRatio() );
     }
-}
-
-vector<cvglVertex> cvglMainProcess::genTriangle(int i, float nTriangles, float yrange, float overlap, float x_offset )
-{
-    vector<cvglVertex> randTri;
-    cvglRandom rand;
-
-    float xRatio = 1. / nTriangles;
-
-    float minxrange =  (i == 0 ? 0 : (i-overlap) * xRatio);
-    float maxxrange =  ((i + 1 + overlap) * xRatio);
-
-    float rx1 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange) ;
-    float ry1 = cvgl::scale( rand.uniformRand(), 0., 1., 0, yrange);
-
-    float minx = rx1;
-    float miny = ry1;
-    float maxx = rx1;
-    float maxy = ry1;
-
-    float rx2 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
-    float ry2 = cvgl::scale( rand.uniformRand(), 0., 1., 0., yrange);
-
-    minx = rx2 < minx ? rx2 : minx;
-    miny = ry2 < miny ? ry2 : miny;
-    maxx = rx2 > minx ? rx2 : maxx;
-    maxy = ry2 > miny ? ry2 : maxy;
-
-    float rx3 = cvgl::scale( rand.uniformRand(), 0., 1., minxrange, maxxrange);
-    float ry3 = cvgl::scale( rand.uniformRand(), 0., 1., 0, yrange);
-
-    minx = rx3 < minx ? rx3 : minx;
-    miny = ry3 < miny ? ry3 : miny;
-    maxx = rx3 > minx ? rx3 : maxx;
-    maxy = ry3 > miny ? ry3 : maxy;
-
-    float w = maxx - minx;
-    float h = maxy - miny;
-
-    float xx = cvgl::scale( rx1, 0., 1., -1., 1) + x_offset;
-    float yy = cvgl::scale( ry1, 0., 1., -1., 1);
-    float x_tex = rx1 - w;
-    if( x_tex < 0 )
-        x_tex = rx1 + w;
-
-    randTri.emplace_back(cvglVertex({{xx, yy, 0.0f}, {x_tex, 1-ry1}}));
-
-    xx = cvgl::scale( rx2, 0., 1., -1., 1) + x_offset;
-    yy = cvgl::scale( ry2, 0., 1., -1., 1);
-
-    x_tex = rx2 - w;
-    if( x_tex < 0 )
-        x_tex = rx2 + w;
-
-    randTri.emplace_back(cvglVertex({{xx, yy, 0.0f},  {x_tex, 1-ry2}}));
-
-    xx = cvgl::scale( rx3, 0., 1., -1., 1) + x_offset;
-    yy = cvgl::scale( ry3, 0., 1., -1., 1);
-
-    x_tex = rx3 - w;
-    if( x_tex < 0 )
-        x_tex = rx3 + w;
-
-    randTri.emplace_back(cvglVertex({{xx, yy, 0.0f},  {x_tex, 1-ry3}}));
-
-    return randTri;
-
 }
 
 void cvglMainProcess::makeMirrorTriangles()
@@ -390,8 +313,10 @@ void cvglMainProcess::makeMirrorTriangles()
     float yrange = 0.4;
     float overlap = 5;
 
+    float xRatio = 1. / nTriangles;
+
     glitchRect->clear();
-    glitchRect->reserve( nTriangles * 3 );
+//    glitchRect->reserve( nTriangles * 3 );
     glitchRect->newObj();
 
 /*
@@ -413,15 +338,22 @@ void cvglMainProcess::makeMirrorTriangles()
         glitchRect->addVertex(tri[2]);
     }
 */
-    for(int i = 0 ; i < nTriangles; i++)
+
+   // float minxrange =  (i == 0 ? 0 : (i-overlap) * xRatio);
+   // float maxxrange =  ((i + 1 + overlap) * xRatio);
+
+    for(int ix = 0 ; ix < nTriangles; ix++)
     {
-        auto tri = genTriangle(i, nTriangles, yrange, overlap, 0);
+        for(int iy = 0 ; iy < nTriangles; iy++)
+        {
+            auto tri = mirrorTriangles.genTriangle(ix*xRatio, iy*xRatio, overlap*xRatio, overlap*xRatio);
+            glitchRect->addVertex(tri[0]);
+            glitchRect->addVertex(tri[1]);
+            glitchRect->addVertex(tri[2]);
 
-        glitchRect->addVertex(tri[0]);
-        glitchRect->addVertex(tri[1]);
-        glitchRect->addVertex(tri[2]);
+        }
 
-        tri_vel.emplace_back(0.);
+//        tri_vel.emplace_back(0.);
 
     }
 /*
@@ -445,44 +377,11 @@ void cvglMainProcess::makeMirrorTriangles()
     }
 */
 
-
     glitchRect->endObj();
+
   //  glitchRect->initStaticDraw();
 }
 
-
-void cvglMainProcess::triCollision(double x, double y)
-{
-
-
-    double gl_x = cvgl::scale(x, 0., 1., -1., 1.);
-    float thresh = 0.01;
-    int size = glitchRect->getSize();
-    for( int tri = 0; tri < size; tri += 3)
-    {
-        cvglVertex vertex1 = glitchRect->getVertex(tri);
-        cvglVertex vertex2 = glitchRect->getVertex(tri+1);
-        cvglVertex vertex3 = glitchRect->getVertex(tri+2);
-
-        double x1 = vertex1.position[0];
-        double avg_x = (vertex1.position[0] + vertex2.position[0] + vertex3.position[0]) / 3.;
-
-        double dx = gl_x - avg_x;
-        double dir = dx > 0 ? 1 : -1;
-        if( abs(dx) < thresh )
-        {
-            glitchRect->setPosition(tri, vertex1.position[0] + (tri_step * dir), vertex1.position[1], 0 );
-            glitchRect->setPosition(tri+1, vertex2.position[0] + (tri_step * dir), vertex2.position[1], 0 );
-            glitchRect->setPosition(tri+2, vertex3.position[0] + (tri_step * dir), vertex3.position[1], 0 );
-
-        }
-
-
-    }
-
-
-
-}
 
 /**
  *  initObjects()
@@ -528,6 +427,7 @@ void cvglMainProcess::initObjs()
     contourTriTex = unique_ptr<cvglTexture>(new cvglTexture);
     hullTex =  unique_ptr<cvglTexture>(new cvglTexture);
     minrectTex =  unique_ptr<cvglTexture>(new cvglTexture);
+    prevFrame =  unique_ptr<cvglTexture>(new cvglTexture);
 
     m_hull_rgba = vector<float>({1, 0, 1, 1});
     m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
@@ -552,14 +452,21 @@ void cvglMainProcess::initObjs()
     float triRatio = 3. / 4.;
 
     bigTriMirror->newObj(GL_TRIANGLES);
+/*
     bigTriMirror->addVertex(cvglVertex({{-1,                    -1,      0.0f},        {0.0f, 0.0f} }));
     bigTriMirror->addVertex(cvglVertex({{ 1,                    -1,      0.0f},        {1.0f, 0.0f} }));
     bigTriMirror->addVertex(cvglVertex({{(triRatio * 2 - 1),    0.,     0.0f},       {triRatio, 0.5f} }));
+  */
+
+    bigTriMirror->addVertex(cvglVertex({{-1,                    -1,      0.0f},      {0.0f,     0.f} }));
+    bigTriMirror->addVertex(cvglVertex({{ 1,                    -1,      0.0f},      {1,        0.0f} }));
+    bigTriMirror->addVertex(cvglVertex({{(triRatio * 2 - 1),     0.,     0.0f},      {triRatio, 0.5f} }));
+
     bigTriMirror->endObj();
     bigTriMirror->initStaticDraw();
 
     float triRatio2 = 4. / 5.;
-    float offset_tex_x = 0.01;
+    float offset_tex_x = 0.0;
     bigTriMirror2->newObj(GL_TRIANGLES);
     bigTriMirror2->addVertex(cvglVertex({{-1,                   1,      0.0f},       {0 + offset_tex_x,          0.0f} }));
     bigTriMirror2->addVertex(cvglVertex({{-1,                   -1,      0.0f},      {triRatio2 + offset_tex_x,  0} }));
@@ -668,8 +575,13 @@ void cvglMainProcess::draw()
     }
     
    // context.set_time_uniform( (float)glfwGetTime() );
+
+    // maybe at end stop clearing
+    // or figure out how to copy output image to new texture and
+    // make some feedback stuff
+    // see: https://learnopengl.com/Advanced-OpenGL/Framebuffers
     context.clear();
-    
+
     context.updateViewport();
 
 
@@ -766,7 +678,6 @@ void cvglMainProcess::draw()
 
     //    glm::mat4 translated = glm::rotate(transform, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     //    glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
-        glUniform1f(scale_alpha_attr_idx, big_tri_alpha2);
 
         frameTex->setTexture( merge.getMat(ACCESS_READ) );
         bigTriMirror2->draw();
@@ -794,11 +705,12 @@ void cvglMainProcess::draw()
     if( m_draw_glitch_triangles )
     {
 
+     //   makeMirrorTriangles();
         glm::mat4 translated = glm::translate(transform, glm::vec3(rotateTriangles, 0, 0));
 
         glitchRect->bind();
         glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
-        float alpha = 0.5;
+        float alpha = 0.75;
         glUniform1f(scale_alpha_attr_idx, alpha);
         frameTex->setTexture( merge.getMat(ACCESS_READ) );
         glitchRect->draw();

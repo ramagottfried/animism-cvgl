@@ -8,6 +8,7 @@
 #include "MapOSC.hpp"
 #include "AnimismCues.hpp"
 
+#include "MirrorTriangles.hpp"
 
 class cvglMainProcess :  public cvglCV, public cvglUDPServer
 {
@@ -30,7 +31,7 @@ public:
     glm::vec4 vignette_xyr_aspect;
 
     std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh, glitchRect, bigTriMirror, bigTriMirror2;
-    std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex;
+    std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex, prevFrame;
     
     bool objects_initialized = false;
     
@@ -55,9 +56,11 @@ public:
     
     void initCues();
 
-    vector<cvglVertex> genTriangle(int i, float nTriangles, float yrange, float overlap, float x_offset = 0 );
+  //  vector<cvglVertex> genTriangle(int i, float nTriangles, float yrange, float overlap, float x_offset = 0 );
+  //  vector<cvglVertex> genTriangle(float x, float y, float xrange, float yrange);
+
     void makeMirrorTriangles();
-    void triCollision(double x, double y);
+//    void triCollision(double x, double y);
 //    std::vector<float> getRGBA( const OdotMessage & msg );
     
     inline void useCameraID( int i ){ m_use_camera_id = i; }
@@ -101,14 +104,14 @@ private:
     bool m_draw_hull = true;
     bool m_draw_minrect = true;
     
-    bool m_draw_glitch_triangles = true;
+    bool m_draw_glitch_triangles = false;
 
-    bool m_draw_big_triangle = true;
+    bool m_draw_big_triangle = false;
     float big_tri_alpha = 1;
     float big_tri_x_offset = 0;
 
 
-    bool m_draw_big_triangle2 = true;
+    bool m_draw_big_triangle2 = false;
     float big_tri_alpha2 = 0.75;
     float big_tri_x_offset2 = 0;
 
@@ -128,6 +131,8 @@ private:
     float m_saturation = 1;
 
     int tri_update_counter = 0;
+
+    MirrorTriangles mirrorTriangles;
 };
 
 

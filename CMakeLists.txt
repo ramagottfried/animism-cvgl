@@ -92,6 +92,7 @@ file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 add_executable(cvgl
     ${RES_FILES}
     ${CUE_FILES}
+    src/MirrorTriangles.cpp
     src/cvgl_main.cpp
     src/cvglMainProcess.cpp
 )
