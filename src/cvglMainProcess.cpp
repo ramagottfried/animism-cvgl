@@ -7,6 +7,7 @@
 using namespace std;
 using namespace cv;
 
+
 void cvglMainProcess::initCues()
 {
     MapOSC bndl;
@@ -383,6 +384,65 @@ void cvglMainProcess::makeMirrorTriangles()
 }
 
 
+int cvglMainProcess::loadShaders()
+{
+    std::string shader_path = "/home/rama/animism-cvgl/src/";
+
+    if( !processing_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "fragment.fs" ) ){
+        cout << "failed to load base shader" << endl;
+        return 0;
+    }
+
+    if( !basic_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "basic_fragment.fs" ) ){
+        cout << "failed to load screen shader" << endl;
+        return 0;
+    }
+
+    setVignette(0.5, 0.5, 1);
+
+    processing_shader.use();
+    processing_shader.setInt("tex", 0);
+    processing_shader.setMat4("transform_matrix", context.getTransform() );
+    processing_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+    processing_shader.setFloat("gamma", gamma);
+    processing_shader.setFloat("contrast", contrast);
+    processing_shader.setFloat("saturation", saturation);
+    processing_shader.setFloat("brightness", brightness);
+    processing_shader.setFloat("scale_alpha", 1);
+
+   // glBindFragDataLocation(basic_shader.getShader(), 0, "outColor");
+
+    //glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
+
+    basic_shader.use();
+    basic_shader.setInt("framebuffer_tex", 0);
+  /*  processing_shader.setMat4("transform_matrix",  context.getTransform() );
+    processing_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+    processing_shader.setFloat("gamma", gamma);
+    processing_shader.setFloat("contrast", contrast);
+    processing_shader.setFloat("saturation", saturation);
+    processing_shader.setFloat("brightness", brightness);
+    processing_shader.setFloat("scale_alpha", 1);
+*/
+   // glBindFragDataLocation(processing_shader.getShader(), 0, "screen_outColor");
+
+/*
+    basic_shader.getShaderAttrLocation("transform_matrix");
+    vignette_attr_idx = basic_shader.getShaderAttrLocation("vignette_xyr_aspect");
+    contrast_attr_idx = basic_shader.getShaderAttrLocation("contrast");
+    brightness_attr_idx = basic_shader.getShaderAttrLocation("brightness");
+    saturation_attr_idx = basic_shader.getShaderAttrLocation("saturation");
+    gamma_attr_idx = basic_shader.getShaderAttrLocation("gamma");
+
+    scale_alpha_attr_idx = processing_shader.getShaderAttrLocation("scale_alpha");
+
+    glUniform1f(scale_alpha_attr_idx, 1);
+*/
+
+    return 1;
+
+}
+
 /**
  *  initObjects()
  *  init function to setup VBOs for GL objects, must be called after context setup is complete
@@ -391,24 +451,6 @@ void cvglMainProcess::makeMirrorTriangles()
 void cvglMainProcess::initObjs()
 {
 
-    transform_attr_idx = context.getShaderAttrLocation("transform_matrix");
-    vignette_attr_idx = context.getShaderAttrLocation("vignette_xyr_aspect");
-    contrast_attr_idx = context.getShaderAttrLocation("contrast");
-    brightness_attr_idx = context.getShaderAttrLocation("brightness");
-    saturation_attr_idx = context.getShaderAttrLocation("saturation");
-    gamma_attr_idx = context.getShaderAttrLocation("gamma");
-
-    scale_alpha_attr_idx = context.getShaderAttrLocation("scale_alpha");
-
-    glUniform1f(scale_alpha_attr_idx, 1);
-
-    cout << "found attr vignette " << vignette_attr_idx << endl;
-    cout << "found attr contrast " << contrast_attr_idx << endl;
-    cout << "found attr brightness " << brightness_attr_idx << endl;
-    cout << "found attr saturation " << saturation_attr_idx << endl;
-
-
-    setVignette(0.5, 0.5, 1);
     //glm::vec4 vignette_xyr_aspect(0.5, 0.25, 1, context.getAspectRatio() );
     //glUniform4fv( vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
 
@@ -428,6 +470,8 @@ void cvglMainProcess::initObjs()
     hullTex =  unique_ptr<cvglTexture>(new cvglTexture);
     minrectTex =  unique_ptr<cvglTexture>(new cvglTexture);
     prevFrame =  unique_ptr<cvglTexture>(new cvglTexture);
+
+    framebuffer = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
 
     m_hull_rgba = vector<float>({1, 0, 1, 1});
     m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
@@ -487,6 +531,14 @@ void cvglMainProcess::initObjs()
 
     context.clearColor(0, 0, 0, 1);
 
+    /*
+     * this will be in the second shader...
+    GLuint texLocation = context.getShaderAttrLocation("tex");
+    GLuint prevTexLocation = context.getShaderAttrLocation("prevTex");
+
+    glUniform1i(texLocation, 0);
+    glUniform1i(prevTexLocation, 1);
+*/
     cout << objects_initialized << endl;
 }
 
@@ -580,8 +632,15 @@ void cvglMainProcess::draw()
     // or figure out how to copy output image to new texture and
     // make some feedback stuff
     // see: https://learnopengl.com/Advanced-OpenGL/Framebuffers
-    context.clear();
 
+    framebuffer->bind();
+  //  glEnable(GL_DEPTH_TEST);
+
+    cvglShader render_shader( processing_shader.getID() );
+    render_shader.use();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+
+    context.clear();
     context.updateViewport();
 
 
@@ -592,14 +651,15 @@ void cvglMainProcess::draw()
         m_newframe = false;
         return;
     }
-
-    glUniform4fv(vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
-    glUniform1fv(contrast_attr_idx, 1, &contrast );
-    glUniform1fv(brightness_attr_idx, 1, &brightness );
-    glUniform1fv(saturation_attr_idx, 1, &saturation );
-    glUniform1fv(gamma_attr_idx, 1, &gamma );
-
-
+/*
+    render_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+    render_shader.setFloat("gamma", gamma);
+    render_shader.setFloat("contrast", contrast);
+    render_shader.setFloat("saturation", saturation);
+    render_shader.setFloat("brightness", brightness);
+    render_shader.setFloat("scale_alpha", 1);
+    render_shader.setMat4("transform_matrix", context.getTransform() );
+*/
     UMat merge;
     if( m_draw_frame && m_use_camera_id > 0 )
     {
@@ -669,8 +729,6 @@ void cvglMainProcess::draw()
 
     glm::mat4 transform = context.getTransform();
 
-
-
     if( m_draw_big_triangle2 )
     {
 
@@ -678,12 +736,15 @@ void cvglMainProcess::draw()
 
     //    glm::mat4 translated = glm::rotate(transform, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     //    glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
+        render_shader.setFloat("scale_alpha", big_tri_alpha2);
 
-        frameTex->setTexture( merge.getMat(ACCESS_READ) );
+        frameTex->bind();
         bigTriMirror2->draw();
 
-        glUniform1f(scale_alpha_attr_idx, 1);
-        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
+        render_shader.setFloat("scale_alpha", 1);
+
+//        glUniform1f(scale_alpha_attr_idx, 1);
+//        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
     }
 
     if( m_draw_big_triangle )
@@ -692,14 +753,21 @@ void cvglMainProcess::draw()
         bigTriMirror->bind();
 
         glm::mat4 translated = glm::translate(transform, glm::vec3(0, big_tri_x_offset, 0));
-        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
-        glUniform1f(scale_alpha_attr_idx, big_tri_alpha);
 
-        frameTex->setTexture( merge.getMat(ACCESS_READ) );
+        render_shader.setMat4("transform_matrix", translated);
+        render_shader.setFloat("scale_alpha", big_tri_alpha);
+
+        //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
+        //glUniform1f(scale_alpha_attr_idx, big_tri_alpha);
+
+        frameTex->bind();
         bigTriMirror->draw();
 
-        glUniform1f(scale_alpha_attr_idx, 1);
-        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
+        render_shader.setFloat("scale_alpha", 1);
+        render_shader.setMat4("transform_matrix", transform);
+
+        //glUniform1f(scale_alpha_attr_idx, 1);
+        //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
     }
 
     if( m_draw_glitch_triangles )
@@ -709,15 +777,37 @@ void cvglMainProcess::draw()
         glm::mat4 translated = glm::translate(transform, glm::vec3(rotateTriangles, 0, 0));
 
         glitchRect->bind();
-        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
+        render_shader.setMat4("transform_matrix", translated);
         float alpha = 0.75;
-        glUniform1f(scale_alpha_attr_idx, alpha);
-        frameTex->setTexture( merge.getMat(ACCESS_READ) );
-        glitchRect->draw();
-        glUniform1f(scale_alpha_attr_idx, 1);
+        render_shader.setFloat("scale_alpha", alpha);
 
-        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
+        //glUniform1f(scale_alpha_attr_idx, alpha);
+        //        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
+
+        frameTex->bind();
+        glitchRect->draw();
+
+        render_shader.setFloat("scale_alpha", 1);
+        render_shader.setMat4("transform_matrix", transform);
+
+        //glUniform1f(scale_alpha_attr_idx, 1);
+        //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
     }
+
+    context.bindDefaultFramebuffer();
+    context.updateViewport(1);
+
+    basic_shader.use();
+    basic_shader.setMat4("transform_matrix", transform);
+
+   // glDisable(GL_DEPTH_TEST);
+   // glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+    context.clear();
+
+    rect->bind();
+   // contourTex->setTexture(m_contour_rgba);
+    context.bindTextureByID( framebuffer->getTexID() ); //framebuffer->getTexID()
+    rect->draw();
 
     context.drawAndPoll();
 

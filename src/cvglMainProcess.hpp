@@ -3,6 +3,9 @@
 #include "cvglContext.hpp"
 #include "cvglCV.hpp"
 #include "cvglObject.hpp"
+#include "cvglFramebuffer.hpp"
+#include "cvglShader.hpp"
+
 #include "cvglUDPServer.hpp"
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
@@ -17,13 +20,15 @@ public:
     
     // GL context
     cvglContext context;
-    
+
+    cvglShader basic_shader, processing_shader;
+
     // globals
     
     void setVignette(float x, float y, float r);
 
-    GLint vignette_attr_idx = -1, gamma_attr_idx = -1, contrast_attr_idx = -1, brightness_attr_idx = -1, saturation_attr_idx = -1;
-    GLint transform_attr_idx = -1, scale_alpha_attr_idx = -1;
+//    GLint vignette_attr_idx = -1, gamma_attr_idx = -1, contrast_attr_idx = -1, brightness_attr_idx = -1, saturation_attr_idx = -1;
+//    GLint transform_attr_idx = -1, scale_alpha_attr_idx = -1;
 
     double rotateTriangles = 0, tri_step = 0.01, tri_damping = 0.99;
     std::vector<double> tri_vel;
@@ -33,6 +38,8 @@ public:
     std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh, glitchRect, bigTriMirror, bigTriMirror2;
     std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex, prevFrame;
     
+    std::unique_ptr<cvglFramebuffer> framebuffer;
+
     bool objects_initialized = false;
     
     // methods
@@ -75,11 +82,14 @@ public:
     }
     */
 
+    int loadShaders();
+
+
 private:
-    
+
     AnimismCues m_cues;
     //cvglMixer m_mixer;
-    
+
     AnalysisData m_data;
     
     cvglProfile profile;
@@ -106,10 +116,9 @@ private:
     
     bool m_draw_glitch_triangles = false;
 
-    bool m_draw_big_triangle = false;
+    bool m_draw_big_triangle = true;
     float big_tri_alpha = 1;
     float big_tri_x_offset = 0;
-
 
     bool m_draw_big_triangle2 = false;
     float big_tri_alpha2 = 0.75;

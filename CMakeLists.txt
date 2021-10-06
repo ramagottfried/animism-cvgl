@@ -59,6 +59,8 @@ add_library(libcvgl STATIC
     src/gl/cvglContext.cpp
     src/gl/cvglObject.cpp
     src/gl/cvglTexture.cpp
+    src/gl/cvglShader.cpp
+    src/gl/cvglFramebuffer.cpp
     src/gl/cvglVAO.cpp
     src/gl/cvglVertex.cpp
     src/gl/delabella.cpp

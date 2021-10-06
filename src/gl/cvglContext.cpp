@@ -29,7 +29,7 @@ void cvglContext::resize_callback(int w, int h)
 
     m_update_viewport = true;
 
-    if( m_transformAttrib )
+    //if( m_transformAttrib )
     {
         double aspect = (double)w / (double)h;
         double adjust = aspect /  m_aspectRatio ;
@@ -39,7 +39,7 @@ void cvglContext::resize_callback(int w, int h)
         m_transform_matrix = glm::scale( glm::mat4(1.0f), glm::vec3(m_x_scale, m_y_scale * adjust, 1.0f) );
 
 
-        glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
+      //  glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
         
     }
 
@@ -185,6 +185,7 @@ void cvglContext::setupWindow(int width, int height )
     
 }
 
+/*
 std::string slurp(std::ifstream& in) {
     std::stringstream sstr;
     sstr << in.rdbuf();
@@ -220,6 +221,48 @@ int cvglContext::loadShaderFiles(const char * vertex_file_path, const char * fra
 int cvglContext::loadShaderFiles(const string& vertex_file_path, const string& fragment_file_path)
 {
     return loadShaderFiles(vertex_file_path.c_str(), fragment_file_path.c_str());
+}
+
+string getGLUnivormTypeName(GLenum type)
+{
+    switch (type) {
+        case GL_FLOAT:
+            return "GL_FLOAT";
+        case GL_FLOAT_VEC2:
+            return "GL_FLOAT_VEC2";
+        case GL_FLOAT_VEC3:
+            return "GL_FLOAT_VEC3";
+        case GL_FLOAT_VEC4:
+            return "GL_FLOAT_VEC4";
+        case GL_INT:
+            return "GL_INT";
+        case GL_INT_VEC2:
+            return "GL_INT_VEC2";
+        case GL_INT_VEC3:
+            return "GL_INT_VEC3";
+        case GL_INT_VEC4:
+            return "GL_INT_VEC4";
+        case GL_BOOL:
+            return "GL_BOOL";
+        case GL_BOOL_VEC2:
+            return "GL_BOOL_VEC2";
+        case GL_BOOL_VEC3:
+            return "GL_BOOL_VEC3";
+        case GL_BOOL_VEC4:
+            return "GL_BOOL_VEC4";
+    case GL_FLOAT_MAT2:
+        return "GL_FLOAT_MAT2";
+    case GL_FLOAT_MAT3:
+        return "GL_FLOAT_MAT3";
+    case GL_FLOAT_MAT4:
+        return "GL_FLOAT_MAT4";
+    case GL_SAMPLER_2D:
+        return "GL_SAMPLER_2D";
+    case GL_SAMPLER_CUBE:
+        return "GL_SAMPLER_CUBE";
+    default:
+        return std::to_string(type);
+    }
 }
 
 int cvglContext::loadShaders(const char * vertex_src, const char * fragment_src)
@@ -270,6 +313,23 @@ int cvglContext::loadShaders(const char * vertex_src, const char * fragment_src)
     }
     
     glUseProgram(m_shaderProgram);
+
+
+    GLint i;
+    GLint count = 0;
+    GLint size;
+    GLenum type;
+    const GLsizei bufSize = 28;
+    GLchar name[bufSize];
+    GLsizei length;
+
+    glGetProgramiv(m_shaderProgram, GL_ACTIVE_UNIFORMS, &count);
+    for( i = 0; i < count; i++ )
+    {
+        glGetActiveUniform(m_shaderProgram, (GLuint)i, bufSize, &size, &length, &type, name);
+        std::cout << "uniform " << i << " type " << getGLUnivormTypeName(type) << " name " << name << std::endl;
+    }
+
     
     m_transformAttrib = glGetUniformLocation(m_shaderProgram, "transform_matrix");
     
@@ -278,28 +338,7 @@ int cvglContext::loadShaders(const char * vertex_src, const char * fragment_src)
         cout << "failed to find m_scaleAttrib " << endl;
         //    return 0;
     }
-/*
-    m_timeAttrib = glGetUniformLocation(m_shaderProgram, "time");
-    if( m_timeAttrib == -1 )
-    {
-        cout << "failed to find m_timeAttrib " << endl;
-        //    return 0;
-    }
-    
-    m_contrastAttr = glGetUniformLocation(m_shaderProgram, "contrast");
-    if( m_contrastAttr == -1 )
-    {
-        cout << "failed to find m_contrastAttr " << endl;
-        //    return 0;
-    }
 
-    m_saturationAttr = glGetUniformLocation(m_shaderProgram, "saturation");
-    if( m_saturationAttr == -1 )
-    {
-        cout << "failed to find m_saturationAttr " << endl;
-        //    return 0;
-    }
-*/
     glBindFragDataLocation(m_shaderProgram, 0, "outColor");
     
     glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
@@ -311,6 +350,7 @@ int cvglContext::loadShaders(const char * vertex_src, const char * fragment_src)
     
     return 1;
 }
+*/
 
 /*
  void cvglContext::genTexture()

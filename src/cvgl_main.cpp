@@ -65,17 +65,21 @@ int main( void )
     }
 
     
-    
+    if( !app.loadShaders() )
+    {
+        cout << "failed to load shaders" << endl;
+        return -1;
+    }
     
   //  app.context.setupWindow( 1920, 1080 );
-    
+    /*
     std::string shader_path = "/home/rama/animism-cvgl/src/";
 
     if( !app.context.loadShaderFiles( shader_path + "vertex.vs", shader_path + "fragment.fs" ) ){
         cout << "failed to load shaders" << endl;
         return -1;
     }
-    
+    */
     // start UDP server
     app.start();
     

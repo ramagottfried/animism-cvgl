@@ -8,11 +8,12 @@ uniform float saturation;
 uniform float brightness;
 uniform float scale_alpha;
 
-
 uniform vec4 vignette_xyr_aspect;
 uniform float time;
 
 uniform sampler2D tex;
+uniform sampler2D prevTex;
+
  float thresh_w = 0.9;
  float thresh_b = 0.1;
 
@@ -107,7 +108,7 @@ void main()
     float luma = dot(tex_samp, luma_coef);
 
     // luma to alpha
-    tex_samp = vec4( tex_samp.rgb, luma*luma);
+   // tex_samp = vec4( tex_samp.rgb, luma*luma);
 
     if( vignette_xyr_aspect.z == 1 )
     {

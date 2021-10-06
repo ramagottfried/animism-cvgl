@@ -27,21 +27,23 @@ public:
     void flip( bool x, bool y);
 
     void set_time_uniform(float t);
-    
+    /*
     int loadShaderFiles(const char * vertex_file_path, const char * fragment_file_path);
     int loadShaderFiles(const std::string& vertex_file_path, const std::string& fragment_file_path);
 
     int loadShaders(const GLchar* vertex_src, const GLchar* fragment_src);
-    
-  //  void genTexture();
-    //void setMatTexture(cv::Mat mat);
-    
+
     inline GLuint getShader(){ return m_shaderProgram; }
-    
+
     inline GLuint getShaderAttrLocation(const char *name)
     {
         return glGetUniformLocation(m_shaderProgram, name );
     }
+
+    */
+  //  void genTexture();
+    //void setMatTexture(cv::Mat mat);
+    
 
     inline bool isActive()
     {
@@ -79,13 +81,13 @@ public:
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
         if( m_update_transform_matrix ){
-            resetTransform();
+          //  resetTransform();
         }
     }
     
-    inline void updateViewport()
+    inline void updateViewport(bool force = false)
     {
-        if ( m_update_viewport )
+        if ( m_update_viewport || force )
         {
             int _vpSize[2] = {0,0};
             glfwGetFramebufferSize( m_window, &_vpSize[0], &_vpSize[1] );
@@ -141,6 +143,15 @@ public:
 
     inline double getAspectRatio(){ return m_aspectRatio; }
 
+    void bindDefaultFramebuffer()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void bindTextureByID(GLuint tex_id)
+    {
+        glBindTexture(GL_TEXTURE_2D, tex_id);
+    }
 
 private:
     
