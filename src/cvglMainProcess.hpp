@@ -38,7 +38,8 @@ public:
     std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh, glitchRect, bigTriMirror, bigTriMirror2;
     std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex, prevFrame;
     
-    std::unique_ptr<cvglFramebuffer> framebuffer;
+    int fbIDX = 0;
+    std::unique_ptr<cvglFramebuffer> framebuffer[2];
 
     bool objects_initialized = false;
     
@@ -116,7 +117,7 @@ private:
     
     bool m_draw_glitch_triangles = false;
 
-    bool m_draw_big_triangle = true;
+    bool m_draw_big_triangle = false;
     float big_tri_alpha = 1;
     float big_tri_x_offset = 0;
 

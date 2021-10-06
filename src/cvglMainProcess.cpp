@@ -402,6 +402,7 @@ int cvglMainProcess::loadShaders()
 
     processing_shader.use();
     processing_shader.setInt("tex", 0);
+    processing_shader.setInt("prevTex", 1);
     processing_shader.setMat4("transform_matrix", context.getTransform() );
     processing_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
     processing_shader.setFloat("gamma", gamma);
@@ -410,9 +411,19 @@ int cvglMainProcess::loadShaders()
     processing_shader.setFloat("brightness", brightness);
     processing_shader.setFloat("scale_alpha", 1);
 
-   // glBindFragDataLocation(basic_shader.getShader(), 0, "outColor");
+    processing_shader.setFloat("luma_target", 0.5);
+    processing_shader.setFloat("luma_tol", 0.);
+    processing_shader.setFloat("luma_fade", 0.9999);
 
-    //glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
+    processing_shader.setVec2("hsflow_scale", glm::vec2(100., 100.) );
+    processing_shader.setVec2("hsflow_offset", glm::vec2(1., 1.));
+    processing_shader.setFloat("hsflow_lambda", 3. );
+
+    processing_shader.setVec2("repos_amt", glm::vec2(50., 50.) );
+    processing_shader.setVec2("repos_scale", glm::vec2(1., 1.));
+    processing_shader.setVec4("repos_bias", glm::vec4(0., 0., 0., 0.) );
+
+
 
     basic_shader.use();
     basic_shader.setInt("framebuffer_tex", 0);
@@ -471,7 +482,8 @@ void cvglMainProcess::initObjs()
     minrectTex =  unique_ptr<cvglTexture>(new cvglTexture);
     prevFrame =  unique_ptr<cvglTexture>(new cvglTexture);
 
-    framebuffer = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
+    framebuffer[0] = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
+    framebuffer[1] = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
 
     m_hull_rgba = vector<float>({1, 0, 1, 1});
     m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
@@ -633,8 +645,12 @@ void cvglMainProcess::draw()
     // make some feedback stuff
     // see: https://learnopengl.com/Advanced-OpenGL/Framebuffers
 
-    framebuffer->bind();
-  //  glEnable(GL_DEPTH_TEST);
+    int prev_fbIDX = fbIDX;
+    fbIDX = (fbIDX+1) % 2;
+
+    framebuffer[fbIDX]->bind();
+
+    glEnable(GL_DEPTH_TEST);
 
     cvglShader render_shader( processing_shader.getID() );
     render_shader.use();
@@ -643,6 +659,10 @@ void cvglMainProcess::draw()
     context.clear();
     context.updateViewport();
 
+    glActiveTexture(GL_TEXTURE1); // Texture unit 1
+    context.bindTextureByID( framebuffer[prev_fbIDX]->getTexID() );
+
+    glActiveTexture(GL_TEXTURE0); // Texture unit 0
 
     if( m_draw_black )
     {
@@ -691,8 +711,8 @@ void cvglMainProcess::draw()
 
         }
 
-
         frameTex->setTexture( merge.getMat(ACCESS_READ) );
+
         rect->draw();
     }
     
@@ -795,18 +815,18 @@ void cvglMainProcess::draw()
     }
 
     context.bindDefaultFramebuffer();
-    context.updateViewport(1);
-
     basic_shader.use();
+
+    context.updateViewport(1);
     basic_shader.setMat4("transform_matrix", transform);
 
-   // glDisable(GL_DEPTH_TEST);
-   // glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+    glDisable(GL_DEPTH_TEST);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
     context.clear();
 
     rect->bind();
    // contourTex->setTexture(m_contour_rgba);
-    context.bindTextureByID( framebuffer->getTexID() ); //framebuffer->getTexID()
+    context.bindTextureByID( framebuffer[fbIDX]->getTexID() ); //framebuffer->getTexID()
     rect->draw();
 
     context.drawAndPoll();

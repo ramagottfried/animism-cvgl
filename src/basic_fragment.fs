@@ -9,7 +9,9 @@ out vec4 screen_outColor;
 void main()
 {
 
-    vec4 tex_samp = texture( framebuffer_tex, Texcoord );
+    vec2 prevTexcoord = vec2(Texcoord.x, 1.0 - Texcoord.y);
+
+    vec4 tex_samp = texture( framebuffer_tex, prevTexcoord );
 
     screen_outColor = tex_samp;
 
