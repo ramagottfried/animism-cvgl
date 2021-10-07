@@ -57,7 +57,7 @@ vec4 lumakey(vec4 aTex, vec4 bTex)
 {
     float luma = dot(aTex, luma_coef);
     float dx = abs(luma - luma_target);
-    float lm_scale = smoothstep(abs(luma_tol), abs(luma_tol)+abs(luma_fade), dx);
+    float lm_scale = smoothstep( abs(luma_tol), abs(luma_tol)+abs(luma_fade), dx);
 
     float mixamout = lm_scale;
     //float mixamout = mix( lm_scale, 1.0 - lm_scale, invert);

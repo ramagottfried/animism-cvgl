@@ -420,7 +420,7 @@ int cvglMainProcess::loadShaders()
 
     processing_shader.setFloat("luma_target", 0.5);
     processing_shader.setFloat("luma_tol", 0.);
-    processing_shader.setFloat("luma_fade", 0.9999);
+    processing_shader.setFloat("luma_fade", 0.99999999);
 
     // setup first shader
     flow_shader.use();
@@ -429,12 +429,12 @@ int cvglMainProcess::loadShaders()
     flow_shader.setMat4("transform_matrix", context.getTransform() );
     flow_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
 
-    flow_shader.setVec2("hsflow_scale", glm::vec2(300., 300.) );
-    flow_shader.setVec2("hsflow_offset", glm::vec2(10., 10.));
-    flow_shader.setFloat("hsflow_lambda", 3. );
+    flow_shader.setVec2("hsflow_scale", glm::vec2(0.9, 0.9) );
+    flow_shader.setVec2("hsflow_offset", glm::vec2(10.9, 0.9));
+    flow_shader.setFloat("hsflow_lambda", 20000. );
 
-    flow_shader.setVec2("repos_amt", glm::vec2(50., 50.) );
-    flow_shader.setVec4("repos_scale", glm::vec4(1., 1., 1., 1.));
+    flow_shader.setVec2("repos_amt", glm::vec2(100.5, 100.5) );
+    flow_shader.setVec4("repos_scale", glm::vec4(1.));
     flow_shader.setVec4("repos_bias", glm::vec4(0., 0., 0., 0.) );
 
     basic_shader.use();

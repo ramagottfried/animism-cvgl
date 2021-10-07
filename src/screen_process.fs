@@ -51,7 +51,7 @@ vec4 ab_hsflow_repos(sampler2D tex0, sampler2D tex1, vec2 texcoord)
     grady =  texture(tex1, texcoord+y1)-texture(tex1, texcoord-y1);
     grady += texture(tex0, texcoord+y1)-texture(tex0, texcoord-y1);
 
-    vec4 gradmag = sqrt( (gradx*gradx) + (grady*grady) + vec4(hsflow_lambda));
+    vec4 gradmag = sqrt( (gradx*gradx) + (grady*grady) + vec4(hsflow_lambda) );
 
     vec4 vx = curdif*(gradx/gradmag);
 
