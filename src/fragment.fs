@@ -16,17 +16,9 @@ uniform float luma_target;
 uniform float luma_tol;
 uniform float luma_fade;
 
-uniform vec2 hsflow_scale;
-uniform vec2 hsflow_offset;
-uniform float hsflow_lambda;
-
-uniform vec2 repos_amt;
-uniform vec4 repos_scale;
-uniform vec4 repos_bias;
-//uniform vec2 repos_boundmode;
-
-uniform vec4 vignette_xyr_aspect;
 uniform float time;
+
+// vignette now in screen proc
 
 const vec4 luma_coef = vec4(0.299, 0.587, 0.114, 0.);
 
@@ -73,51 +65,6 @@ vec4 lumakey(vec4 aTex, vec4 bTex)
     return mix(bTex, aTex, vec4(mixamout));
 }
 
-vec4 ab_hsflow_repos(sampler2D tex0, sampler2D tex1, vec2 texcoord0, vec2 texcoord1)
-{
-    vec4 a = texture( tex0, texcoord0 );
-    vec4 b = texture( tex1, texcoord1 );
-
-    vec2 x1 = vec2( hsflow_offset.x, 0.);
-    vec2 y1 = vec2( 0., hsflow_offset.y);
-
-    vec4 curdif = a - b;
-
-    //calculate the gradient
-    vec4 gradx = texture(tex1, texcoord1+x1)-texture(tex1, texcoord1-x1);
-    gradx += texture(tex0, texcoord0+x1)-texture(tex0, texcoord0-x1);
-    vec4 grady = texture(tex1, texcoord1+y1)-texture(tex1, texcoord1-y1);
-    grady += texture(tex0, texcoord0+y1)-texture(tex0, texcoord0-y1);
-
-    vec4 gradmag = sqrt( (gradx*gradx) + (grady*grady) + vec4(hsflow_lambda));
-
-    vec4 vx = curdif*(gradx/gradmag);
-    float vxd = vx.r;//assumes greyscale
-
-    //format output for flowrepos, out(-x,+x,-y,+y)
-    vec2 xout = vec2(max(vxd,0.),abs(min(vxd,0.))) * hsflow_scale.x;
-
-    vec4 vy = curdif*(grady/gradmag);
-    float vyd = vy.r;//assumes greyscale
-    //format output for flowrepos, out(-x,+x,-y,+y)
-    vec2 yout = vec2(max(vyd,0.),abs(min(vyd,0.))) * hsflow_scale.y;
-
-    //return vec4(xout.xy,yout.xy);
-
-    vec4 look = vec4(xout.xy,yout.xy);
-
-// repos
-    //vec4 look = texture2DRect(tex1,texcoord1);//sample repos texture
-    vec2 offs = vec2(look.y-look.x,look.w-look.z) * repos_amt;
-    vec2 coord = offs + texcoord0;//relative coordinates
-   //coord = mod(coord,texdim0);
-    vec4 repos = texture(tex0, coord);
-
-   // output texture
-    return repos * repos_scale + repos_bias;
-
-}
-
 
 void main()
 {
@@ -133,8 +80,6 @@ void main()
 
 
     vec4 lumaMix = lumakey(a, b);
-
-    vec4 hsflow = ab_hsflow_repos(tex, prevTex, Texcoord, prevTexcoord);
 
     outColor = lumaMix;
 

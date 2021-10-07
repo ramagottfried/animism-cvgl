@@ -393,6 +393,11 @@ int cvglMainProcess::loadShaders()
         return 0;
     }
 
+    if( !flow_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "screen_process.fs" ) ){
+        cout << "failed to load screen shader" << endl;
+        return 0;
+    }
+
     if( !basic_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "basic_fragment.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
@@ -400,11 +405,13 @@ int cvglMainProcess::loadShaders()
 
     setVignette(0.5, 0.5, 1);
 
+    // setup first shader
     processing_shader.use();
     processing_shader.setInt("tex", 0);
     processing_shader.setInt("prevTex", 1);
     processing_shader.setMat4("transform_matrix", context.getTransform() );
     processing_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+
     processing_shader.setFloat("gamma", gamma);
     processing_shader.setFloat("contrast", contrast);
     processing_shader.setFloat("saturation", saturation);
@@ -415,40 +422,23 @@ int cvglMainProcess::loadShaders()
     processing_shader.setFloat("luma_tol", 0.);
     processing_shader.setFloat("luma_fade", 0.9999);
 
-    processing_shader.setVec2("hsflow_scale", glm::vec2(100., 100.) );
-    processing_shader.setVec2("hsflow_offset", glm::vec2(1., 1.));
-    processing_shader.setFloat("hsflow_lambda", 3. );
+    // setup first shader
+    flow_shader.use();
+    flow_shader.setInt("tex", 0);
+    flow_shader.setInt("prevTex", 1);
+    flow_shader.setMat4("transform_matrix", context.getTransform() );
+    flow_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
 
-    processing_shader.setVec2("repos_amt", glm::vec2(50., 50.) );
-    processing_shader.setVec2("repos_scale", glm::vec2(1., 1.));
-    processing_shader.setVec4("repos_bias", glm::vec4(0., 0., 0., 0.) );
+    flow_shader.setVec2("hsflow_scale", glm::vec2(300., 300.) );
+    flow_shader.setVec2("hsflow_offset", glm::vec2(10., 10.));
+    flow_shader.setFloat("hsflow_lambda", 3. );
 
-
+    flow_shader.setVec2("repos_amt", glm::vec2(50., 50.) );
+    flow_shader.setVec4("repos_scale", glm::vec4(1., 1., 1., 1.));
+    flow_shader.setVec4("repos_bias", glm::vec4(0., 0., 0., 0.) );
 
     basic_shader.use();
     basic_shader.setInt("framebuffer_tex", 0);
-  /*  processing_shader.setMat4("transform_matrix",  context.getTransform() );
-    processing_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
-    processing_shader.setFloat("gamma", gamma);
-    processing_shader.setFloat("contrast", contrast);
-    processing_shader.setFloat("saturation", saturation);
-    processing_shader.setFloat("brightness", brightness);
-    processing_shader.setFloat("scale_alpha", 1);
-*/
-   // glBindFragDataLocation(processing_shader.getShader(), 0, "screen_outColor");
-
-/*
-    basic_shader.getShaderAttrLocation("transform_matrix");
-    vignette_attr_idx = basic_shader.getShaderAttrLocation("vignette_xyr_aspect");
-    contrast_attr_idx = basic_shader.getShaderAttrLocation("contrast");
-    brightness_attr_idx = basic_shader.getShaderAttrLocation("brightness");
-    saturation_attr_idx = basic_shader.getShaderAttrLocation("saturation");
-    gamma_attr_idx = basic_shader.getShaderAttrLocation("gamma");
-
-    scale_alpha_attr_idx = processing_shader.getShaderAttrLocation("scale_alpha");
-
-    glUniform1f(scale_alpha_attr_idx, 1);
-*/
 
     return 1;
 
@@ -484,6 +474,7 @@ void cvglMainProcess::initObjs()
 
     framebuffer[0] = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
     framebuffer[1] = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
+    pass_buffer = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
 
     m_hull_rgba = vector<float>({1, 0, 1, 1});
     m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
@@ -648,9 +639,9 @@ void cvglMainProcess::draw()
     int prev_fbIDX = fbIDX;
     fbIDX = (fbIDX+1) % 2;
 
-    framebuffer[fbIDX]->bind();
-
+    pass_buffer->bind();
     glEnable(GL_DEPTH_TEST);
+
 
     cvglShader render_shader( processing_shader.getID() );
     render_shader.use();
@@ -662,7 +653,7 @@ void cvglMainProcess::draw()
     glActiveTexture(GL_TEXTURE1); // Texture unit 1
     context.bindTextureByID( framebuffer[prev_fbIDX]->getTexID() );
 
-    glActiveTexture(GL_TEXTURE0); // Texture unit 0
+    glActiveTexture(GL_TEXTURE0); // Texture unit 0 for new frames and gl colors
 
     if( m_draw_black )
     {
@@ -814,6 +805,33 @@ void cvglMainProcess::draw()
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
     }
 
+    // end pass_buffer render
+
+    // switch to write into storage framebuffer
+    // draw previous texture, applying flow stuff
+
+    framebuffer[fbIDX]->bind();
+    glDisable(GL_DEPTH_TEST);
+
+    flow_shader.use();
+
+    context.clear();
+    context.updateViewport(1);
+    flow_shader.setMat4("transform_matrix", transform);
+
+
+    rect->bind();
+    glActiveTexture(GL_TEXTURE0);
+    context.bindTextureByID( pass_buffer->getTexID() ); // tex0 = prev render pass
+
+    glActiveTexture(GL_TEXTURE1);
+    context.bindTextureByID( framebuffer[prev_fbIDX]->getTexID() ); // tex1 = pre framebuffer feedback
+
+    rect->draw();
+
+    // switch to this default screen framebuffer
+    // draw fbIDX frame buffer, using simple output shader (not stored)
+
     context.bindDefaultFramebuffer();
     basic_shader.use();
 
@@ -826,6 +844,7 @@ void cvglMainProcess::draw()
 
     rect->bind();
    // contourTex->setTexture(m_contour_rgba);
+    glActiveTexture(GL_TEXTURE0);
     context.bindTextureByID( framebuffer[fbIDX]->getTexID() ); //framebuffer->getTexID()
     rect->draw();
 

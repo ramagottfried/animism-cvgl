@@ -21,7 +21,7 @@ public:
     // GL context
     cvglContext context;
 
-    cvglShader basic_shader, processing_shader;
+    cvglShader basic_shader, processing_shader, flow_shader;
 
     // globals
     
@@ -40,6 +40,7 @@ public:
     
     int fbIDX = 0;
     std::unique_ptr<cvglFramebuffer> framebuffer[2];
+    std::unique_ptr<cvglFramebuffer> pass_buffer;
 
     bool objects_initialized = false;
     
