@@ -6,6 +6,8 @@ out vec4 outColor;
 uniform sampler2D tex;
 uniform sampler2D prevTex;
 
+uniform float prev_tex_ratio;
+
 uniform float gamma;
 uniform float contrast;
 uniform float saturation;
@@ -15,6 +17,7 @@ uniform float scale_alpha;
 uniform float luma_target;
 uniform float luma_tol;
 uniform float luma_fade;
+uniform float luma_mix;
 
 uniform float time;
 
@@ -77,11 +80,15 @@ void main()
     a = czm_saturation(a, saturation);
     a = gammaCorrection(a, gamma);
     a.a *= scale_alpha;
+/*
+    vec4 tex_samp = mix(a, b, prev_tex_ratio);
 
+    float luma = dot(tex_samp, luma_coef);
+    tex_samp.a = luma;
+*/
+    vec4 luma_proc = lumakey(a, b);
 
-    vec4 lumaMix = lumakey(a, b);
-
-    outColor = lumaMix;
+    outColor = mix(a, luma_proc, luma_mix);//lumaMix;//lumaMix;
 
     /*
     if( vignette_xyr_aspect.z == 1 )

@@ -143,6 +143,23 @@ private:
 
     int tri_update_counter = 0;
 
+
+    float luma_target = 0.1;
+    float luma_tol = 0.1;
+    float luma_fade = 0.48;
+    float luma_mix = 0.75;
+
+    glm::vec2 hsflow_scale = glm::vec2(0.02);
+    glm::vec2 hsflow_offset = glm::vec2(0.01);
+    float hsflow_lambda = 2.;
+
+    glm::vec2 repos_amt = glm::vec2(3.);
+    glm::vec4 repos_scale = glm::vec4(1.);
+    glm::vec4 repos_bias = glm::vec4(0.);
+
+    float flow_mix = 0.75;
+
+
     MirrorTriangles mirrorTriangles;
 };
 

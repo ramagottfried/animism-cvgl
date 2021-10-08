@@ -199,6 +199,61 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             big_tri_x_offset2 = val.getFloat();
         }
+        else if( addr == "/hsflow_scale")
+        {
+            if( val.size() == 2 )
+                hsflow_scale = glm::vec2( val.get<float>(0), val.get<float>(1) );
+            else
+                hsflow_scale = glm::vec2( val.get<float>(0), val.get<float>(0) );
+        }
+        else if( addr == "/hsflow_offset")
+        {
+            if( val.size() == 2 )
+                hsflow_offset = glm::vec2( val.get<float>(0), val.get<float>(1) );
+            else
+                hsflow_offset = glm::vec2( val.getFloat() );
+        }
+        else if( addr == "/hsflow_lambda")
+        {
+            hsflow_lambda = val.getFloat();
+        }
+        else if( addr == "/repos_amt")
+        {
+            if( val.size() == 2 )
+                repos_amt = glm::vec2( val.get<float>(0), val.get<float>(1) );
+            else
+                repos_amt = glm::vec2( val.getFloat() );
+        }
+        else if( addr == "/repos_scale")
+        {
+            if( val.size() == 4 )
+                repos_scale = glm::vec4( val.get<float>(0), val.get<float>(1), val.get<float>(2), val.get<float>(3) );
+            else
+                repos_scale = glm::vec4( val.getFloat() );
+        }
+        else if( addr == "/repos_bias")
+        {
+            if( val.size() == 4 )
+                repos_bias = glm::vec4( val.get<float>(0), val.get<float>(1), val.get<float>(2), val.get<float>(3) );
+            else
+                repos_bias = glm::vec4( val.getFloat() );
+        }
+        else if( addr == "/luma_target")
+        {
+            luma_target = val.getFloat();
+        }
+        else if( addr == "/luma_tol")
+        {
+            luma_tol = val.getFloat();
+        }
+        else if( addr == "/luma_fade")
+        {
+            luma_fade = val.getFloat();
+        }
+        else if( addr == "/luma_mix")
+        {
+            luma_mix = val.getFloat();
+        }
     }
 }
 
@@ -418,24 +473,28 @@ int cvglMainProcess::loadShaders()
     processing_shader.setFloat("brightness", brightness);
     processing_shader.setFloat("scale_alpha", 1);
 
-    processing_shader.setFloat("luma_target", 0.5);
-    processing_shader.setFloat("luma_tol", 0.);
-    processing_shader.setFloat("luma_fade", 0.99999999);
+    processing_shader.setFloat("luma_target", luma_target);
+    processing_shader.setFloat("luma_tol", luma_tol);
+    processing_shader.setFloat("luma_fade", luma_fade);
+    processing_shader.setFloat("luma_mix", luma_mix);
+
 
     // setup first shader
     flow_shader.use();
-    flow_shader.setInt("tex", 0);
-    flow_shader.setInt("prevTex", 1);
+    flow_shader.setInt("tex0", 0);
+    flow_shader.setInt("tex1", 1);
     flow_shader.setMat4("transform_matrix", context.getTransform() );
     flow_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
 
-    flow_shader.setVec2("hsflow_scale", glm::vec2(0.9, 0.9) );
-    flow_shader.setVec2("hsflow_offset", glm::vec2(10.9, 0.9));
-    flow_shader.setFloat("hsflow_lambda", 20000. );
+    flow_shader.setVec2("hsflow_scale", hsflow_scale );
+    flow_shader.setVec2("hsflow_offset", hsflow_offset);
+    flow_shader.setFloat("hsflow_lambda", hsflow_lambda );
 
-    flow_shader.setVec2("repos_amt", glm::vec2(100.5, 100.5) );
-    flow_shader.setVec4("repos_scale", glm::vec4(1.));
-    flow_shader.setVec4("repos_bias", glm::vec4(0., 0., 0., 0.) );
+    flow_shader.setVec2("repos_amt", repos_amt );
+    flow_shader.setVec4("repos_scale", repos_scale);
+    flow_shader.setVec4("repos_bias", repos_bias );
+
+    flow_shader.setFloat("flow_mix", flow_mix);
 
     basic_shader.use();
     basic_shader.setInt("framebuffer_tex", 0);
@@ -640,11 +699,30 @@ void cvglMainProcess::draw()
     fbIDX = (fbIDX+1) % 2;
 
     pass_buffer->bind();
-    glEnable(GL_DEPTH_TEST);
+  // glEnable(GL_DEPTH_TEST);
 
 
-    cvglShader render_shader( processing_shader.getID() );
-    render_shader.use();
+
+//    cvglShader render_shader( processing_shader.getID() );
+    flow_shader.use();
+    flow_shader.setMat4("transform_matrix", context.getTransform() );
+    flow_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+
+    flow_shader.setFloat("slide_up", 3.3);
+    flow_shader.setFloat("slide_down", 3.3);
+
+
+    flow_shader.setVec2("hsflow_scale", hsflow_scale );
+    flow_shader.setVec2("hsflow_offset", hsflow_offset);
+    flow_shader.setFloat("hsflow_lambda", hsflow_lambda );
+
+    flow_shader.setVec2("repos_amt", repos_amt );
+    flow_shader.setVec4("repos_scale", repos_scale);
+    flow_shader.setVec4("repos_bias", repos_bias );
+
+    flow_shader.setFloat("flow_mix", flow_mix);
+
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
 
     context.clear();
@@ -662,15 +740,7 @@ void cvglMainProcess::draw()
         m_newframe = false;
         return;
     }
-/*
-    render_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
-    render_shader.setFloat("gamma", gamma);
-    render_shader.setFloat("contrast", contrast);
-    render_shader.setFloat("saturation", saturation);
-    render_shader.setFloat("brightness", brightness);
-    render_shader.setFloat("scale_alpha", 1);
-    render_shader.setMat4("transform_matrix", context.getTransform() );
-*/
+
     UMat merge;
     if( m_draw_frame && m_use_camera_id > 0 )
     {
@@ -747,12 +817,12 @@ void cvglMainProcess::draw()
 
     //    glm::mat4 translated = glm::rotate(transform, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     //    glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
-        render_shader.setFloat("scale_alpha", big_tri_alpha2);
+        processing_shader.setFloat("scale_alpha", big_tri_alpha2);
 
         frameTex->bind();
         bigTriMirror2->draw();
 
-        render_shader.setFloat("scale_alpha", 1);
+        processing_shader.setFloat("scale_alpha", 1);
 
 //        glUniform1f(scale_alpha_attr_idx, 1);
 //        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
@@ -765,8 +835,8 @@ void cvglMainProcess::draw()
 
         glm::mat4 translated = glm::translate(transform, glm::vec3(0, big_tri_x_offset, 0));
 
-        render_shader.setMat4("transform_matrix", translated);
-        render_shader.setFloat("scale_alpha", big_tri_alpha);
+        processing_shader.setMat4("transform_matrix", translated);
+        processing_shader.setFloat("scale_alpha", big_tri_alpha);
 
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
         //glUniform1f(scale_alpha_attr_idx, big_tri_alpha);
@@ -774,8 +844,8 @@ void cvglMainProcess::draw()
         frameTex->bind();
         bigTriMirror->draw();
 
-        render_shader.setFloat("scale_alpha", 1);
-        render_shader.setMat4("transform_matrix", transform);
+        processing_shader.setFloat("scale_alpha", 1);
+        processing_shader.setMat4("transform_matrix", transform);
 
         //glUniform1f(scale_alpha_attr_idx, 1);
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
@@ -788,9 +858,9 @@ void cvglMainProcess::draw()
         glm::mat4 translated = glm::translate(transform, glm::vec3(rotateTriangles, 0, 0));
 
         glitchRect->bind();
-        render_shader.setMat4("transform_matrix", translated);
+        processing_shader.setMat4("transform_matrix", translated);
         float alpha = 0.75;
-        render_shader.setFloat("scale_alpha", alpha);
+        processing_shader.setFloat("scale_alpha", alpha);
 
         //glUniform1f(scale_alpha_attr_idx, alpha);
         //        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
@@ -798,8 +868,8 @@ void cvglMainProcess::draw()
         frameTex->bind();
         glitchRect->draw();
 
-        render_shader.setFloat("scale_alpha", 1);
-        render_shader.setMat4("transform_matrix", transform);
+        processing_shader.setFloat("scale_alpha", 1);
+        processing_shader.setMat4("transform_matrix", transform);
 
         //glUniform1f(scale_alpha_attr_idx, 1);
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
@@ -811,21 +881,33 @@ void cvglMainProcess::draw()
     // draw previous texture, applying flow stuff
 
     framebuffer[fbIDX]->bind();
-    glDisable(GL_DEPTH_TEST);
+  //  glDisable(GL_DEPTH_TEST);
 
-    flow_shader.use();
+    processing_shader.use();
+    processing_shader.setMat4("transform_matrix", transform);
+    processing_shader.setFloat("gamma", gamma);
+    processing_shader.setFloat("contrast", contrast);
+    processing_shader.setFloat("saturation", saturation);
+    processing_shader.setFloat("brightness", brightness);
+    //processing_shader.setFloat("scale_alpha", 1);
+
+    processing_shader.setFloat("luma_target", luma_target);
+    processing_shader.setFloat("luma_tol", luma_tol);
+    processing_shader.setFloat("luma_fade", luma_fade);
+    processing_shader.setFloat("luma_mix", luma_mix);
+
+    processing_shader.setFloat("prev_tex_ratio", 0.94);
 
     context.clear();
     context.updateViewport(1);
-    flow_shader.setMat4("transform_matrix", transform);
-
 
     rect->bind();
     glActiveTexture(GL_TEXTURE0);
-    context.bindTextureByID( pass_buffer->getTexID() ); // tex0 = prev render pass
+    frameTex->bind();
 
     glActiveTexture(GL_TEXTURE1);
-    context.bindTextureByID( framebuffer[prev_fbIDX]->getTexID() ); // tex1 = pre framebuffer feedback
+    context.bindTextureByID( pass_buffer->getTexID() ); // tex0 = prev render pass
+    //context.bindTextureByID( framebuffer[prev_fbIDX]->getTexID() ); // tex1 = pre framebuffer feedback
 
     rect->draw();
 
@@ -838,7 +920,7 @@ void cvglMainProcess::draw()
     context.updateViewport(1);
     basic_shader.setMat4("transform_matrix", transform);
 
-    glDisable(GL_DEPTH_TEST);
+  //  glDisable(GL_DEPTH_TEST);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
     context.clear();
 
