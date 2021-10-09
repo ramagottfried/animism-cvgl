@@ -12,7 +12,6 @@ uniform float gamma;
 uniform float contrast;
 uniform float saturation;
 uniform float brightness;
-uniform float scale_alpha;
 
 uniform float luma_target;
 uniform float luma_tol;
@@ -79,14 +78,13 @@ void main()
     a = brightnessContrast(a, brightness, contrast);
     a = czm_saturation(a, saturation);
     a = gammaCorrection(a, gamma);
-    a.a *= scale_alpha;
 /*
     vec4 tex_samp = mix(a, b, prev_tex_ratio);
 
     float luma = dot(tex_samp, luma_coef);
     tex_samp.a = luma;
 */
-    vec4 luma_proc = lumakey(a, b);
+   vec4 luma_proc = lumakey(a, b);
 
     outColor = mix(a, luma_proc, luma_mix);//lumaMix;//lumaMix;
 

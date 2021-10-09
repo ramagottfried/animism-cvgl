@@ -6,6 +6,8 @@ out vec4 outColor;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 
+uniform float scale_alpha;
+
 uniform vec2 hsflow_scale;
 uniform vec2 hsflow_offset;
 uniform float hsflow_lambda;
@@ -139,15 +141,15 @@ vec4 ab_hsflow_repos(sampler2D tex0, sampler2D tex1, vec2 texcoord0, vec2 texcoo
 void main()
 {
     vec2 invCoord = vec2(Texcoord.x, 1.0 - Texcoord.y);
-    //  vec4 a = texture( tex, invCoord );
-    //  vec4 b = texture( prevTex, invCoord);
-
 
     vec2 texcoord0 = Texcoord;
-    vec2 texcoord1 = invCoord;//vec2(Texcoord.x, 1.0 - Texcoord.y);
+    vec2 texcoord1 = invCoord;
 
     vec4 a = texture( tex0, texcoord0 );
     vec4 b = texture( tex1, texcoord1 );
+
+    //a.a *= scale_alpha;
+
 
     // ab_hsflow
     vec2 x1 = vec2( hsflow_offset.x, 0.);
@@ -168,13 +170,10 @@ void main()
 
     vec4 vx = curdif * (gradx/gradmag);
 
-    // editing here, trying to figure out why it's not moving like ab's does
     float xluma = dot(vx, luma_coef);
-
     float vxd = xluma; //vx.r;//assumes greyscale
-
     //format output for flowrepos, out(-x,+x,-y,+y)
-    vec2 xout = vec2(max(vxd,0.),abs(min(vxd,0.))) * hsflow_scale.x;
+    vec2 xout = vec2( max(vxd,0.), abs(min(vxd,0.)) ) * hsflow_scale.x;
 
     vec4 vy = curdif*(grady/gradmag);
 
@@ -182,7 +181,7 @@ void main()
     float vyd = yluma;// vy.r;//assumes greyscale
 
 //format output for flowrepos, out(-x,+x,-y,+y)
-    vec2 yout = vec2(max(vyd,0.),abs(min(vyd,0.))) * hsflow_scale.y;
+    vec2 yout = vec2( max(vyd,0.), abs(min(vyd,0.)) ) * hsflow_scale.y;
 
     //return vec4(xout.xy,yout.xy);
 
@@ -197,8 +196,6 @@ void main()
 
     // output texture
     vec4 hsflow =  repos * repos_scale + repos_bias;
-
-
 
     outColor = mix(a, hsflow, flow_mix);//mix(a, hsflow, 0.75); ;//hsflow;//hsflow;/// mix(a,b, 0.5);//mix(a, hsflow, 0.75);
 

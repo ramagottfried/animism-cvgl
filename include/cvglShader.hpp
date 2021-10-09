@@ -22,7 +22,7 @@ class cvglShader
 public:
     cvglShader(){}
 
-    cvglShader(GLuint id) : freeShader(false), m_shaderProgram(id) {}
+    cvglShader(GLuint id) : m_shaderProgram(id), freeShader(false) {}
 
     cvglShader(const char * vertex_file_path, const char * fragment_file_path)
     {

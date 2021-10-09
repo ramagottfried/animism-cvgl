@@ -36,10 +36,16 @@ public:
     
     void bind()
     {
-    //    glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_tex);
     }
     
+    void bind(GLuint texIDX)
+    {
+        glActiveTexture(GL_TEXTURE0 + texIDX);
+        glBindTexture(GL_TEXTURE_2D, m_tex);
+    }
+
+
     void setTexture(cv::Mat bgr_mat)
     {
         glBindTexture(GL_TEXTURE_2D, m_tex);

@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include "opencv2/core/utility.hpp"
 
+#include "cvglTexture.hpp"
+
 class cvglFramebuffer
 {
 public:
@@ -12,22 +14,14 @@ public:
     {
         glGenFramebuffers(1, &m_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER , m_fbo);
-        // coudl maybe use GL_DRAW_FRAMEBUFFER since we're only writing into it?
+        // could maybe use GL_DRAW_FRAMEBUFFER since we're only writing into it?
         // was GL_FRAMEBUFFER
 
-        glGenTextures(1, &m_tex);
-        glBindTexture(GL_TEXTURE_2D, m_tex);
+        texture = std::unique_ptr<cvglTexture>(new cvglTexture);
 
-        // setting dummy texture content for setup
+        // configure texture for framebuffer
+        texture->bind();
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1920, 1080, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-        // wrap parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // or GL_CLAMP_TO_EDGE?
-
-        // interpolation
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // try GL_NEAREST also
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
         // render buffer for depth (not sure if we really need this right now but whatever)
@@ -37,7 +31,7 @@ public:
         // GL_DEPTH_COMPONENT instead of GL_DEPTH24_STENCIL8..?
 
         // attach texture to framebuffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tex, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->getTexID(), 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
         // GL_DEPTH_STENCIL_ATTACHMENT vs GL_DEPTH_ATTACHMENT
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
@@ -53,9 +47,8 @@ public:
     
     ~cvglFramebuffer()
     {
-        glDeleteTextures(1, &m_tex);
+        glDeleteRenderbuffers(1, &m_rbo);
         glDeleteFramebuffers(1, &m_fbo);
-        m_tex = 0;
         m_fbo = 0;
     }
     
@@ -65,11 +58,12 @@ public:
     }
 
 
-    inline GLuint getTexID(){ return m_tex; }
+    inline GLuint getTexID(){ return texture->getTexID(); }
     
 private:
     GLuint m_fbo = 0;
-    GLuint m_tex = 0;
     GLuint m_rbo = 0;
+
+    std::unique_ptr<cvglTexture> texture;
 
 };

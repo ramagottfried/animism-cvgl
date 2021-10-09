@@ -61,6 +61,7 @@ add_library(libcvgl STATIC
     src/gl/cvglTexture.cpp
     src/gl/cvglShader.cpp
     src/gl/cvglFramebuffer.cpp
+    src/gl/cvglShaderFramebuffer.cpp
     src/gl/cvglVAO.cpp
     src/gl/cvglVertex.cpp
     src/gl/delabella.cpp
@@ -94,6 +95,7 @@ file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 add_executable(cvgl
     ${RES_FILES}
     ${CUE_FILES}
+    src/animShader1.cpp
     src/MirrorTriangles.cpp
     src/cvgl_main.cpp
     src/cvglMainProcess.cpp

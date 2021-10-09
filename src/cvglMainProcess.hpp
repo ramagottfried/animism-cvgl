@@ -6,6 +6,8 @@
 #include "cvglFramebuffer.hpp"
 #include "cvglShader.hpp"
 
+#include "animShader1.hpp"
+
 #include "cvglUDPServer.hpp"
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
@@ -23,12 +25,12 @@ public:
 
     cvglShader basic_shader, processing_shader, flow_shader;
 
+    std::unique_ptr<animShader1> shader1;
+
     // globals
     
     void setVignette(float x, float y, float r);
 
-//    GLint vignette_attr_idx = -1, gamma_attr_idx = -1, contrast_attr_idx = -1, brightness_attr_idx = -1, saturation_attr_idx = -1;
-//    GLint transform_attr_idx = -1, scale_alpha_attr_idx = -1;
 
     double rotateTriangles = 0, tri_step = 0.01, tri_damping = 0.99;
     std::vector<double> tri_vel;
@@ -61,6 +63,7 @@ public:
 
     // --- called from gl thread (main thread) ---
     void draw();
+    void drawShapes();
     void initObjs();
     
     void initCues();
@@ -143,7 +146,6 @@ private:
 
     int tri_update_counter = 0;
 
-
     float luma_target = 0.1;
     float luma_tol = 0.1;
     float luma_fade = 0.48;
@@ -157,10 +159,12 @@ private:
     glm::vec4 repos_scale = glm::vec4(1.);
     glm::vec4 repos_bias = glm::vec4(0.);
 
-    float flow_mix = 0.75;
+    float flow_mix = 0.;
 
 
     MirrorTriangles mirrorTriangles;
+
+
 };
 
 
