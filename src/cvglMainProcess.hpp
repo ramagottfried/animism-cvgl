@@ -121,11 +121,11 @@ private:
     
     bool m_draw_glitch_triangles = false;
 
-    bool m_draw_big_triangle = false;
+    bool m_draw_big_triangle = true;
     float big_tri_alpha = 1;
     float big_tri_x_offset = 0;
 
-    bool m_draw_big_triangle2 = false;
+    bool m_draw_big_triangle2 = true;
     float big_tri_alpha2 = 0.75;
     float big_tri_x_offset2 = 0;
 

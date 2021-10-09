@@ -6,6 +6,8 @@ out vec4 outColor;
 uniform sampler2D tex;
 uniform sampler2D prevTex;
 
+uniform float scale_alpha;
+
 uniform float prev_tex_ratio;
 
 uniform float gamma;
@@ -84,7 +86,9 @@ void main()
     float luma = dot(tex_samp, luma_coef);
     tex_samp.a = luma;
 */
-   vec4 luma_proc = lumakey(a, b);
+    vec4 luma_proc = lumakey(a, b);
+    luma_proc.a *= scale_alpha;
+    a.a *= scale_alpha;
 
     outColor = mix(a, luma_proc, luma_mix);//lumaMix;//lumaMix;
 

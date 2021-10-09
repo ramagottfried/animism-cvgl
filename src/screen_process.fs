@@ -6,7 +6,6 @@ out vec4 outColor;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 
-uniform float scale_alpha;
 
 uniform vec2 hsflow_scale;
 uniform vec2 hsflow_offset;
@@ -148,9 +147,6 @@ void main()
     vec4 a = texture( tex0, texcoord0 );
     vec4 b = texture( tex1, texcoord1 );
 
-    //a.a *= scale_alpha;
-
-
     // ab_hsflow
     vec2 x1 = vec2( hsflow_offset.x, 0.);
     vec2 y1 = vec2( 0., hsflow_offset.y);
@@ -196,6 +192,9 @@ void main()
 
     // output texture
     vec4 hsflow =  repos * repos_scale + repos_bias;
+
+    vec4 mix_out = mix(a, hsflow, flow_mix);
+
 
     outColor = mix(a, hsflow, flow_mix);//mix(a, hsflow, 0.75); ;//hsflow;//hsflow;/// mix(a,b, 0.5);//mix(a, hsflow, 0.75);
 

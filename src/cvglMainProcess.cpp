@@ -717,7 +717,6 @@ void cvglMainProcess::draw()
         return;
     }
 
-    context.clearColor(0, 0, 0, 1);
 
     // make frame texture
     UMat merge;
@@ -756,6 +755,8 @@ void cvglMainProcess::draw()
     fbIDX = (fbIDX+1) % 2;
 
     pass_buffer->bind();
+//    glDisable(GL_DEPTH_TEST);
+    context.clearColor(0, 0, 0, 1);
 
     context.clear();
     context.updateViewport();
@@ -777,7 +778,6 @@ void cvglMainProcess::draw()
 
     flow_shader.setFloat("flow_mix", flow_mix);
 
-    flow_shader.setFloat("scale_alpha", 1);
 
 
     glActiveTexture(GL_TEXTURE0+1); // Texture unit 1
@@ -800,6 +800,7 @@ void cvglMainProcess::draw()
     // luma framebuffer, stored for feedback
 
     framebuffer[fbIDX]->bind();
+    context.updateViewport(1);
 
     processing_shader.use();
     processing_shader.setMat4("transform_matrix", transform);
@@ -812,11 +813,14 @@ void cvglMainProcess::draw()
     processing_shader.setFloat("luma_tol", luma_tol);
     processing_shader.setFloat("luma_fade", luma_fade);
     processing_shader.setFloat("luma_mix", luma_mix);
+    processing_shader.setFloat("scale_alpha", 1);
 
-    processing_shader.setFloat("prev_tex_ratio", 0.94);
+    //processing_shader.setFloat("prev_tex_ratio", 0.94);
+
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
 
     context.clear();
-    context.updateViewport(1);
+
 
     rect->bind();    
         glActiveTexture(GL_TEXTURE0);
@@ -842,14 +846,12 @@ void cvglMainProcess::draw()
     context.updateViewport(1);
     basic_shader.setMat4("transform_matrix", transform);
 
-  //  glDisable(GL_DEPTH_TEST);
+
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
     context.clear();
+    glActiveTexture(GL_TEXTURE0);
 
     rect->bind();
-   // contourTex->setTexture(m_contour_rgba);
-    glActiveTexture(GL_TEXTURE0);
-    //context.bindTextureByID( pass_buffer->getTexID() );
     context.bindTextureByID( framebuffer[fbIDX]->getTexID() ); //framebuffer->getTexID()
     rect->draw();
 
@@ -873,6 +875,7 @@ void cvglMainProcess::drawShapes()
     if( m_draw_contour )
     {
         contourMesh->bind();
+        processing_shader.setFloat("scale_alpha", 1);
         contourTex->setTexture(m_contour_rgba);//getFrame());
         contourMesh->draw(GL_TRIANGLES);
     }
@@ -882,6 +885,7 @@ void cvglMainProcess::drawShapes()
         contourMesh->bind();
         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
         contourTriTex->setTexture(m_contour_triangles_rgba);
+        processing_shader.setFloat("scale_alpha", 1);
         contourMesh->draw(GL_TRIANGLE_STRIP);
         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
     }
@@ -889,6 +893,7 @@ void cvglMainProcess::drawShapes()
     if( m_draw_hull )
     {
         hullMesh->bind();
+        processing_shader.setFloat("scale_alpha", 1);
         hullTex->setTexture(m_hull_rgba);
         hullMesh->draw(GL_TRIANGLE_STRIP);//vector<int>({GL_TRIANGLES, GL_POINTS}));
     }
@@ -898,6 +903,7 @@ void cvglMainProcess::drawShapes()
         //   glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
         minrectMesh->bind();
         minrectTex->setTexture(m_minrect_rgba);
+        processing_shader.setFloat("scale_alpha", 1);
         minrectMesh->draw(GL_TRIANGLE_STRIP);
     }
 
@@ -909,12 +915,11 @@ void cvglMainProcess::drawShapes()
 
     //    glm::mat4 translated = glm::rotate(transform, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     //    glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
-        flow_shader.setFloat("scale_alpha", big_tri_alpha2);
+        processing_shader.setFloat("scale_alpha", big_tri_alpha2);
 
         frameTex->bind();
         bigTriMirror2->draw();
 
-        flow_shader.setFloat("scale_alpha", 1);
 
 //        glUniform1f(scale_alpha_attr_idx, 1);
 //        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
@@ -925,19 +930,17 @@ void cvglMainProcess::drawShapes()
 
         bigTriMirror->bind();
 
-        glm::mat4 translated = glm::translate(transform, glm::vec3(0, big_tri_x_offset, 0));
+       // glm::mat4 translated = glm::translate(transform, glm::vec3(0, big_tri_x_offset, 0));
 
-        flow_shader.setMat4("transform_matrix", translated);
-        flow_shader.setFloat("scale_alpha", big_tri_alpha);
-
+       // flow_shader.setMat4("transform_matrix", translated);
+        processing_shader.setFloat("scale_alpha", big_tri_alpha);
+        //cout << big_tri_alpha << " ? " << endl;
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
         //glUniform1f(scale_alpha_attr_idx, big_tri_alpha);
 
         frameTex->bind();
         bigTriMirror->draw();
-
-        flow_shader.setFloat("scale_alpha", 1);
-        flow_shader.setMat4("transform_matrix", transform);
+       // flow_shader.setMat4("transform_matrix", transform);
 
         //glUniform1f(scale_alpha_attr_idx, 1);
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
@@ -952,7 +955,7 @@ void cvglMainProcess::drawShapes()
         glitchRect->bind();
         flow_shader.setMat4("transform_matrix", translated);
         float alpha = 0.75;
-        flow_shader.setFloat("scale_alpha", alpha);
+        processing_shader.setFloat("scale_alpha", alpha);
 
         //glUniform1f(scale_alpha_attr_idx, alpha);
         //        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
@@ -960,7 +963,6 @@ void cvglMainProcess::drawShapes()
         frameTex->bind();
         glitchRect->draw();
 
-        flow_shader.setFloat("scale_alpha", 1);
         flow_shader.setMat4("transform_matrix", transform);
 
         //glUniform1f(scale_alpha_attr_idx, 1);
