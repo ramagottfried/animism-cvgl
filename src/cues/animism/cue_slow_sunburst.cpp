@@ -12,21 +12,21 @@ MapOSC cue_slow_sunburst( cueArgs args )
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 
-    //MapOSC& m_state_cache = args.cache;
-    //cvglRandom& m_rand_generator = args.randGen;
-
-    double fadetime = 10;
+    double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
-        // transition, to sped up version
-       // out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, 0., -12));
-        out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., -6));
-        out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 0., 12) );
-
+        b.addMessage("/glitch_tri/alpha", scale(elapsed_section, 0., fadetime, 1., 0.) );
+        b.addMessage("/big_triangle1/alpha", scale(elapsed_section, 0., fadetime, 1., 0.) );
+        b.addMessage("/big_triangle2/alpha", scale(elapsed_section, 0., fadetime, 1., 0.) );
     }
 
     if( isNewCue )
     {
+
+        b.addMessage("/glitch_tri/alpha", 1);
+        b.addMessage("/big_triangle1/alpha", 1 );
+        b.addMessage("/big_triangle2/alpha", 1 );
+        b.addMessage("/half_mirror/alpha", 0 );
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);

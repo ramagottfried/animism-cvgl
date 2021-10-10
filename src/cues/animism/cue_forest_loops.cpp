@@ -34,6 +34,10 @@ MapOSC cue_forest_loops( cueArgs args )
 
     if( isNewCue )
     {
+        b.addMessage("/glitch_tri/alpha", 0);
+        b.addMessage("/big_triangle1/alpha", 0 );
+        b.addMessage("/big_triangle2/alpha", 0 );
+        b.addMessage("/half_mirror/alpha", 0 );
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
@@ -61,7 +65,7 @@ MapOSC cue_forest_loops( cueArgs args )
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 1);
         b.addMessage("/enable/contour", 1);
-        b.addMessage("/glitch_tri/alpha", 0);
+
 
 
       //  cout << "use camera" << 2 << endl;

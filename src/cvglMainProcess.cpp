@@ -72,6 +72,10 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
            setVignette( val.get<float>(0), val.get<float>(1), val.get<float>(2) );
         }
+        else if( addr == "/vignette/fadeSize" )
+        {
+           vignette_fadeSize = val.getFloat();
+        }
         else if( addr == "/use/camera" )
         {
             m_use_camera_id = val.getInt();
@@ -258,6 +262,14 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         else if( addr == "/flow_mix")
         {
             flow_mix = val.getFloat();
+        }
+        else if( addr == "/noise_mult")
+        {
+            noise_mult = val.getFloat();
+        }
+        else if( addr == "/noise_mix")
+        {
+            noise_mix = val.getFloat();
         }
     }
 }
@@ -487,6 +499,9 @@ int cvglMainProcess::loadShaders()
     screen_shader.use();
     screen_shader.setInt("framebuffer_tex", 0);
     screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+    screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
+    screen_shader.setFloat("noise_mix", noise_mix);
+    screen_shader.setFloat("noise_mix", noise_mult);
 
     return 1;
 
@@ -688,7 +703,6 @@ void cvglMainProcess::draw()
         return;
     }
     
-   // context.set_time_uniform( (float)glfwGetTime() );
 
     // maybe at end stop clearing
     // or figure out how to copy output image to new texture and
@@ -826,13 +840,17 @@ void cvglMainProcess::draw()
 
     context.bindDefaultFramebuffer();
     screen_shader.use();
-    screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
-
-    context.updateViewport(1);
     screen_shader.setMat4("transform_matrix", transform);
+    screen_shader.setFloat("time", (float)glfwGetTime() );
+
+    screen_shader.setFloat("noise_mix", noise_mix );
+    screen_shader.setFloat("noise_mult", noise_mult );
+    screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+    screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
+
 
     glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
-
+    context.updateViewport(1);
     context.clear();
     glActiveTexture(GL_TEXTURE0);
 

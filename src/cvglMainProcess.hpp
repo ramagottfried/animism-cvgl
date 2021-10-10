@@ -34,8 +34,6 @@ public:
 
     double rotateTriangles = 0, tri_step = 0.01, tri_damping = 0.99;
     std::vector<double> tri_vel;
-    float contrast = 1, brightness = 0, saturation = 1, gamma = 1;
-    glm::vec4 vignette_xyr_aspect;
 
     std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh;
     std::unique_ptr<cvglObject>     glitchRect, bigTriMirror, bigTriMirror2, halfMirror;
@@ -142,9 +140,6 @@ private:
         
     bool m_contour_analysis = true;
 
-    float m_contrast = 1;
-    float m_saturation = 1;
-
     int tri_update_counter = 0;
 
     float luma_target = 0.1;
@@ -162,9 +157,15 @@ private:
 
     float flow_mix = 0.;
 
+    float noise_mult = 1;
+    float noise_mix = 0.;
+
+    float contrast = 1, brightness = 0, saturation = 1, gamma = 1;
+    glm::vec4 vignette_xyr_aspect;
+    float vignette_fadeSize = 0.5;
+
 
     MirrorTriangles mirrorTriangles;
-
 
 };
 

@@ -53,6 +53,8 @@ MapOSC cue_forest_loops( cueArgs args );
 MapOSC cue_forest_loops_triZ( cueArgs args );
 
 MapOSC cue_slow_sunburst( cueArgs args );
+MapOSC cue_slow_sunburst_mirror( cueArgs args );
+
 MapOSC cue_slow_sunburst_noise_start( cueArgs args );
 MapOSC cue_slow_sunburst_distortion( cueArgs args );
 MapOSC cue_vignette_circle_drop( cueArgs args );
@@ -330,8 +332,14 @@ public:
         // then fade out mirrors when sunburst comes in?
         setCue("5Q",
                "slow spectral sunburst",
-               "increasingly dissonant becoming white noise",
+               "mirror",
                &cue_slow_sunburst );
+
+        setCue("5Q_b",
+               "mirror",
+               "increasingly dissonant becoming white noise",
+               &cue_slow_sunburst_mirror );
+
 
         setCue("5R",
                "increasingly dissonant becoming white noise",

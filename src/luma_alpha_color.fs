@@ -21,23 +21,10 @@ uniform float luma_fade;
 uniform float luma_mix;
 
 
-uniform float time;
-
 // vignette now in screen proc
 
 const vec4 luma_coef = vec4(0.299, 0.587, 0.114, 0.);
 
-
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
-const float PHI = 1.61803398874989484820459; // Φ = Golden Ratio
-
-float gold_noise(vec2 xy, float seed)
-{
-    return fract(tan(distance(xy*PHI, xy)*seed)*xy.x);
-}
 
 vec4 brightnessContrast(vec4 value, float brightness, float contrast)
 {
@@ -93,86 +80,5 @@ void main()
 
     outColor = mix(a, luma_proc, luma_mix);//lumaMix;//lumaMix;
 
-    /*
-    if( vignette_xyr_aspect.z == 1 )
-    {
-        outColor = tex_samp;
-    }
-    else
-    {
-        float xfade = 0.05;
-        float dx = vignette_xyr_aspect.x - Texcoord.x;
-        float dy = vignette_xyr_aspect.y - (Texcoord.y / vignette_xyr_aspect.w);
-        float dist = sqrt(dx*dx + dy*dy);
-
-        if( dist < vignette_xyr_aspect.z )
-        {
-            outColor = tex_samp;
-        }
-        else if( (dist - vignette_xyr_aspect.z) <= xfade )
-        {
-            float fade = (dist - vignette_xyr_aspect.z) / xfade;
-
-            outColor = tex_samp * vec4(1, 1, 1, 1 - fade * fade * fade);
-
-        }
-        else
-        {
-            outColor = vec4(0,0,0,1);
-        }
-    }
-    */
-
 }
 
-
-
-/*
- outColor.r = gold_noise(Texcoord, Time*1.1);
- outColor.g = gold_noise(Texcoord, Time*1.7);
- outColor.b = gold_noise(Texcoord, Time*1.4);
- */
-
-/*
-
-mat4 brightnessMatrix( float brightness )
-{
-    return mat4( 1, 0, 0, 0,
-                 0, 1, 0, 0,
-                 0, 0, 1, 0,
-                 brightness, brightness, brightness, 1 );
-}
-
-mat4 contrastMatrix( float contrast )
-{
-    float t = ( 1.0 - contrast );// / 2.0;
-
-    return mat4( contrast, 0, 0, 0,
-                 0, contrast, 0, 0,
-                 0, 0, contrast, 0,
-                 1, 1, 1, 1 );
-
-}
-
-mat4 saturationMatrix( float saturation )
-{
-    vec3 luminance = vec3( 0.3086, 0.6094, 0.0820 );
-
-    float oneMinusSat = 1.0 - saturation;
-
-    vec3 red = vec3( luminance.x * oneMinusSat );
-    red+= vec3( saturation, 0, 0 );
-
-    vec3 green = vec3( luminance.y * oneMinusSat );
-    green += vec3( 0, saturation, 0 );
-
-    vec3 blue = vec3( luminance.z * oneMinusSat );
-    blue += vec3( 0, 0, saturation );
-
-    return mat4( red,     0,
-                 green,   0,
-                 blue,    0,
-                 0, 0, 0, 1 );
-}
-
-*/

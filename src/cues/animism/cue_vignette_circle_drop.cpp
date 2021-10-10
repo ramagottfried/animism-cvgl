@@ -23,9 +23,15 @@ MapOSC cue_vignette_circle_drop( cueArgs args )
         b.addMessage("/enable/contour", 0);
 
         b.addMessage("/vignette/xyr", 0.5, 0.5, 0.5 );
-
+        b.addMessage("/luma_mix", 1);
+        b.addMessage("/flow_mix", 1);
     }
 
+
+    /*
+     *  end with noise_mult 0, noise_mix 1
+     *
+     */
 
     double dur1 = 45;
     double dur2 = 30 + dur1;
@@ -44,6 +50,9 @@ MapOSC cue_vignette_circle_drop( cueArgs args )
         out.addMessage("/rad", rad);
         out.addMessage("/y", y);
 
+        b.addMessage("/noise_mult", 1 - t);
+        b.addMessage("/noise_mix", t);
+        b.addMessage("/vignette/fadeSize", 0.05 * (1-t) ); //
     }
     else if( elapsed_section <= dur2 )
     {
@@ -56,6 +65,10 @@ MapOSC cue_vignette_circle_drop( cueArgs args )
         float y =   scale(ease, 0, 1, 0.185, 3.085); //1.2
 
         b.addMessage("/vignette/xyr", x, y, rad );
+    }
+    else
+    {
+        b.addMessage("/vignette/xyr", 0.5, M_PI, 2. );
     }
     /*
     else if( elapsed_section <= dur2 )
