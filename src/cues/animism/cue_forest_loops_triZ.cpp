@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_forest_loops( cueArgs args )
+MapOSC cue_forest_loops_triZ( cueArgs args )
 {
 
     MapOSC out;
@@ -18,18 +18,15 @@ MapOSC cue_forest_loops( cueArgs args )
     double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
-
-        // transition, to sped up version
-       // out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, 0., -12));
-        out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., -6));
-        out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 0., 12) );
-
-      //  b.addMessage("/big_triangle/x", scale( cvgl::easeInOutSine( scale(elapsed_section, 0., fadetime, 0., 1.)),0., 1., -1, 0) );
-        b.addMessage("/big_triangle1/alpha", cvgl::easeInSine( scale(elapsed_section, 0., fadetime*0.5, 0., 1.)) );
-        b.addMessage("/big_triangle2/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime, 0., 1.)) );
-
-
+        b.addMessage("/glitch_tri/alpha", scale(elapsed_section, 0., fadetime, 0., 1.) );
     }
+
+
+    double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
+    double freq = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein), -1., 1., 0.015, 0.003);
+    double lfo = tanh(cos(elapsed_section * M_PI * 2 * freq * fadein) * 7);
+    b.addMessage("/glitch_tri/z_offset", scale( lfo, -1., 1., 0.1, 0.75));
+
 
 
     if( isNewCue )
@@ -61,7 +58,10 @@ MapOSC cue_forest_loops( cueArgs args )
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 1);
         b.addMessage("/enable/contour", 1);
+
         b.addMessage("/glitch_tri/alpha", 0);
+        b.addMessage("/big_triangle1/alpha", 1 );
+        b.addMessage("/big_triangle2/alpha", 1 );
 
 
       //  cout << "use camera" << 2 << endl;

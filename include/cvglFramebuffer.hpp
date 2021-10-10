@@ -21,13 +21,13 @@ public:
 
         // configure texture for framebuffer
         texture->bind();
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1920, 1080, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 
         // render buffer for depth (not sure if we really need this right now but whatever)
         glGenRenderbuffers(1, &m_rbo);
         glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1920, 1080);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
         // GL_DEPTH_COMPONENT instead of GL_DEPTH24_STENCIL8..?
 
         // attach texture to framebuffer
@@ -61,6 +61,10 @@ public:
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 //        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        glViewport( 0, 0, width, height);
+
+        glEnable(GL_LINE_SMOOTH);
+        glHint(GL_LINE_SMOOTH_HINT,  GL_NICEST);
 
     }
 
@@ -72,5 +76,8 @@ private:
     GLuint m_rbo = 0;
 
     std::unique_ptr<cvglTexture> texture;
+
+    int width = 1920;
+    int height = 1080;
 
 };

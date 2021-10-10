@@ -129,6 +129,22 @@ void cvglObject::draw()
     
 }
 
+
+void cvglObject::drawSubObject( int i )
+{
+    if( m_draw_mode == GL_STREAM_DRAW )
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cvglVertex) * m_vertices.size(), m_vertices.data(), GL_STREAM_DRAW);
+
+    if( m_tex[i] )
+        glBindTexture( GL_TEXTURE_2D, m_tex[i] );
+
+    for( size_t j = 0; j < m_drawTypes[i].size(); ++j  )
+        glDrawArrays(m_drawTypes[i][j], (int)m_start[i], (int)m_size[i]);
+
+
+}
+
+
 void cvglObject::draw( vector<int> drawtypes )
 {
 

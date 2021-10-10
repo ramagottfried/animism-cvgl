@@ -21,7 +21,6 @@ uniform float flow_mix;
 uniform float slide_down;
 uniform float slide_up;
 
-uniform vec4 vignette_xyr_aspect;
 uniform float time;
 
 const vec4 luma_coef = vec4(0.299, 0.587, 0.114, 0.);

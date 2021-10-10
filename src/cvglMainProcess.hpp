@@ -23,7 +23,7 @@ public:
     // GL context
     cvglContext context;
 
-    cvglShader basic_shader, processing_shader, flow_shader;
+    cvglShader screen_shader, luma_shader, flow_shader;
 
     std::unique_ptr<animShader1> shader1;
 
@@ -37,7 +37,9 @@ public:
     float contrast = 1, brightness = 0, saturation = 1, gamma = 1;
     glm::vec4 vignette_xyr_aspect;
 
-    std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh, glitchRect, bigTriMirror, bigTriMirror2;
+    std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh;
+    std::unique_ptr<cvglObject>     glitchRect, bigTriMirror, bigTriMirror2, halfMirror;
+
     std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex, prevFrame;
     
     int fbIDX = 0;
@@ -63,7 +65,7 @@ public:
 
     // --- called from gl thread (main thread) ---
     void draw();
-    void drawShapes();
+    void drawShapes(cvglShader& shapeRenderShader);
     void initObjs();
     
     void initCues();
@@ -119,15 +121,14 @@ private:
     bool m_draw_hull = true;
     bool m_draw_minrect = true;
     
-    bool m_draw_glitch_triangles = false;
+    float glitch_tri_alpha = 0.5;
+    float glitch_tri_offset_z = 1.;
 
-    bool m_draw_big_triangle = true;
-    float big_tri_alpha = 1;
-    float big_tri_x_offset = 0;
+    float big_tri1_alpha = 0;
 
-    bool m_draw_big_triangle2 = true;
-    float big_tri_alpha2 = 0.75;
-    float big_tri_x_offset2 = 0;
+    float big_tri2_alpha = 0.;
+
+    float half_mirror_alpha = 0.;
 
     std::vector<float> m_contour_rgba;
     std::vector<float> m_contour_triangles_rgba;
@@ -149,7 +150,7 @@ private:
     float luma_target = 0.1;
     float luma_tol = 0.1;
     float luma_fade = 0.48;
-    float luma_mix = 0.75;
+    float luma_mix = 0.0;
 
     glm::vec2 hsflow_scale = glm::vec2(0.02);
     glm::vec2 hsflow_offset = glm::vec2(0.01);

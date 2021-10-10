@@ -20,6 +20,7 @@ uniform float luma_tol;
 uniform float luma_fade;
 uniform float luma_mix;
 
+
 uniform float time;
 
 // vignette now in screen proc

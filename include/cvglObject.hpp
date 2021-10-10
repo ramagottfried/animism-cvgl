@@ -28,6 +28,8 @@ public:
     void draw();
     void draw( std::vector<int> drawtypes );
     void draw( int drawtype );
+    void drawSubObject( int i);
+
     void initStaticDraw();
     
     void triangulate();

@@ -50,6 +50,7 @@ MapOSC cue_forest( cueArgs args );
 MapOSC cue_branch_rips_and_falls(cueArgs args);
 MapOSC cue_forest_frogs( cueArgs args );
 MapOSC cue_forest_loops( cueArgs args );
+MapOSC cue_forest_loops_triZ( cueArgs args );
 
 MapOSC cue_slow_sunburst( cueArgs args );
 MapOSC cue_slow_sunburst_noise_start( cueArgs args );
@@ -318,8 +319,13 @@ public:
         // could also pre-record this part and make hardcore forwards/backwards loops etc.
         setCue("5P",
                "natural sounds begin to loop",
-               "slow spectral sunburst",
+               "fade in triangles",
                &cue_forest_loops );
+
+        setCue("5P_b",
+               "fade in triangles",
+               "slow spectral sunburst",
+               &cue_forest_loops_triZ );
 
         // then fade out mirrors when sunburst comes in?
         setCue("5Q",

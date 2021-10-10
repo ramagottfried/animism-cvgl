@@ -38,7 +38,6 @@ void cvglContext::resize_callback(int w, int h)
         
         m_transform_matrix = glm::scale( glm::mat4(1.0f), glm::vec3(m_x_scale, m_y_scale * adjust, 1.0f) );
 
-
       //  glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
         
     }

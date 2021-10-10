@@ -114,7 +114,7 @@ vector<cvglVertex> MirrorTriangles::genTriangle(float x, float y, float xrange, 
     if( x_tex < 0 )
         x_tex = rx1 + w;
 
-    randTri.emplace_back(cvglVertex({{xx, yy, 0.0f}, {x_tex, 1-ry1}}));
+    randTri.emplace_back(cvglVertex({{xx, yy, (float)rand.uniformRand()}, {x_tex, 1-ry1}}));
 
     xx = cvgl::scale( rx2, 0., 1., -1., 1);
     yy = cvgl::scale( ry2, 0., 1., -1., 1);
@@ -123,7 +123,7 @@ vector<cvglVertex> MirrorTriangles::genTriangle(float x, float y, float xrange, 
     if( x_tex < 0 )
         x_tex = rx2 + w;
 
-    randTri.emplace_back(cvglVertex({{xx, yy, 0.0f},  {x_tex, 1-ry2}}));
+    randTri.emplace_back(cvglVertex({{xx, yy, (float)rand.uniformRand()},  {x_tex, 1-ry2}}));
 
     xx = cvgl::scale( rx3, 0., 1., -1., 1);
     yy = cvgl::scale( ry3, 0., 1., -1., 1);
@@ -132,7 +132,7 @@ vector<cvglVertex> MirrorTriangles::genTriangle(float x, float y, float xrange, 
     if( x_tex < 0 )
         x_tex = rx3 + w;
 
-    randTri.emplace_back(cvglVertex({{xx, yy, 0.0f},  {x_tex, 1-ry3}}));
+    randTri.emplace_back(cvglVertex({{xx, yy, (float)rand.uniformRand()},  {x_tex, 1-ry3}}));
 
     return randTri;
 

@@ -169,11 +169,8 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         else if( addr == "/gamma")
         {
             gamma = val.getFloat();
-        }
-        else if( addr == "/offset/triangles/x" )
-        {
-            rotateTriangles += val.getFloat();
-        }
+        }        
+        /*
         else if( addr == "/triangle/interact/x")
         {
             const auto& vec = val.getAtomVector();
@@ -182,22 +179,26 @@ void cvglMainProcess::setMainParams( MapOSC & b )
          //       triCollision(v->getFloat(), 0);
             }
 
-        }
-        else if( addr == "/big_triangle/alpha")
+        }*/
+        else if( addr == "/big_triangle1/alpha")
         {
-            big_tri_alpha = val.getFloat();
-        }
-        else if( addr == "/big_triangle/x")
-        {
-            big_tri_x_offset = val.getFloat();
-        }
+            big_tri1_alpha = val.getFloat();
+        }        
         else if( addr == "/big_triangle2/alpha")
         {
-            big_tri_alpha2 = val.getFloat();
+            big_tri2_alpha = val.getFloat();
         }
-        else if( addr == "/big_triangle2/x")
+        else if( addr == "/half_mirror/alpha")
         {
-            big_tri_x_offset2 = val.getFloat();
+            half_mirror_alpha = val.getFloat();
+        }
+        else if( addr == "/glitch_tri/alpha")
+        {
+            glitch_tri_alpha = val.getFloat();
+        }
+        else if( addr == "/glitch_tri/z_offset" )
+        {
+            glitch_tri_offset_z = val.getFloat();
         }
         else if( addr == "/hsflow_scale")
         {
@@ -369,7 +370,7 @@ void cvglMainProcess::makeMirrorTriangles()
 
 
     cvglRandom rand;
-    float nTriangles = 50;
+    float nTriangles = 15;
     float yrange = 0.4;
     float overlap = 5;
 
@@ -416,30 +417,10 @@ void cvglMainProcess::makeMirrorTriangles()
 //        tri_vel.emplace_back(0.);
 
     }
-/*
-    for(int i = 0 ; i < nTriangles; i++)
-    {
-        auto tri = genTriangle(i, nTriangles, yrange, overlap, 1);
 
-        glitchRect->addVertex(tri[0]);
-        glitchRect->addVertex(tri[1]);
-        glitchRect->addVertex(tri[2]);
-
-    }
-
-    for(int i = 0 ; i < nTriangles; i++)
-    {
-        auto tri = genTriangle(i, nTriangles, yrange, overlap, 2);
-        glitchRect->addVertex(tri[0]);
-        glitchRect->addVertex(tri[1]);
-        glitchRect->addVertex(tri[2]);
-
-    }
-*/
 
     glitchRect->endObj();
-
-  //  glitchRect->initStaticDraw();
+    glitchRect->initStaticDraw();
 }
 
 
@@ -447,58 +428,51 @@ int cvglMainProcess::loadShaders()
 {
     std::string shader_path = "/home/rama/animism-cvgl/src/";
 
-    if( !processing_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "fragment.fs" ) ){
+    if( !flow_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "flow_repos.fs" ) ){
+        cout << "failed to load screen shader" << endl;
+        return 0;
+    }
+
+    if( !luma_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "luma_alpha_color.fs" ) ){
         cout << "failed to load base shader" << endl;
         return 0;
     }
 
-    if( !flow_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "screen_process.fs" ) ){
+    if( !screen_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "screen_vignette.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
     }
 
-    if( !basic_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "basic_fragment.fs" ) ){
-        cout << "failed to load screen shader" << endl;
-        return 0;
-    }
+    glm::mat4 identityMatrix = glm::identity<glm::mat4>();
 /*
-    if( !shader1.loadShaderFiles( shader_path + "vertex.vs", shader_path + "fragment.fs" ) ){
-        cout << "failed to load base shader" << endl;
-        return 0;
-    }
-    shader1.init();
-*/
-
     shader1 = unique_ptr<animShader1>(new animShader1);
-    shader1->transform_matrix = context.getTransform();
-
+    shader1->transform_matrix = identityMatrix;
+*/
     setVignette(0.5, 0.5, 1);
 
     // setup first shader
-    processing_shader.use();
-    processing_shader.setInt("tex", 0);
-    processing_shader.setInt("prevTex", 1);
-    processing_shader.setMat4("c", context.getTransform() );
-    processing_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+    luma_shader.use();
+    luma_shader.setInt("tex", 0);
+    luma_shader.setInt("prevTex", 1);
+    luma_shader.setMat4("transform_matrix", identityMatrix );
 
-    processing_shader.setFloat("gamma", gamma);
-    processing_shader.setFloat("contrast", contrast);
-    processing_shader.setFloat("saturation", saturation);
-    processing_shader.setFloat("brightness", brightness);
-    processing_shader.setFloat("scale_alpha", 1);
+    luma_shader.setFloat("gamma", gamma);
+    luma_shader.setFloat("contrast", contrast);
+    luma_shader.setFloat("saturation", saturation);
+    luma_shader.setFloat("brightness", brightness);
+    luma_shader.setFloat("scale_alpha", 1);
 
-    processing_shader.setFloat("luma_target", luma_target);
-    processing_shader.setFloat("luma_tol", luma_tol);
-    processing_shader.setFloat("luma_fade", luma_fade);
-    processing_shader.setFloat("luma_mix", luma_mix);
+    luma_shader.setFloat("luma_target", luma_target);
+    luma_shader.setFloat("luma_tol", luma_tol);
+    luma_shader.setFloat("luma_fade", luma_fade);
+    luma_shader.setFloat("luma_mix", luma_mix);
 
 
     // setup first shader
     flow_shader.use();
     flow_shader.setInt("tex0", 0);
     flow_shader.setInt("tex1", 1);
-    flow_shader.setMat4("transform_matrix", context.getTransform() );
-    flow_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+    flow_shader.setMat4("transform_matrix", identityMatrix );
 
     flow_shader.setVec2("hsflow_scale", hsflow_scale );
     flow_shader.setVec2("hsflow_offset", hsflow_offset);
@@ -510,8 +484,9 @@ int cvglMainProcess::loadShaders()
 
     flow_shader.setFloat("flow_mix", flow_mix);
 
-    basic_shader.use();
-    basic_shader.setInt("framebuffer_tex", 0);
+    screen_shader.use();
+    screen_shader.setInt("framebuffer_tex", 0);
+    screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
 
     return 1;
 
@@ -537,6 +512,7 @@ void cvglMainProcess::initObjs()
     glitchRect = unique_ptr<cvglObject>(new cvglObject);
     bigTriMirror = unique_ptr<cvglObject>(new cvglObject);
     bigTriMirror2 = unique_ptr<cvglObject>(new cvglObject);
+    halfMirror = unique_ptr<cvglObject>(new cvglObject);
 
     frameTex =  unique_ptr<cvglTexture>(new cvglTexture);
     contourTex = unique_ptr<cvglTexture>(new cvglTexture);
@@ -573,10 +549,10 @@ void cvglMainProcess::initObjs()
 
     bigTriMirror->newObj(GL_TRIANGLES);
 /*
-    bigTriMirror->addVertex(cvglVertex({{-1,                    -1,      0.0f},        {0.0f, 0.0f} }));
-    bigTriMirror->addVertex(cvglVertex({{ 1,                    -1,      0.0f},        {1.0f, 0.0f} }));
-    bigTriMirror->addVertex(cvglVertex({{(triRatio * 2 - 1),    0.,     0.0f},       {triRatio, 0.5f} }));
-  */
+    bigTriMirror->addVertex(cvglVertex({{-1,                    -1,      0.0f},        {0.0f,       0.0f} }));
+    bigTriMirror->addVertex(cvglVertex({{ 1,                    -1,      0.0f},        {0.5,   0.f} }));
+    bigTriMirror->addVertex(cvglVertex({{(triRatio * 2 - 1),    0.,     0.0f},         {triRatio,   0.5f} }));
+*/
 
     bigTriMirror->addVertex(cvglVertex({{-1,                    -1,      0.0f},      {0.0f,     0.f} }));
     bigTriMirror->addVertex(cvglVertex({{ 1,                    -1,      0.0f},      {1,        0.0f} }));
@@ -592,8 +568,6 @@ void cvglMainProcess::initObjs()
     bigTriMirror2->addVertex(cvglVertex({{-1,                   -1,      0.0f},      {triRatio2 + offset_tex_x,  0} }));
     bigTriMirror2->addVertex(cvglVertex({{(triRatio2 * 2 - 1),  -1.,    0.0f},       {triRatio2 + offset_tex_x,  1.f} }));
 
-
-
 /*
     bigTriMirror2->addVertex(cvglVertex({{-1,  1,   0.0f},      {0.,  1.0} }));
     bigTriMirror2->addVertex(cvglVertex({{ 1,  1,   0.0f},      {1.,  1.0} }));
@@ -601,6 +575,18 @@ void cvglMainProcess::initObjs()
 */
     bigTriMirror2->endObj();
     bigTriMirror2->initStaticDraw();
+
+
+    halfMirror->newObj(GL_TRIANGLES);
+    halfMirror->addVertex(cvglVertex({{ 0,  1, 0.0f},  {0.5f, 0.0f} }));
+    halfMirror->addVertex(cvglVertex({{ 1,  1, 0.0f},  {0.f, 0.0f} }));
+    halfMirror->addVertex(cvglVertex({{ 1, -1, 0.0f},  {0.f, 1.0f} }));
+    halfMirror->addVertex(cvglVertex({{ 1, -1, 0.0f},  {0.f, 1.0f} }));
+    halfMirror->addVertex(cvglVertex({{ 0, -1, 0.0f},  {0.5f, 1.0f} }));
+    halfMirror->addVertex(cvglVertex({{ 0,  1, 0.0f},  {0.5f, 0.0f} }));
+
+    halfMirror->endObj();
+    halfMirror->initStaticDraw();
 
 
     objects_initialized = true;
@@ -755,15 +741,12 @@ void cvglMainProcess::draw()
     fbIDX = (fbIDX+1) % 2;
 
     pass_buffer->bind();
-//    glDisable(GL_DEPTH_TEST);
-    context.clearColor(0, 0, 0, 1);
-
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     context.clear();
-    context.updateViewport();
+
+    // note: don't update the viewport or transform, since the fbos are always the same size (1920x1080)
 
     flow_shader.use();
-    flow_shader.setMat4("transform_matrix", transform );
-    flow_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
 
     flow_shader.setFloat("slide_up", 3.3);
     flow_shader.setFloat("slide_down", 3.3);
@@ -800,24 +783,25 @@ void cvglMainProcess::draw()
     // luma framebuffer, stored for feedback
 
     framebuffer[fbIDX]->bind();
-    context.updateViewport(1);
+    // note: don't update the viewport or transform, since the fbos are always the same size (1920x1080)
+    luma_shader.use();
+    luma_shader.setFloat("gamma", gamma);
+    luma_shader.setFloat("contrast", contrast);
+    luma_shader.setFloat("saturation", saturation);
+    luma_shader.setFloat("brightness", brightness);
 
-    processing_shader.use();
-    processing_shader.setMat4("transform_matrix", transform);
-    processing_shader.setFloat("gamma", gamma);
-    processing_shader.setFloat("contrast", contrast);
-    processing_shader.setFloat("saturation", saturation);
-    processing_shader.setFloat("brightness", brightness);
+    luma_shader.setFloat("luma_target", luma_target);
+    luma_shader.setFloat("luma_tol", luma_tol);
+    luma_shader.setFloat("luma_fade", luma_fade);
+    luma_shader.setFloat("luma_mix", luma_mix);
+    luma_shader.setFloat("scale_alpha", 1);
 
-    processing_shader.setFloat("luma_target", luma_target);
-    processing_shader.setFloat("luma_tol", luma_tol);
-    processing_shader.setFloat("luma_fade", luma_fade);
-    processing_shader.setFloat("luma_mix", luma_mix);
-    processing_shader.setFloat("scale_alpha", 1);
 
-    //processing_shader.setFloat("prev_tex_ratio", 0.94);
+    //luma_shader.setFloat("prev_tex_ratio", 0.94);
 
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+    // this needs to be black, since the processing creates alpha dips
+    // we will see the background if the the alpha is low
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     context.clear();
 
@@ -830,7 +814,7 @@ void cvglMainProcess::draw()
         context.bindTextureByID( pass_buffer->getTexID() ); // tex0 = prev render pass
     rect->draw();
 
-    drawShapes();
+    drawShapes( luma_shader );
 
 
     // ----------------------------------------------------------------
@@ -841,13 +825,14 @@ void cvglMainProcess::draw()
     // draw fbIDX frame buffer, using simple output shader (not stored)
 
     context.bindDefaultFramebuffer();
-    basic_shader.use();
+    screen_shader.use();
+    screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
 
     context.updateViewport(1);
-    basic_shader.setMat4("transform_matrix", transform);
+    screen_shader.setMat4("transform_matrix", transform);
 
+    glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
     context.clear();
     glActiveTexture(GL_TEXTURE0);
 
@@ -859,23 +844,21 @@ void cvglMainProcess::draw()
 
     // context.printFPS();
     
-    //m_use_camera_id = m_use_camera_id == 1 ? 2 : 1;
-
     m_newframe = false;
     
 }
 
 
-void cvglMainProcess::drawShapes()
+void cvglMainProcess::drawShapes(cvglShader& shapeRenderShader)
 {
-    glm::mat4 transform = context.getTransform();
+    glm::mat4 transform = glm::identity<glm::mat4>(); // not screen version here...
 
     glActiveTexture(GL_TEXTURE0);
 
     if( m_draw_contour )
     {
         contourMesh->bind();
-        processing_shader.setFloat("scale_alpha", 1);
+        shapeRenderShader.setFloat("scale_alpha", 1);
         contourTex->setTexture(m_contour_rgba);//getFrame());
         contourMesh->draw(GL_TRIANGLES);
     }
@@ -885,7 +868,7 @@ void cvglMainProcess::drawShapes()
         contourMesh->bind();
         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
         contourTriTex->setTexture(m_contour_triangles_rgba);
-        processing_shader.setFloat("scale_alpha", 1);
+        shapeRenderShader.setFloat("scale_alpha", 1);
         contourMesh->draw(GL_TRIANGLE_STRIP);
         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
     }
@@ -893,7 +876,7 @@ void cvglMainProcess::drawShapes()
     if( m_draw_hull )
     {
         hullMesh->bind();
-        processing_shader.setFloat("scale_alpha", 1);
+        shapeRenderShader.setFloat("scale_alpha", 1);
         hullTex->setTexture(m_hull_rgba);
         hullMesh->draw(GL_TRIANGLE_STRIP);//vector<int>({GL_TRIANGLES, GL_POINTS}));
     }
@@ -903,37 +886,37 @@ void cvglMainProcess::drawShapes()
         //   glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
         minrectMesh->bind();
         minrectTex->setTexture(m_minrect_rgba);
-        processing_shader.setFloat("scale_alpha", 1);
+        shapeRenderShader.setFloat("scale_alpha", 1);
         minrectMesh->draw(GL_TRIANGLE_STRIP);
     }
 
 
-    if( m_draw_big_triangle2 )
+    if( half_mirror_alpha > 0 )
+    {
+
+        halfMirror->bind();
+        shapeRenderShader.setFloat("scale_alpha", half_mirror_alpha);
+        frameTex->bind();
+        halfMirror->draw();
+
+    }
+
+    if( big_tri2_alpha > 0 )
     {
 
         bigTriMirror2->bind();
-
-    //    glm::mat4 translated = glm::rotate(transform, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    //    glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
-        processing_shader.setFloat("scale_alpha", big_tri_alpha2);
-
+        shapeRenderShader.setFloat("scale_alpha", big_tri2_alpha);
         frameTex->bind();
         bigTriMirror2->draw();
 
-
-//        glUniform1f(scale_alpha_attr_idx, 1);
-//        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
     }
 
-    if( m_draw_big_triangle )
+    if( big_tri1_alpha > 0 )
     {
 
         bigTriMirror->bind();
 
-       // glm::mat4 translated = glm::translate(transform, glm::vec3(0, big_tri_x_offset, 0));
-
-       // flow_shader.setMat4("transform_matrix", translated);
-        processing_shader.setFloat("scale_alpha", big_tri_alpha);
+        shapeRenderShader.setFloat("scale_alpha", big_tri1_alpha);
         //cout << big_tri_alpha << " ? " << endl;
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
         //glUniform1f(scale_alpha_attr_idx, big_tri_alpha);
@@ -946,119 +929,21 @@ void cvglMainProcess::drawShapes()
         //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
     }
 
-    if( m_draw_glitch_triangles )
+    if( glitch_tri_alpha > 0 )
     {
 
-     //   makeMirrorTriangles();
-        glm::mat4 translated = glm::translate(transform, glm::vec3(rotateTriangles, 0, 0));
-
         glitchRect->bind();
-        flow_shader.setMat4("transform_matrix", translated);
-        float alpha = 0.75;
-        processing_shader.setFloat("scale_alpha", alpha);
 
-        //glUniform1f(scale_alpha_attr_idx, alpha);
-        //        glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &translated[0][0]);
+        glm::mat4 translated = glm::translate(transform, glm::vec3(0, 0, glitch_tri_offset_z ));
 
+        shapeRenderShader.setMat4("transform_matrix", translated);
+        shapeRenderShader.setFloat("scale_alpha", glitch_tri_alpha);
         frameTex->bind();
         glitchRect->draw();
 
-        flow_shader.setMat4("transform_matrix", transform);
+        shapeRenderShader.setMat4("transform_matrix", transform);
 
-        //glUniform1f(scale_alpha_attr_idx, 1);
-        //glUniformMatrix4fv(transform_attr_idx, 1, GL_FALSE, &transform[0][0]);
+
     }
 }
 
-
-// multi-block thread lock version, moving back to longer gl block
-// so that it's easier to draw to the image from the cv processing
-
-/*
-void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
-{
-    if( m_use_camera_id == camera_id )
-    {
-
-        // this first lock is for the gl thread, and here is were we need to perform any
-        // operations that should be displayed, it's separated from the analysis thread
-        // in order to speed up the display part a bit
-       {
-            unique_lock<mutex> lock(m_gl_lock);
-
-            if( frame.empty() || !objects_initialized )
-                return;
-
-            m_newframe = true;
-            setFrame(frame); // takes ownership of frame in local storage m_img
-
-            // note that any graphics processing to display needs to happen here,
-            // otherwise, the frame is not redrawn after releasing the gl lock
-            switch(m_use_preprocess) {
-                case 3:
-                   // getFlow();
-                break;
-            default:
-                break;
-            }
-
-
-        }
-
-
-        // second block is for the analysis data, preprocessing based on the settings that
-        // have been set from the OSC input, and so there is a lock for the udp/osc thread
-
-        AnalysisData data;
-
-        {
-            unique_lock<mutex> lock_osc(m_osc_lock);
-          // cout << " preprocessing mode " << m_use_preprocess << endl;
-
-           // profile.markStart();
-            // pre-processes inherited from cvglCV
-            switch (m_use_preprocess) {
-                case 0:
-                    preprocess();
-                    break;
-                case 1:
-                    preprocessDifference();
-                    break;
-                case 2:
-                    preprocessCanny();
-                    break;
-                case 3:
-                    preprocessDenseFlow();
-                  //  m_contour_analysis = false;
-                default:
-                    break;
-            }
-
-            if( m_contour_analysis ){
-                data = analyzeContour();
-                m_data = data;
-            }
-        }
-        //    cvx.getFlow( flowMesh );
-       // profile.markEnd("preproc");
-
-        //profile.markStart();
-
-        //profile.markEnd("analyzeContour");
-
-
-        // finally we add the analysis to the gl objects to draw, after the analysis
-        // this is not part of the first part, because if the analysis is too slow,
-        // then this should hypothetically make it possible to draw the video part first,
-        // and maybe the next frame might have the objects from the previous frame, but
-        // but that is ok, better than blocking the gl thread for the analysis
-
-        {
-            unique_lock<mutex> lock(m_gl_lock);
-            analysisToGL( data );
-        }
-
-    }
-
-}
-*/
