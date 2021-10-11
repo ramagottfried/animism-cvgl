@@ -18,6 +18,8 @@ MapOSC cue_underwater_deep( cueArgs args )
 
     if( isNewCue )
     {
+        b.addMessage("/contrast", 1.3);
+        b.addMessage("/use/camera",  2);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
@@ -32,7 +34,6 @@ MapOSC cue_underwater_deep( cueArgs args )
         b.addMessage("/video/black",  0);
         b.addMessage("/use/preprocess",  3);
 
-        b.addMessage("/use/camera",  1);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);

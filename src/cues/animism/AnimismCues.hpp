@@ -68,7 +68,7 @@ public:
 
     AnimismCues()
     {
-        m_cue = "5Q";
+        m_cue = "5K";
 
         setCue("-1",
                "start black",
@@ -241,6 +241,7 @@ public:
 
     void setScene5()
     {
+        // cam 1
         setCue("5A",
                "holding breath",
                "fuzzball",
@@ -287,6 +288,7 @@ public:
                &cue_pond_edge ); // with drones? maybe quiet noisy texture drone...
                 // respond to light on water?? not sure if this is possible with the camera angle
 
+        // cam 2 ? or stay with cam 1 so we can swap out gel creature for forest scene
         setCue("5J",
                "underwater",
                "in the deep black",
@@ -302,6 +304,7 @@ public:
                "descend into the forest",
                &cue_floating_fisheye_blinks );
 
+        // cam 1 if eye is on cam 2, or visa versa
         // maybe the sun is not too too bright, so that it is more climatic later
         setCue("5M",
                "descend into the forest, sun gets brighter, then wind picks up as we go deeper into the woods",

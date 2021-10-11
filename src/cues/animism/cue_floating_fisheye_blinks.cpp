@@ -3,6 +3,12 @@
 using namespace cvgl;
 using namespace Eigen;
 
+/*
+ * sheet of paper in front of eye, light behind paper shining on eye
+ * dont' blink! until this cue
+ *
+ */
+
 MapOSC cue_floating_fisheye_blinks(cueArgs args)
 {
     MapOSC out;
@@ -13,6 +19,8 @@ MapOSC cue_floating_fisheye_blinks(cueArgs args)
 
     if( isNewCue )
     {
+        b.addMessage("/contrast", 1.3);
+        b.addMessage("/use/camera",  1);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
@@ -32,7 +40,7 @@ MapOSC cue_floating_fisheye_blinks(cueArgs args)
         b.addMessage("/thresh", 60 );
         b.addMessage("/invert", 0 );
 
-        b.addMessage("/use/camera",  1);
+        // trigger blink sound here
 
     }
 

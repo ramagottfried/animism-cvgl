@@ -27,6 +27,7 @@ MapOSC cue_forest( cueArgs args )
 
     if( isNewCue )
     {
+        b.addMessage("/contrast", 1);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
