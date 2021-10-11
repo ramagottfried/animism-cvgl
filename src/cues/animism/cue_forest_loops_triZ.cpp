@@ -24,8 +24,10 @@ MapOSC cue_forest_loops_triZ( cueArgs args )
 
     double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
     double freq = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
-    double lfo = tanh(cos(elapsed_section * M_PI * 2 * freq * fadein) * 7);
-    b.addMessage("/glitch_tri/z_offset", scale( lfo, -1., 1., 0.1, 0.75));
+    double lfo = cos(elapsed_section * M_PI * 2 * freq * fadein);
+   // double signOf = lfo > 0 ? -1 : 1;
+    double lfo_rect = tanh(lfo * 7);
+    b.addMessage("/glitch_tri/z_offset", scale( lfo_rect, -1., 1., 0.1, 0.75));
 
 
 
@@ -55,8 +57,8 @@ MapOSC cue_forest_loops_triZ( cueArgs args )
         b.addMessage("/overlap/flip", 0.);
 
         b.addMessage("/enable/hull", 0);
-        b.addMessage("/enable/minrect", 1);
-        b.addMessage("/enable/contour", 1);
+        b.addMessage("/enable/minrect", 0);
+        b.addMessage("/enable/contour", 0);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.2 );
 
 

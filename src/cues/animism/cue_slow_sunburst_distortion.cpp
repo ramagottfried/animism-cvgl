@@ -17,18 +17,13 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
 
 
     double fadetime = 10;
-    if( elapsed_section <= fadetime )
-    {
-        b.addMessage("/luma_tol", scale(elapsed_section, 0., fadetime, 0.3, 0.5)  );
-    }
 
     double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
     double freq = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
     double lfo = cos(elapsed_section * M_PI * 2 * freq * fadein);
-    double rect_lfo = tanh(cos(elapsed_section * M_PI * 2 * freq * fadein) * 7);
     b.addMessage("/repos_amt", scale( lfo, -1., 1., 0.17, 0.5));
 
-    b.addMessage("/hsflow_scale", scale( lfo, -1., 1., 0.01, 0.1));
+    b.addMessage("/hsflow_scale", scale( lfo, -1., 1., 0.1, 0.01));
     b.addMessage("/repos_scale", scale( lfo, -1., 1., 0.998, 1.) );
 
     // move lfos to previous cue!

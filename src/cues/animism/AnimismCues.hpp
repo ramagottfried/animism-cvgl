@@ -52,9 +52,9 @@ MapOSC cue_forest_frogs( cueArgs args );
 MapOSC cue_forest_loops( cueArgs args );
 MapOSC cue_forest_loops_triZ( cueArgs args );
 
-MapOSC cue_slow_sunburst( cueArgs args );
-MapOSC cue_slow_sunburst_mirror( cueArgs args );
-MapOSC cue_slow_sunburst_mirror_flow( cueArgs args );
+MapOSC cue_slow_sunburst( cueArgs args ); // fade out tris
+MapOSC cue_slow_sunburst_mirror( cueArgs args ); // fade in mirror
+MapOSC cue_slow_sunburst_mirror_flow( cueArgs args ); // fade flow
 
 
 MapOSC cue_slow_sunburst_noise_start( cueArgs args );

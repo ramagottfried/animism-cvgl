@@ -31,7 +31,27 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
     double lfo = tanh(cos(elapsed_section * M_PI * 2 * freq * fadein) * 7);
     b.addMessage("/contrast", scale( lfo, -1., 1., 1., 1.5));
 
-// add some more flow movement towards the end?
+    double luma_fade = 40;
+    if( elapsed_section <= fadetime )
+    {
+        double t = scale(elapsed_section, 0., luma_fade, 0., 1.) ;
+        b.addMessage("/luma_tol", scale(t, 0., 1., 0.3, 0.8)  );
+        b.addMessage("/contour/color", 0.25, 0.5, 1., scale(t, 0., 1., 0., 0.125)  );
+
+    }
+
+    double fadein2 =  scale_clip(elapsed_section, 0., luma_fade, 0., 1.);
+    double freq2 = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein2), -1., 1., 0.05, 0.03);
+    double lfo2 = cos(elapsed_section * M_PI * 2 * freq2 * fadein2);
+   // double rect_lfo2 = tanh(lfo2 * 7);
+    b.addMessage("/repos_amt", scale( lfo2, -1., 1., 0.17, 0.5));
+
+    b.addMessage("/hsflow_scale", scale( lfo2, -1., 1., 0.05, 0.01));
+    b.addMessage("/repos_scale", scale( lfo2, -1., 1., 0.998, 1.) );
+
+// need to use cache to log the values to stay smooth between cues
+    // better to smooth out the speed a bit, it's too fast right now suddenly
+
 
     if( isNewCue )
     {
@@ -80,7 +100,7 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 1);
-        b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
+        b.addMessage("/contour/color", 0.25, 0.5, 1., 0.);
 
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
