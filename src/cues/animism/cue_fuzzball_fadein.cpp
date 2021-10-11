@@ -39,7 +39,6 @@ MapOSC cue_fuzzball( cueArgs args )
         out.addMessage("/sine/pregain/dB",  -70);
 
         b.addMessage("/video/black",  0);
-        b.addMessage("/use/preprocess",  3);
 
         b.addMessage("/use/camera",  1);
 
@@ -52,6 +51,7 @@ MapOSC cue_fuzzball( cueArgs args )
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
       //  cout << "use camera" << 2 << endl;
+        b.addMessage("/use/preprocess",  3);
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 0.9 );
         b.addMessage("/thresh", 41 );
@@ -131,7 +131,7 @@ MapOSC cue_fuzzball( cueArgs args )
             out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
             out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
             out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
-     }
+        }
 
 
     }

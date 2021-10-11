@@ -34,6 +34,7 @@ MapOSC cue_fuzzball_fadein( cueArgs args );
 MapOSC cue_fuzzball( cueArgs args );
 
 MapOSC cue_grass(cueArgs args);
+MapOSC cue_grass_fadeout( cueArgs args );
 
 MapOSC cue_moon_hands(cueArgs args);
 
@@ -260,7 +261,7 @@ public:
         setCue("5D",
                "fuzzball continues on",
                "moonrise with birds",
-               &cue_fuzzball ); // fade field recording back in ?
+               &cue_grass_fadeout ); // fade field recording back in ?
 
         setCue("5E",
                "moonrise with birds",

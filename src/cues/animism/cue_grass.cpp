@@ -14,7 +14,7 @@ MapOSC cue_grass( cueArgs args )
 
     if( isNewCue )
     {
-        out.addMessage("/dpo/pregain/dB",          -100);
+        out.addMessage("/dpo/pregain/dB",          -24);
         out.addMessage("/dpo/sarah/pregain/dB",    0);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
@@ -28,7 +28,7 @@ MapOSC cue_grass( cueArgs args )
 
         b.addMessage("/size/min", 0.00001 );
         b.addMessage("/size/max", 1 );
-        b.addMessage("/thresh", 60 );
+        b.addMessage("/thresh", 20 );
         b.addMessage("/invert", 0 );
 
 
@@ -51,21 +51,23 @@ MapOSC cue_grass( cueArgs args )
         out.addMessage("/dpo/index1/val", 0.38);
         out.addMessage("/dpo/index2/val", 0.68);
         out.addMessage("/dpo/shape/val", 0.29);
+
         out.addMessage("/dpo/vcf1_q/scale", -2, 0.3);
         out.addMessage("/dpo/vcf2_q/scale", 0, 0.5);
+
         out.addMessage("/dpo/sarah/slide/up", 0);
         out.addMessage("/dpo/sarah/slide/down", 0);
 
         out.addMessage("/dpo/amp/val", 1);
         out.addMessage("/dpo/sarah/amp/val", 1);
 
-
+/*
         out.addMessage("/led/1/spread", 2);
         out.addMessage("/led/1/amp", 1);
         out.addMessage("/led/rand/pos/hz", 2.5);
         out.addMessage("/led/rand/pos/range", 29, 88);
         out.addMessage("/led/rand/pos/snapshot", 100);
-
+*/
 
         args.cache.addMessage("/min", 1);
         args.cache.addMessage("/max", 0);
@@ -135,22 +137,24 @@ MapOSC cue_grass( cueArgs args )
 
      //   double centroid_dist_avg = data.delta_centroid_dist.mean();
      //   double area_avg = data.contour_area.mean();
-
+        out.addMessage("/dpo/f1/val", scale(dist_sum, 0, 1, 48, 128), 20);
         out.addMessage("/dpo/f2/val", scale(dist_sum, 0, 1, 135, 50), 20);
         out.addMessage("/dpo/index1/val", scale(area_sum, 0, 1, 0.4, 0.8) + scale(dist_sum, 0, 1, 0.2, 0.8), 20);
 
         out.addMessage("/dpo/sarah/amp/val", dist_sum * dist_sum  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+        out.addMessage("/dpo/amp/val", dist_sum * dist_sum);
 
         out.addMessage("/dpo/vcf1_hz/val", scale(area_sum, min, max, -0.3, 0));
         out.addMessage("/dpo/vcf2_hz/val", scale(area_sum, min, max, 0, 0.8));
 
-        out.addMessage("/dpo/vcf1_q/val", scale(area_sum, min, max, -1, 0.8));
-        out.addMessage("/dpo/vcf2_q/val", scale(area_sum, min, max, -1, 0.8));
+        out.addMessage("/dpo/vcf1_q/val", scale(area_sum, min, max, -0.5, 0.));
+        out.addMessage("/dpo/vcf2_q/val", scale(area_sum, min, max, -0.5, 0.));
 
 
     }
     else
     {
+        out.addMessage("/dpo/amp/val", 0);
         out.addMessage("/dpo/sarah/amp/val", 0);
     }
 
