@@ -12,21 +12,6 @@ MapOSC cue_vignette_circle_drop( cueArgs args )
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 
-    if( isNewCue )
-    {
-
-        b.addMessage("/use/camera",  1);
-        b.addMessage("/video/black", 0);
-
-        b.addMessage("/enable/hull", 0);
-        b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 0);
-
-        b.addMessage("/vignette/xyr", 0.5, 0.5, 0.5 );
-        b.addMessage("/luma_mix", 1);
-        b.addMessage("/flow_mix", 1);
-    }
-
 
     /*
      *  end with noise_mult 0, noise_mix 1
@@ -50,8 +35,8 @@ MapOSC cue_vignette_circle_drop( cueArgs args )
         out.addMessage("/rad", rad);
         out.addMessage("/y", y);
 
-        b.addMessage("/noise_mult", 1 - t);
-        b.addMessage("/noise_mix", t);
+    //    b.addMessage("/noise_mult", 1 - t);
+    //    b.addMessage("/noise_mix", t);
         b.addMessage("/vignette/fadeSize", 0.05 * (1-t) ); //
     }
     else if( elapsed_section <= dur2 )
@@ -96,6 +81,27 @@ MapOSC cue_vignette_circle_drop( cueArgs args )
         b.addMessage("/vignette/xyr", x, y, rad );
     }
     */
+
+    if( isNewCue )
+    {
+
+        b.addMessage("/use/camera",  1);
+        b.addMessage("/video/black", 0);
+
+        b.addMessage("/enable/hull", 0);
+        b.addMessage("/enable/minrect", 0);
+        b.addMessage("/enable/contour", 0);
+
+        b.addMessage("/vignette/xyr", 0.5, 0.5, 0.5 );
+        b.addMessage("/luma_mix", 1);
+        b.addMessage("/flow_mix", 1);
+
+        b.addMessage("/noise_mult", 0. );
+        b.addMessage("/noise_mix", 1. );
+
+    }
+
+
 
     return out;
 

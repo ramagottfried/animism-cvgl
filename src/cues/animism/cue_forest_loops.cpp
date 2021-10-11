@@ -57,15 +57,9 @@ MapOSC cue_forest_loops( cueArgs args )
         b.addMessage("/overlap/flip", 0.);
 
         b.addMessage("/enable/hull", 0);
-        b.addMessage("/enable/minrect", 1);
-        b.addMessage("/enable/contour", 1);
+        b.addMessage("/enable/minrect", 0);
+        b.addMessage("/enable/contour", 0);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.2 );
-
-
-        b.addMessage("/enable/hull", 0);
-        b.addMessage("/enable/minrect", 1);
-        b.addMessage("/enable/contour", 1);
-
 
 
       //  cout << "use camera" << 2 << endl;

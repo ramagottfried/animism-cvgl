@@ -15,7 +15,7 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
     //MapOSC& m_state_cache = args.cache;
     //cvglRandom& m_rand_generator = args.randGen;
 
-    double fadetime = 10;
+    double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
         // transition, to sped up version
@@ -23,10 +23,41 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
         out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., -6));
         out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 0., 12) );
 
+        b.addMessage("/half_mirror/alpha", scale(elapsed_section, 0., fadetime, 1., 0)  );
     }
+
+    double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
+    double freq = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
+    double lfo = tanh(cos(elapsed_section * M_PI * 2 * freq * fadein) * 7);
+    b.addMessage("/contrast", scale( lfo, -1., 1., 1., 1.5));
+
+// add some more flow movement towards the end?
 
     if( isNewCue )
     {
+        b.addMessage("/glitch_tri/alpha", 0);
+        b.addMessage("/big_triangle1/alpha", 0 );
+        b.addMessage("/big_triangle2/alpha", 0 );
+        b.addMessage("/half_mirror/alpha", 1 );
+        b.addMessage("/vignette/xyr", 0.5, 0.5, 1);
+
+
+        b.addMessage("/luma_target", 0.24);
+        b.addMessage("/luma_tol", 0.5);
+        b.addMessage("/luma_fade", 0.0);
+
+        b.addMessage("/hsflow_lambda", 0.);
+        b.addMessage("/hsflow_scale", 0.01);
+        b.addMessage("/hsflow_offset", 0.3);
+
+        b.addMessage("/repos_amt", 0.17);
+        b.addMessage("/repos_scale", 0.997);
+        b.addMessage("/repos_bias", 0.00);
+
+        b.addMessage("/luma_mix", 1.);
+        b.addMessage("/flow_mix", 1.);
+        b.addMessage("/noise_mix", 0.);
+
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);

@@ -54,6 +54,8 @@ MapOSC cue_forest_loops_triZ( cueArgs args );
 
 MapOSC cue_slow_sunburst( cueArgs args );
 MapOSC cue_slow_sunburst_mirror( cueArgs args );
+MapOSC cue_slow_sunburst_mirror_flow( cueArgs args );
+
 
 MapOSC cue_slow_sunburst_noise_start( cueArgs args );
 MapOSC cue_slow_sunburst_distortion( cueArgs args );
@@ -66,7 +68,7 @@ public:
 
     AnimismCues()
     {
-        m_cue = "5P";
+        m_cue = "5Q";
 
         setCue("-1",
                "start black",
@@ -325,7 +327,7 @@ public:
                &cue_forest_loops );
 
         setCue("5P_b",
-               "fade in triangles",
+               "fade in triangles, then shadow heartbeat",
                "slow spectral sunburst",
                &cue_forest_loops_triZ );
 
@@ -337,8 +339,13 @@ public:
 
         setCue("5Q_b",
                "mirror",
-               "increasingly dissonant becoming white noise",
+               "mirror flow",
                &cue_slow_sunburst_mirror );
+
+        setCue("5Q_c",
+               "mirror flow",
+               "increasingly dissonant becoming white noise",
+               &cue_slow_sunburst_mirror_flow );
 
 
         setCue("5R",

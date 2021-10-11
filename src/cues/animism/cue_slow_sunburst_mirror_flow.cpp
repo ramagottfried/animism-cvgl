@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_slow_sunburst_distortion( cueArgs args )
+MapOSC cue_slow_sunburst_mirror_flow( cueArgs args )
 {
 
     MapOSC out;
@@ -12,56 +12,38 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 
-    //MapOSC& m_state_cache = args.cache;
-    //cvglRandom& m_rand_generator = args.randGen;
-
-
-    double fadetime = 10;
+    double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
-        b.addMessage("/luma_tol", scale(elapsed_section, 0., fadetime, 0.3, 0.5)  );
-    }
+        double curve = pow( scale(elapsed_section, 0., fadetime, 0., 1), 0.5);
+        b.addMessage("/luma_mix", curve );
+        b.addMessage("/flow_mix", curve );
 
-    double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
-    double freq = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
-    double lfo = cos(elapsed_section * M_PI * 2 * freq * fadein);
-    double rect_lfo = tanh(cos(elapsed_section * M_PI * 2 * freq * fadein) * 7);
-    b.addMessage("/repos_amt", scale( lfo, -1., 1., 0.17, 0.5));
-
-    b.addMessage("/hsflow_scale", scale( lfo, -1., 1., 0.01, 0.1));
-    b.addMessage("/repos_scale", scale( lfo, -1., 1., 0.998, 1.) );
-
-    // move lfos to previous cue!
-
-    double noisefade = 20;
-    if( elapsed_section <= noisefade )
-    {
-        double curve = pow( scale(elapsed_section, 0., noisefade, 0., 1), 1);
-        b.addMessage("/noise_mix", curve );
     }
     else
-        b.addMessage("/noise_mix", 1. );
-
-    double noise_mult_fade = 30;
-    if( elapsed_section <= noise_mult_fade )
     {
-        double curve = pow( scale(elapsed_section, 0., noise_mult_fade, 0., 1), 0.2);
-        b.addMessage("/noise_mult", scale(curve, 0., 1., 1, 0.)  );
+        b.addMessage("/luma_mix", 1 );
+        b.addMessage("/flow_mix", 1 );
     }
-    else
-        b.addMessage("/noise_mult", 0. );
+
+    double fadetime2 = 40;
+    if( elapsed_section <= fadetime2 )
+    {
+        double curve = scale(elapsed_section, 0., fadetime2, 0., 0.3);
+        b.addMessage("/luma_tol", curve );
+    }
+
 
     if( isNewCue )
     {
-        b.addMessage("/contrast", 1);
 
         b.addMessage("/glitch_tri/alpha", 0);
         b.addMessage("/big_triangle1/alpha", 0 );
         b.addMessage("/big_triangle2/alpha", 0 );
-        b.addMessage("/half_mirror/alpha", 0 );
+        b.addMessage("/half_mirror/alpha", 1 );
 
         b.addMessage("/luma_target", 0.24);
-        b.addMessage("/luma_tol", 0.5);
+        b.addMessage("/luma_tol", 0.3);
         b.addMessage("/luma_fade", 0.0);
 
         b.addMessage("/hsflow_lambda", 0.);
@@ -72,10 +54,9 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
         b.addMessage("/repos_scale", 0.997);
         b.addMessage("/repos_bias", 0.00);
 
-        b.addMessage("/luma_mix", 1.);
-        b.addMessage("/flow_mix", 1.);
+        b.addMessage("/luma_mix", 0.);
+        b.addMessage("/flow_mix", 0.);
         b.addMessage("/noise_mix", 0.);
-
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
