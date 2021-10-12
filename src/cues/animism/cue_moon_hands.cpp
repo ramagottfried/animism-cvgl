@@ -22,7 +22,7 @@ MapOSC cue_moon_hands(cueArgs args)
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
-        out.addMessage("/fuzz/pregain/dB",         -100);
+        out.addMessage("/fuzz/pregain/dB",         -12);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         0);
 
@@ -44,7 +44,7 @@ MapOSC cue_moon_hands(cueArgs args)
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 200 );
+        b.addMessage("/thresh", 60 );
         b.addMessage("/invert", 0 );
 
         out.addMessage("/loop/amp", 1);
@@ -55,13 +55,17 @@ MapOSC cue_moon_hands(cueArgs args)
         out.addMessage("/loop/buffer/idx", 0);
         out.addMessage("/loop/retrigger/click", 1);
 
-        out.addMessage("/korg/maths/cycle", 0);
+        out.addMessage("/loop/send/korg", 1);
+        out.addMessage("/loop/send/fuzz", 0);
+
+        out.addMessage("/korg/maths/cycle", 1);
+
         out.addMessage("/korg/q1/val", 0.65 );
         out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
-
         out.addMessage("/korg/slide/down", 0);
         out.addMessage("/korg/slide/up", 5);
-
+        out.addMessage("/korg/hz1", 0);
+        out.addMessage("/korg/hz2", 0);
 
         out.addMessage("/fuzz/drive/val", 0.5);
         out.addMessage("/fuzz/fat/val", 0.);
@@ -88,18 +92,17 @@ MapOSC cue_moon_hands(cueArgs args)
 
         double x_ctr = scale(avg_x, 0., 1., -90, 90) ;
 
+        double normed = scale(sum_area, 0., 0.03, 0., 1.);
         out.addMessage("/korg/spat/1/az", x_ctr - 5);
         out.addMessage("/korg/spat/2/az", x_ctr + 5);
 
         out.addMessage("/korg/amp", 1  );
-        out.addMessage("/korg/hz1", scale_clip(sum_area, 0., 0.03, 0.5,  -0.3));
-        out.addMessage("/korg/hz2", scale_clip(sum_area, 0., 0.03, 0.6, -0.4));
+        //out.addMessage("/korg/hz1", scale_clip(normed, 0., 1., 0.5,  -0.3));
+        //out.addMessage("/korg/hz2", scale_clip(normed, 0., 1., 0.6, -0.4));
 
-        out.addMessage("/fuzz/drive/val", 0.5);
-        out.addMessage("/fuzz/fat/val", 0.);
-        out.addMessage("/fuzz/stab/val", clip( scale( sum_area, 0., 0.03,  0.3, 0.5), 0.3, 0.5) );
-        out.addMessage("/fuzz/amp", 1 );
-
+        out.addMessage("/korg/maths/speed/val", scale(normed, 0., 1., -0.1, 0.1));
+        out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
+        out.addMessage("/korg/maths/offset/val", scale(normed, 0., 1.,  0.2, -0.2 ));
 
     }
     else

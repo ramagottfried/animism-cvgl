@@ -37,6 +37,7 @@ MapOSC cue_grass(cueArgs args);
 MapOSC cue_grass_fadeout( cueArgs args );
 
 MapOSC cue_moon_hands(cueArgs args);
+MapOSC cue_moon_hands_fadeout(cueArgs args);
 
 MapOSC cue_antlers( cueArgs args );
 MapOSC cue_burdock_roll_out(cueArgs args);
@@ -69,7 +70,7 @@ public:
 
     AnimismCues()
     {
-        m_cue = "5K";
+        m_cue = "5E";
 
         setCue("-1",
                "start black",
@@ -265,8 +266,13 @@ public:
 
         setCue("5E",
                "moonrise with birds",
-               "antler creature",
+               "moonrise fadeout, fuzzball continues",
                &cue_moon_hands ); // contour filter?
+
+        setCue("5E_b",
+               "moonrise fadeout, fuzzball continues",
+               "antler creature",
+               &cue_moon_hands_fadeout );
 
         setCue("5F",
                "antler creature",

@@ -55,7 +55,7 @@ MapOSC cue_string_creature(cueArgs args)
         out.addMessage("/gran/*/rate/scale", 15., 117.);
         out.addMessage("/gran/*/amp/val", 0);
         out.addMessage("/gran/*/buffer/scale", 3, 9 );
-        out.addMessage("/gran/send", 1);
+        out.addMessage("/gran/send/fuzz", 1);
         cache.addMessage("/position", 0);
         cache.addMessage("/direction", 1);
         cache.addMessage("/min", 1);

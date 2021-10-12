@@ -52,7 +52,7 @@ MapOSC cue_heart_fadein(cueArgs args)
         out.addMessage("/gran/1/rate/val", 0.2);
         out.addMessage("/gran/1/amp/val", 1);
         out.addMessage("/gran/1/buffer/val", 7);
-        out.addMessage("/gran/send", 1);
+        out.addMessage("/gran/send/fuzz", 1);
 
         out.addMessage("/fuzz/drive/val", 0.5);
         out.addMessage("/fuzz/fat/val", 0.);
