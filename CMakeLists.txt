@@ -55,6 +55,7 @@ add_library(libcvgl STATIC
     src/camera/cvglCameraBase.cpp
     src/camera/cvglCVCamera.cpp
     src/camera/cvglDeckLinkCamera.cpp
+    src/camera/cvglVideoPlayer.cpp
     src/gl/cvglCallbacks.cpp
     src/gl/cvglContext.cpp
     src/gl/cvglObject.cpp

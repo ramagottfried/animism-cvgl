@@ -166,17 +166,18 @@ MapOSC cue_antlers( cueArgs args )
             {
                 out.addMessage("/gran/3/amp/val", adaptive_norm_mag_avg, 20);
                 out.addMessage("/gran/3/buffer/val", 9 );
-                out.addMessage("/gran/3/overlap/val", scale(adaptive_norm_mag_avg, thresh, 1., 0.01, 1), 5);
+                out.addMessage("/gran/3/overlap/val", scale(adaptive_norm_mag_avg, thresh, 1., 0.1, 1), 5);
                 out.addMessage("/gran/3/motor/val", scale(adaptive_norm_mag_avg, thresh, 1., 20, 100) );
                 out.addMessage("/gran/3/rate/val",   scale(adaptive_norm_mag_avg, thresh, 1., 1, 0.5) );
 
 
                 out.addMessage("/gran/2/play", 1);
                 out.addMessage("/gran/2/retrigger", 0);
-                out.addMessage("/gran/2/ms", 4000);
+                out.addMessage("/gran/2/ms", scale(adaptive_norm_mag_avg, thresh, 1., 4000 + rand_generator.uniformRand()*100, 100 + rand_generator.uniformRand()*100));
                 out.addMessage("/gran/2/loop", 0);
-                out.addMessage("/gran/2/amp/val", 0 );
-                out.addMessage("/gran/2/motor/scale", 0.07, 471.);
+                out.addMessage("/gran/2/amp/scale", rand_generator.uniformRand(), 1.);
+                out.addMessage("/gran/2/motor/scale", 0.07, scale(rand_generator.uniformRand(), 0., 1., 471., 20));
+                out.addMessage("/gran/2/overlap/scale", 0.001, 0.5);
 
 
             }
@@ -188,7 +189,7 @@ MapOSC cue_antlers( cueArgs args )
             out.addMessage("/gran/1/amp/val", adaptive_norm_mag_avg, 20);
             out.addMessage("/gran/1/rate/val", scale(adaptive_norm_mag_avg, 0., 1., 4, 0.1) );
             out.addMessage("/gran/1/buffer/val", 0 );
-            out.addMessage("/gran/1/overlap/val", scale(adaptive_norm_mag_avg, 0., 1., 1, 2));
+            out.addMessage("/gran/1/overlap/val", scale(adaptive_norm_mag_avg, 0., 1., 0.05, 0.1));
             out.addMessage("/gran/1/motor/val", scale(adaptive_norm_mag_avg, 0., 1., 20, 200));
 
 

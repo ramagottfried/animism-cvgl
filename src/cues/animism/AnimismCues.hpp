@@ -32,6 +32,7 @@ MapOSC cue_lungs(cueArgs args);
 
 MapOSC cue_fuzzball_fadein( cueArgs args );
 MapOSC cue_fuzzball( cueArgs args );
+MapOSC cue_fuzzball_fadeout( cueArgs args );
 
 MapOSC cue_grass(cueArgs args);
 MapOSC cue_grass_fadeout( cueArgs args );
@@ -245,14 +246,19 @@ public:
     {
         // cam 1
         setCue("5A",
-               "holding breath",
+               "holding breath, fuzzball fade in with field rec",
                "fuzzball",
                &cue_fuzzball_fadein );
 
         setCue("5B",
                "fuzzball",
-               "grass creature",
+               "fade before grass",
                &cue_fuzzball );
+
+        setCue("5B_b",
+               "fuzzball fade before grass",
+               "grass creature",
+               &cue_fuzzball_fadeout );
 
         setCue("5C",
                "grass creature",

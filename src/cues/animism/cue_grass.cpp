@@ -12,10 +12,19 @@ MapOSC cue_grass( cueArgs args )
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 
+    double fadetime = 10;
+    if( elapsed_section <= fadetime )
+    {
+        out.addMessage("/dpo/pregain/dB",       scale(elapsed_section, 0., fadetime, -70, -24) );
+        out.addMessage("/dpo/sarah/pregain/dB", scale(elapsed_section, 0., fadetime, -70, 0) );
+        out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime,  0, -70));
+    }
+
+
     if( isNewCue )
     {
         out.addMessage("/dpo/pregain/dB",          -24);
-        out.addMessage("/dpo/sarah/pregain/dB",    0);
+        out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);

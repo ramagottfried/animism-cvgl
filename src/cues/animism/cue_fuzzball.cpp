@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_fuzzball_fadein( cueArgs args )
+MapOSC cue_fuzzball( cueArgs args )
 {
 
     MapOSC out;
@@ -24,15 +24,13 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
-        out.addMessage("/korg/pregain/dB",         -6);
+        out.addMessage("/loop/pregain/dB",         -8);
+        out.addMessage("/korg/pregain/dB",          0);
 
         out.addMessage("/sine/pregain/dB",         -70);
 
         b.addMessage("/video/black",  0);
-        b.addMessage("/use/preprocess",  3);
 
-        b.addMessage("/use/camera",  1);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);
@@ -42,10 +40,11 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
         b.addMessage("/enable/contour", 1);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
-      //  cout << "use camera" << 2 << endl;
+        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/preprocess",  3);
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 41 );
+        b.addMessage("/thresh", 21 );
         b.addMessage("/invert", 0 );
 
         out.addMessage("/loop/length/ms", -1);
@@ -112,7 +111,7 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
 
 
             double norm_mag_avg = mag_avg / 255. ;
-            double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
+            double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 1000, 0., 1.);
 
             out.addMessage("/data/norm_mag_avg", norm_mag_avg);
 
@@ -121,7 +120,7 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
             out.addMessage("/korg/slide/up", 5);
             out.addMessage("/korg/q1/val", 0.65 );
             out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
-            out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
+            out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.5, 0.2) );
             out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
             out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
      }
