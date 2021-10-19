@@ -2,7 +2,7 @@
 #include "cvglMainProcess.hpp"
 #include "cvglCVCamera.hpp"
 #include "cvglDeckLinkCamera.hpp"
-
+#include "cvglVideoPlayer.hpp"
 
 int main( void )
 {
@@ -19,6 +19,8 @@ int main( void )
     cout << "blackmagic " << bm_cam.hasCamera() << " checking cv cam" << endl;
     cvglCVCamera cvcam(0);
    
+    //cvglVideoPlayer cvcam("/home/rama/opencv/doc/js_tutorials/js_assets/cup.mp4");
+
     if( bm_cam.hasCamera() )
     {
         cout << "found blackmagic 2 " << endl;

@@ -283,7 +283,7 @@ public:
         setCue("5F",
                "antler creature",
                "burdock/corona children roll out",
-               &cue_antlers ); // something like grass...
+               &cue_antlers ); // mirror v2
 
         setCue("5G",
                "burdock/corona children roll out",

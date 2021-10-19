@@ -14,13 +14,26 @@ MapOSC cue_burdock_roll_out(cueArgs args)
     MapOSC& m_state_cache = args.cache;
     cvglRandom& m_rand_generator = args.randGen;
 
+    double fadetime = 10;
+    if( elapsed_section <= fadetime )
+    {
+        b.addMessage("/overlap/flip",  scale_clip(elapsed_section, 0., 5, 0.5, 0.));
+        out.addMessage("/dpo/pregain/dB",  scale(elapsed_section, 0., fadetime, -70, -28));
+
+        //b.addMessage("/half_mirror/alpha", scale(elapsed_section, 0., fadetime, 0., 1.) );
+    }
+
+
     if( isNewCue )
     {
+        b.addMessage("/overlap/flip", 0.5);
+        b.addMessage("/half_mirror/alpha", 0 );
+
 
         out.addMessage("/dpo/pregain/dB",          -28);
         out.addMessage("/dpo/sarah/pregain/dB",    -100); // not using sarah here...
 
-        out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/gran/pregain/dB",         0);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
@@ -33,7 +46,6 @@ MapOSC cue_burdock_roll_out(cueArgs args)
 
         b.addMessage("/use/camera",  1);
         b.addMessage("/overlap/cameras", 0.0 );
-        b.addMessage("/overlap/flip", 0.);
 
 
         b.addMessage("/enable/hull", 0);
@@ -66,11 +78,88 @@ MapOSC cue_burdock_roll_out(cueArgs args)
 
 
         out.addMessage("/dpo/amp/val", 1);
-
         out.addMessage("/sine/amp", 1);
 
+
+        out.addMessage("/gran/*/motor/scale", 0.001, 500.);
+        out.addMessage("/gran/*/overlap/scale", 0.01, 0.8);
+        out.addMessage("/gran/*/rate/scale", 15., 117.);
+        out.addMessage("/gran/*/amp/val", 1);
+        out.addMessage("/gran/*/buffer/scale", 3, 9 );
+        out.addMessage("/gran/send/fuzz", 1);
+        out.addMessage("/gran/*/loop", 0);
+
+        out.addMessage("/gran/*/retrigger", 1);
+
+    }
+    else
+    {
+        out.addMessage("/gran/*/retrigger", 0);
     }
 
+    double burdock_fade = 20;
+    if( elapsed_section < burdock_fade )
+    {
+        double fadeout_amp = dbtoa( scale(elapsed_section, 0, burdock_fade, 0, -70.) );
+        double fadeout_ms4 = scale(elapsed_section, 0, burdock_fade,  500, 1000);
+        double fadeout_ms5 = scale(elapsed_section, 0, burdock_fade,  100, 1000);
+        double fadeout_motor_max = scale(elapsed_section, 0, burdock_fade, 20, 200);
+        double fadeout_motor_min = scale(elapsed_section, 0, burdock_fade, 200, 2);
+
+        double fadeout_motor5_min = scale(elapsed_section, 0, burdock_fade, 10, 1);
+
+        out.addMessage("/gran/1/play", 0);
+        out.addMessage("/gran/1/ms", 20000);
+        out.addMessage("/gran/1/loop", 1);
+        out.addMessage("/gran/1/rate/scale", 15., 100.);
+        out.addMessage("/gran/1/amp/scale", 0, fadeout_amp * 0.5);
+        out.addMessage("/gran/1/motor/scale", 50, 500);
+        out.addMessage("/gran/1/overlap/scale", 0.001, 0.1);
+        out.addMessage("/gran/1/pan", 0.);
+
+
+        out.addMessage("/gran/2/play", 1);
+        out.addMessage("/gran/2/ms", fadeout_ms4 - 250);
+        out.addMessage("/gran/2/loop", 1);
+        out.addMessage("/gran/2/rate/scale", 15., 100.);
+        out.addMessage("/gran/2/amp", fadeout_amp );
+        out.addMessage("/gran/2/motor/scale", fadeout_motor_min, fadeout_motor_max);
+        out.addMessage("/gran/2/overlap/scale", 0.001, 0.1);
+        out.addMessage("/gran/2/pan", -0.5);
+
+
+        out.addMessage("/gran/3/play", 1);
+        out.addMessage("/gran/3/ms", fadeout_ms5 + 250);
+        out.addMessage("/gran/3/loop", 1);
+        out.addMessage("/gran/3/rate/scale", 15., 100.);
+        out.addMessage("/gran/3/amp/scale", 0, fadeout_amp);
+        out.addMessage("/gran/3/motor/scale", fadeout_motor5_min, fadeout_motor_max);
+        out.addMessage("/gran/3/overlap/scale", 0.001, 5);
+        out.addMessage("/gran/3/pan", 0.5);
+
+
+
+        out.addMessage("/gran/4/play", 1);
+        out.addMessage("/gran/4/ms", fadeout_ms4);
+        out.addMessage("/gran/4/loop", 1);
+        out.addMessage("/gran/4/rate/scale", 15., 100.);
+        out.addMessage("/gran/4/amp", fadeout_amp );
+        out.addMessage("/gran/4/motor/scale", fadeout_motor_min, fadeout_motor_max);
+        out.addMessage("/gran/4/overlap/scale", 0.001, 0.1);
+        out.addMessage("/gran/4/pan", -1);
+
+
+        out.addMessage("/gran/5/play", 1);
+        out.addMessage("/gran/5/ms", fadeout_ms5);
+        out.addMessage("/gran/5/loop", 1);
+        out.addMessage("/gran/5/rate/scale", 15., 100.);
+        out.addMessage("/gran/5/amp/scale", 0, fadeout_amp);
+        out.addMessage("/gran/5/motor/scale", fadeout_motor5_min, fadeout_motor_max);
+        out.addMessage("/gran/5/overlap/scale", 0.001, 5);
+        out.addMessage("/gran/5/pan", 1);
+
+
+    }
 
     vector<string> v1({     "bb:4-31",   "c:5",         "d:5+4",    "c:5-27",   "c:5-27"   });
     vector<string> v2({     "c:5",       "b:4-12",      "b:4+20",   "d:5+4",    "c:5+45"   });
