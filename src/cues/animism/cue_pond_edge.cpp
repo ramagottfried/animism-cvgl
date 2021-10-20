@@ -24,7 +24,7 @@ MapOSC cue_pond_edge( cueArgs args )
         b.addMessage("/flow_mix", 0.);
         b.addMessage("/noise_mix", 0.);
 
-    //    out.addMessage("/dpo/pregain/dB",          -28);
+        out.addMessage("/dpo/pregain/dB",          -28);
         out.addMessage("/loop/pregain/dB",         -8);
         out.addMessage("/korg/pregain/dB",         0);
 
@@ -79,14 +79,13 @@ MapOSC cue_pond_edge( cueArgs args )
             out.addMessage("/dpo/f2/val", ntom( "eb:5" ) );
         }
 
-        out.addMessage("/dpo/amp/val", 1);
 
         out.addMessage("/sine/amp", 1);
 
     }
 
-    double dpo_db = scale( sin(args.total_elapsed.count() * M_PI * 0.15), -1, 1, -48, -28);
-    out.addMessage("/dpo/pregain/dB",  dpo_db);
+    double dpo_db = scale( sin(args.total_elapsed.count() * M_PI * 0.15), -1, 1, -20, 0);
+    out.addMessage("/dpo/amp", dbtoa( dpo_db ) );
 
 
     vector<string> v1({     "bb:4-31",   "c:5",         "d:5+4",    "c:5-27",   "c:5-27"   });

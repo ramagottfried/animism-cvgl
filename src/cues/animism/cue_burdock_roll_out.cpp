@@ -127,7 +127,6 @@ MapOSC cue_burdock_roll_out(cueArgs args)
         out.addMessage("/dpo/f2/val", ntom( "eb:5" ) );
 
 
-        out.addMessage("/dpo/amp/val", 1);
         out.addMessage("/sine/amp", 1);
 
 
@@ -238,8 +237,8 @@ MapOSC cue_burdock_roll_out(cueArgs args)
     }
     else
     {
-        double dpo_db = scale( sin(args.total_elapsed.count() * M_PI * 0.15), -1, 1, -48, -28);
-        out.addMessage("/dpo/pregain/dB",  dpo_db);
+        double dpo_db = scale( sin(args.total_elapsed.count() * M_PI * 0.15), -1, 1, -20, 0);
+        out.addMessage("/dpo/amp", dbtoa( dpo_db ) );
 
     }
 

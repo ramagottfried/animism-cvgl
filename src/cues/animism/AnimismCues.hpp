@@ -287,26 +287,26 @@ public:
 
         setCue("5G",
                "burdock/corona children roll out",
-               "fuzzball continues on",
+               "fuzzball climbs up to water",
                &cue_burdock_roll_out ); // gran attack, mirror fades out
 
         setCue("5H",
-               "fuzzball continues on",
+               "fuzzball climbs up to water",
                "at water's edge",
                &cue_pond_edge );
 
         setCue("5I",
                "at water's edge",
-               "underwater",
+               "blur and dive underwater",
                &cue_pond_edge ); // with drones? maybe quiet noisy texture drone...
                 // respond to light on water?? not sure if this is possible with the camera angle
 
-        // cam 2 ? or stay with cam 1 so we can swap out gel creature for forest scene
         setCue("5J",
-               "underwater",
+               "underwater, paste white dots and arrow",
                "in the deep black",
                &cue_underwater );
 
+        // cut to cam2 or prerec for floating bright eye
         setCue("5K",
                "in the deep black",
                "floating fish eye blinks",
