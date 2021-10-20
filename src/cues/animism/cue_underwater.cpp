@@ -19,6 +19,16 @@ MapOSC cue_underwater( cueArgs args )
     //MapOSC& m_state_cache = args.cache;
     //cvglRandom& m_rand_generator = args.randGen;
 
+//    double fadetime = 10;
+//    if( elapsed_section <= fadetime )
+//    {
+//        double dpo_db = scale( sin(args.total_elapsed.count() * M_PI * 0.15), -1, 1, -48, -28);
+//        double dpo_fadeout = scale(elapsed_section, 0., fadetime, 0., -50.);
+
+//        out.addMessage("/dpo/pregain/dB", dpo_db + dpo_fadeout );
+//    }
+
+
 
     if( isNewCue )
     {
@@ -26,12 +36,12 @@ MapOSC cue_underwater( cueArgs args )
         b.addMessage("/contrast", 1.3);
         b.addMessage("/use/camera",  2);
 
-        out.addMessage("/dpo/pregain/dB",          -100);
+     //   out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -6);
 
         out.addMessage("/sine/pregain/dB",         -70);
@@ -63,6 +73,13 @@ MapOSC cue_underwater( cueArgs args )
         out.addMessage("/loop/buffer/idx", 0);
 
         out.addMessage("/korg/maths/cycle", 1);
+
+        out.addMessage("/dpo/pregain/dB", -26 );
+        out.addMessage("/dpo/f1/val", 0, 0, 200, 210 );
+        out.addMessage("/dpo/f2/val", 0, 0, 200, 200 );
+        out.addMessage("/dpo/amp", 0, 500 );
+
+
 
     }
 

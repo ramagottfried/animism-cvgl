@@ -68,9 +68,16 @@ MapOSC cue_pond_edge( cueArgs args )
         out.addMessage("/dpo/sarah/slide/up", 0);
         out.addMessage("/dpo/sarah/slide/down", 0);
 
-//        out.addMessage("/dpo/f1/val", ntom( "eb:5" ) );
-//        out.addMessage("/dpo/f2/val", ntom( "eb:5" ) );
-
+        if( m_state_cache.addressExists("/f1_offset") )
+        {
+           out.addMessage("/dpo/f1/val", m_state_cache["/f1_offset"].getFloat() );
+           out.addMessage("/dpo/f2/val", m_state_cache["/f2_offset"].getFloat()  );
+        }
+        else
+        {
+            out.addMessage("/dpo/f1/val", ntom( "eb:5" ) );
+            out.addMessage("/dpo/f2/val", ntom( "eb:5" ) );
+        }
 
         out.addMessage("/dpo/amp/val", 1);
 
@@ -125,6 +132,8 @@ MapOSC cue_pond_edge( cueArgs args )
 
         out.addMessage("/dpo/f1/val", f1_offset, 10000 );
         out.addMessage("/dpo/f2/val", f2_offset, 10000 );
+        m_state_cache.addMessage("/f1_offset", f1_offset);
+        m_state_cache.addMessage("/f2_offset", f2_offset);
 
        // f2_offset = 0;//cvgl::round(scale( m_rand_generator.uniformRand(), 0., 1, -1, 1));
         t_offset = m_rand_generator.uniformRand() * 5;
@@ -134,8 +143,7 @@ MapOSC cue_pond_edge( cueArgs args )
     out.addMessage("/dpo/fold/val", fold[seq_minIdx] );
 
     m_state_cache.addMessage("/prev/seq_step", (int32_t)seq_minIdx);
-    m_state_cache.addMessage("/f1_offset", f1_offset);
-    m_state_cache.addMessage("/f2_offset", f2_offset);
+
     m_state_cache.addMessage("/duration", duration);
 
     m_state_cache.addMessage("/prev/f1", f1);
