@@ -288,12 +288,12 @@ public:
         setCue("5G",
                "burdock/corona children roll out",
                "fuzzball continues on",
-               &cue_burdock_roll_out );
+               &cue_burdock_roll_out ); // gran attack, mirror fades out
 
         setCue("5H",
                "fuzzball continues on",
                "at water's edge",
-               &cue_fuzzball_fadein );
+               &cue_pond_edge );
 
         setCue("5I",
                "at water's edge",

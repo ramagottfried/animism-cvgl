@@ -24,6 +24,23 @@ MapOSC cue_antlers( cueArgs args )
     if( isNewCue )
     {
 
+        b.addMessage("/luma_target", 0.24);
+        b.addMessage("/luma_tol", 0.5);
+        b.addMessage("/luma_fade", 0.0);
+
+        b.addMessage("/hsflow_lambda", 0.);
+        b.addMessage("/hsflow_scale", 0.01);
+        b.addMessage("/hsflow_offset", 0.3);
+
+        b.addMessage("/repos_amt", 0.17);
+        b.addMessage("/repos_scale", 0.997);
+        b.addMessage("/repos_bias", 0.00);
+
+        b.addMessage("/luma_mix", 0.);
+        b.addMessage("/flow_mix", 0.);
+        b.addMessage("/noise_mix", 0.);
+
+
         b.addMessage("/overlap/flip", 0.5);
         b.addMessage("/half_mirror/alpha", 0 );
 

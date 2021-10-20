@@ -46,6 +46,7 @@ struct cueArgs {
     cvglRandom& randGen;
     timepoint_t startTime;
     duration_t elapsed_section;
+    duration_t total_elapsed;
     bool isNewCue = false;
 };
 
@@ -91,14 +92,14 @@ public:
 
 protected:
 
-
+    timepoint_t global_start = sys_clock_t::now();
 
     MapOSC m_state_cache;
     
     string m_cue = "0";
 
     timepoint_t m_section_start = sys_clock_t::now();
-    duration_t m_elapsed_section;
+    duration_t m_elapsed_section, total_elapsed;
     
     unordered_map<string, LabeledCue> m_cueFunctions;
     

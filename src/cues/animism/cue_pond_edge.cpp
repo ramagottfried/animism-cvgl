@@ -14,16 +14,24 @@ MapOSC cue_pond_edge( cueArgs args )
     MapOSC& m_state_cache = args.cache;
     cvglRandom& m_rand_generator = args.randGen;
 
+
     if( isNewCue )
     {
 
-        out.addMessage("/dpo/pregain/dB",          -28);
-        out.addMessage("/dpo/sarah/pregain/dB",    -100); // not using sarah here...
+        b.addMessage("/contrast", 1);
 
+        b.addMessage("/luma_mix", 0.);
+        b.addMessage("/flow_mix", 0.);
+        b.addMessage("/noise_mix", 0.);
+
+    //    out.addMessage("/dpo/pregain/dB",          -28);
+        out.addMessage("/loop/pregain/dB",         -8);
+        out.addMessage("/korg/pregain/dB",         0);
+
+        out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
-        out.addMessage("/loop/pregain/dB",         -100);
-        out.addMessage("/korg/pregain/dB",         -100);
+
         out.addMessage("/spring/pregain/dB",       -100);
         out.addMessage("/sine/pregain/dB",         -100);
 
@@ -38,13 +46,12 @@ MapOSC cue_pond_edge( cueArgs args )
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 1);
-        b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
+        b.addMessage("/enable/contour", 0);
 
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 41 );
+        b.addMessage("/thresh", 10 );
         b.addMessage("/invert", 0 );
 
 
@@ -61,8 +68,8 @@ MapOSC cue_pond_edge( cueArgs args )
         out.addMessage("/dpo/sarah/slide/up", 0);
         out.addMessage("/dpo/sarah/slide/down", 0);
 
-        out.addMessage("/dpo/f1/val", ntom( "eb:5" ) );
-        out.addMessage("/dpo/f2/val", ntom( "eb:5" ) );
+//        out.addMessage("/dpo/f1/val", ntom( "eb:5" ) );
+//        out.addMessage("/dpo/f2/val", ntom( "eb:5" ) );
 
 
         out.addMessage("/dpo/amp/val", 1);
@@ -70,6 +77,9 @@ MapOSC cue_pond_edge( cueArgs args )
         out.addMessage("/sine/amp", 1);
 
     }
+
+    double dpo_db = scale( sin(args.total_elapsed.count() * M_PI * 0.15), -1, 1, -48, -28);
+    out.addMessage("/dpo/pregain/dB",  dpo_db);
 
 
     vector<string> v1({     "bb:4-31",   "c:5",         "d:5+4",    "c:5-27",   "c:5-27"   });

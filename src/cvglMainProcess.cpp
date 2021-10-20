@@ -173,6 +173,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         else if( addr == "/gamma")
         {
             gamma = val.getFloat();
+            cout << "setting gamma " << gamma << endl;
         }        
         /*
         else if( addr == "/triangle/interact/x")

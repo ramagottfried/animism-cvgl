@@ -4,16 +4,18 @@
 // called from analysis thread
 MapOSC cvglCues::procDataAndMixer(const AnalysisData& data)
 {
-    
-    m_elapsed_section = sys_clock_t::now() - m_section_start;
-    
+    timepoint_t now = sys_clock_t::now();
+    m_elapsed_section = now - m_section_start;
+    total_elapsed = now - global_start;
+
     MapOSC out = m_cueFunctions[m_cue].fn(
             cueArgs({ m_state_cache,
                       data,
                       m_input,
                       m_rand_generator,
                       m_section_start,
-                      m_elapsed_section
+                      m_elapsed_section,
+                      total_elapsed
                     }));
     
     isNewCue = false;
@@ -42,6 +44,8 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
 
             m_elapsed_section = sys_clock_t::now() - m_section_start;
 
+            total_elapsed = m_section_start - global_start;
+
             out = m_cueFunctions[m_cue].fn(
                     cueArgs({   m_state_cache,
                                 data,
@@ -49,6 +53,7 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
                                 m_rand_generator,
                                 m_section_start,
                                 m_elapsed_section,
+                                total_elapsed,
                                 isNewCue
                             }));
            // out = m_cueFunctions[m_cue]( data, b );
@@ -64,7 +69,10 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
     }
     else
     {
-        m_elapsed_section = sys_clock_t::now() - m_section_start;
+        timepoint_t now = sys_clock_t::now();
+        m_elapsed_section = now - m_section_start;
+        total_elapsed = now - global_start;
+
         //out = m_cueFunctions[m_cue]( data, b );
         out = m_cueFunctions[m_cue].fn(
                 cueArgs({     m_state_cache,
@@ -72,7 +80,8 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
                               b,
                               m_rand_generator,
                               m_section_start,
-                              m_elapsed_section
+                              m_elapsed_section,
+                              total_elapsed
                           }));
     }
     
