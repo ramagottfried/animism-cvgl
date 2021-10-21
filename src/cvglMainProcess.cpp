@@ -710,9 +710,26 @@ void cvglMainProcess::draw()
     // make some feedback stuff
     // see: https://learnopengl.com/Advanced-OpenGL/Framebuffers
 
+    glm::mat4 transform = context.getTransform();
+
     if( m_draw_black )
     {
-        context.clearColor(0, 0, 0, 1);
+        context.bindDefaultFramebuffer();
+        screen_shader.use();
+     /*
+        screen_shader.setMat4("transform_matrix", transform);
+        screen_shader.setFloat("time", (float)glfwGetTime() );
+
+        screen_shader.setFloat("noise_mix", noise_mix );
+        screen_shader.setFloat("noise_mult", noise_mult );
+        screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
+        screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
+*/
+
+        glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+        context.updateViewport(1);
+        context.clear();
+
         context.drawAndPoll();
         m_newframe = false;
         return;
@@ -749,7 +766,6 @@ void cvglMainProcess::draw()
 
     // draw main frame
 
-    glm::mat4 transform = context.getTransform();
 
 
     int prev_fbIDX = fbIDX;

@@ -17,6 +17,9 @@ MapOSC cue_cam1_click(cueArgs args);
 
 MapOSC cue_wire_slug(cueArgs args);
 
+MapOSC cue_thunderclap_field(cueArgs args);
+
+MapOSC cue_black_fadeout_field(cueArgs args);
 
 MapOSC cue_fog_hands_field(cueArgs args);
 MapOSC cue_fog_hands(cueArgs args);
@@ -79,10 +82,7 @@ public:
                &cue_black_silent );
 
         setScene1();
-
-        // Scene 2 is without camera or electronics
-        // (Scene 1 ends black)
-
+        setScene2();
         setScene3();
         setScene4();
         setScene5();
@@ -165,14 +165,23 @@ public:
                &cue_black_silent ); // silent electronics
     }
 
+    void setScene2()
+    {
+        setCue("2I",
+               "ending thunderclap",
+               "scene3",
+               &cue_thunderclap_field );
+    }
 
+// maybe not much electronics until drums
     void setScene3()
     {
         setCue("3A",
                "start black, shhh",
                "fog-hands (cam2)",
-               &cue_black_silent );
+               &cue_black_silent ); //cue_black_fadeout_field
 
+        // thunderclap is too dramatic here, better to move it to scene 5? or just cut it, i like it but not sure where it fits
         setCue("3B",
                "fog-hands (snares), start black, hands on black, fog, moving very slowly and cloudlike, grandually becoming bigger and bigger",
                "fog-hands",
@@ -307,6 +316,7 @@ public:
                &cue_underwater );
 
         // cut to cam2 or prerec for floating bright eye
+        // shift pitches a little here
         setCue("5K",
                "in the deep black",
                "floating fish eye blinks",
