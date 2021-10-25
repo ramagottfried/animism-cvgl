@@ -21,17 +21,16 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
         // transition, to sped up version
        // out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, 0., -12));
         out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., -6));
-        out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 0., 12) );
-
         b.addMessage("/half_mirror/alpha", scale(elapsed_section, 0., fadetime, 1., 0)  );
     }
+
 
     double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
     double freq = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
     double lfo = tanh(cos(elapsed_section * M_PI * 2 * freq * fadein) * 7);
     b.addMessage("/contrast", scale( lfo, -1., 1., 1., 1.5));
 
-    double luma_fade = 40;
+    double luma_fade = 1;//40;
     if( elapsed_section <= fadetime )
     {
         double t = scale(elapsed_section, 0., luma_fade, 0., 1.) ;
@@ -48,6 +47,20 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
 
     b.addMessage("/hsflow_scale", scale( lfo2, -1., 1., 0.05, 0.01));
     b.addMessage("/repos_scale", scale( lfo2, -1., 1., 0.998, 1.) );
+
+
+    double loop_ramp_time = 1;//45;
+    double lrt_p1 = loop_ramp_time + 1;
+    if( elapsed_section <= lrt_p1 )
+    {
+        out.addMessage("/loop/transpose",   pow( scale_clip(elapsed_section, 0., loop_ramp_time, 0., 1.), 2) * 200 );
+        out.addMessage("/loop/pregain/dB",   scale_clip(elapsed_section, 0., loop_ramp_time, 0., -12) );
+    }
+    else
+    {
+        out.addMessage("/loop/transpose",   scale( sin( args.total_elapsed.count() * M_PI * 2 * 0.001 * lfo2), -1., 1., 250., 251.1) );
+    }
+
 
 // need to use cache to log the values to stay smooth between cues
     // better to smooth out the speed a bit, it's too fast right now suddenly
@@ -82,6 +95,8 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/gran/send/fuzz",          0.);
+
         out.addMessage("/fuzz/pregain/dB",         -100);
 
         out.addMessage("/loop/pregain/dB",         0);

@@ -161,15 +161,15 @@ public:
 
         setCue("1L",
                "singing D",
-               "scene 3 (no electronics or camear in scene 2)",
+               "next cue 2I, last sequence of scene 2 (thunderclap)",
                &cue_black_silent ); // silent electronics
     }
 
     void setScene2()
     {
         setCue("2I",
-               "ending thunderclap",
-               "scene3",
+               "thunderclap",
+               "black (scene 3)",
                &cue_thunderclap_field );
     }
 
@@ -181,7 +181,8 @@ public:
                "fog-hands (cam2)",
                &cue_black_silent ); //cue_black_fadeout_field
 
-        // thunderclap is too dramatic here, better to move it to scene 5? or just cut it, i like it but not sure where it fits
+        // moved thuderclap to end of scene 2, any electronics in strings/oboe part?
+        // maybe not...
         setCue("3B",
                "fog-hands (snares), start black, hands on black, fog, moving very slowly and cloudlike, grandually becoming bigger and bigger",
                "fog-hands",
@@ -250,6 +251,7 @@ public:
 
     }
 
+// check field recording sequence
 
     void setScene5()
     {
@@ -332,17 +334,18 @@ public:
         setCue("5M",
                "descend into the forest, sun gets brighter, then wind picks up as we go deeper into the woods",
                "branch rips off and falls",
-               &cue_forest );
+               &cue_forest );                   // field rec comes in here
 
         setCue("5N",
                "branch rips off and falls (fade in field recording? or add 5Nb for fall?)",
                "frogs and other pond and forest creatures",
-               &cue_branch_rips_and_falls );
+               &cue_branch_rips_and_falls );    // no field rec here?
 
         setCue("5O",
                "frogs and other pond and forest creatures",
                "natural sounds begin to loop",
-               &cue_forest_frogs );
+               &cue_forest_frogs );             // field rec comes back in here?
+
 
         // slowly fade in different types of mirror images?
         // might work better than pure mirror fragments
