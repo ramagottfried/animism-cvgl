@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_slow_sunburst_noise_start( cueArgs args )
+MapOSC cue_slow_sunburst_mirror_flow2( cueArgs args )
 {
 
     MapOSC out;
@@ -16,51 +16,35 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
     //MapOSC& m_state_cache = args.cache;
     //cvglRandom& m_rand_generator = args.randGen;
 
-    double freq = scale( cos(total_elapsed * M_PI * 2 * 0.05 ), -1., 1., 0.005, 0.003);
-    double lfo = tanh(cos(total_elapsed * M_PI * 2 * freq ) * 7);
+    double fadetime = 20;
+    if( elapsed_section <= fadetime )
+    {
+        b.addMessage("/half_mirror/alpha", scale(elapsed_section, 0., fadetime, 1., 0)  );
+    }
+
+
+    double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
+    double freq = scale( cos(total_elapsed * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
+    double lfo = tanh(cos(total_elapsed * M_PI * 2 * freq * fadein) * 7);
     b.addMessage("/contrast", scale( lfo, -1., 1., 1., 1.5));
 
+    double luma_fade = 40;
+    if( elapsed_section <= fadetime )
+    {
+        double t = scale(elapsed_section, 0., luma_fade, 0., 1.) ;
+        b.addMessage("/luma_tol", scale(t, 0., 1., 0.3, 0.8)  );
+        b.addMessage("/contour/color", 0.25, 0.5, 1., scale(t, 0., 1., 0., 0.125)  );
 
-    double freq2 = scale( cos(total_elapsed * M_PI * 2 * 0.05 ), -1., 1., 0.05, 0.03);
-    double lfo2 = cos(total_elapsed * M_PI * 2 * freq2 );
+    }
+
+    double fadein2 =  scale_clip(elapsed_section, 0., luma_fade, 0., 1.);
+    double freq2 = scale( cos(total_elapsed * M_PI * 2 * 0.05 * fadein2), -1., 1., 0.05, 0.03);
+    double lfo2 = cos(total_elapsed * M_PI * 2 * freq2 * fadein2);
    // double rect_lfo2 = tanh(lfo2 * 7);
     b.addMessage("/repos_amt", scale( lfo2, -1., 1., 0.17, 0.5));
 
     b.addMessage("/hsflow_scale", scale( lfo2, -1., 1., 0.05, 0.01));
     b.addMessage("/repos_scale", scale( lfo2, -1., 1., 0.998, 1.) );
-
-
-    double loop_ramp_time = 30;
-    double lrt_p1 = loop_ramp_time + 1;
-    if( elapsed_section <= lrt_p1 )
-    {
-        out.addMessage("/loop/transpose",   pow( scale_clip(elapsed_section, 0., loop_ramp_time, 0., 1.), 2) * 200 );
-        out.addMessage("/loop/pregain/dB",   scale_clip(elapsed_section, 0., loop_ramp_time, 0., -12) );
-    }
-    else
-    {
-        out.addMessage("/loop/transpose",   scale( sin( total_elapsed * M_PI * 2 * 0.001 * lfo2), -1., 1., 250., 251.1) );
-    }
-
-
-    double noisefade = 30;
-    if( elapsed_section <= noisefade )
-    {
-        double curve = pow( scale(elapsed_section, 0., noisefade, 0., 1), 4);
-        b.addMessage("/noise_mix", curve );
-    }
-    else
-        b.addMessage("/noise_mix", 1. );
-
-    double noise_mult_fade = 30;
-    if( elapsed_section <= noise_mult_fade )
-    {
-        double curve = pow( scale(elapsed_section, 0., noise_mult_fade, 0., 1), 0.2);
-        b.addMessage("/noise_mult", scale(curve, 0., 1., 1, 0.)  );
-    }
-    else
-        b.addMessage("/noise_mult", 0. );
-
 
 // need to use cache to log the values to stay smooth between cues
     // better to smooth out the speed a bit, it's too fast right now suddenly
@@ -71,14 +55,13 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
         b.addMessage("/glitch_tri/alpha", 0);
         b.addMessage("/big_triangle1/alpha", 0 );
         b.addMessage("/big_triangle2/alpha", 0 );
-        b.addMessage("/half_mirror/alpha", 0 );
+        b.addMessage("/half_mirror/alpha", 1 );
         b.addMessage("/vignette/xyr", 0.5, 0.5, 1);
 
 
         b.addMessage("/luma_target", 0.24);
-        b.addMessage("/luma_tol", 0.8);
+        b.addMessage("/luma_tol", 0.5);
         b.addMessage("/luma_fade", 0.0);
-        b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125  );
 
         b.addMessage("/hsflow_lambda", 0.);
         b.addMessage("/hsflow_scale", 0.01);

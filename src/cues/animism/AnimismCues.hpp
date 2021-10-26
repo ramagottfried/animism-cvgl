@@ -2,6 +2,34 @@
 
 #include "cvglCues.hpp"
 
+/*
+
+    clean up scene 3 electronics
+    track field rec usage, is it too much?
+    check field rec levels
+
+    eventually check scene 1 wire gran, is it too similar to antler creature?
+
+    fuzz for ensemble, how will this work exactly?
+
+    check camera changes
+
+    lighting check
+
+    does fuzzball need flashlight on it?
+
+    are we using the gold foil?
+    i think so... panning down from paper
+
+    add noise to distortion cue
+        is there noise with the trumpet?
+
+
+
+*/
+
+
+
 MapOSC cue_nothing(cueArgs args);
 
 MapOSC cue_black_silent(cueArgs args);
@@ -61,6 +89,7 @@ MapOSC cue_forest_loops_triZ( cueArgs args );
 MapOSC cue_slow_sunburst( cueArgs args ); // fade out tris
 MapOSC cue_slow_sunburst_mirror( cueArgs args ); // fade in mirror
 MapOSC cue_slow_sunburst_mirror_flow( cueArgs args ); // fade flow
+MapOSC cue_slow_sunburst_mirror_flow2( cueArgs args ); // fade out mirror and increase flow
 
 
 MapOSC cue_slow_sunburst_noise_start( cueArgs args );
@@ -373,8 +402,14 @@ public:
 
         setCue("5Q_c",
                "mirror flow",
-               "increasingly dissonant becoming white noise",
+               "more flow, mirror fade out",
                &cue_slow_sunburst_mirror_flow );
+
+
+        setCue("5Q_d",
+               "more flow, mirror fade out",
+               "increasingly dissonant becoming white noise",
+               &cue_slow_sunburst_mirror_flow2 );
 
 
         setCue("5R",

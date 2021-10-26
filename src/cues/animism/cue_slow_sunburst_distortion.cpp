@@ -11,40 +11,13 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
     AnalysisData data = args.data;
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
-
-    //MapOSC& m_state_cache = args.cache;
-    //cvglRandom& m_rand_generator = args.randGen;
+    const double total_elapsed =  args.total_elapsed.count();
 
 
-    double fadetime = 10;
+    double freq2 = scale( cos(total_elapsed * M_PI * 2 * 0.05 ), -1., 1., 0.005, 0.003);
+    double lfo2 = cos(total_elapsed * M_PI * 2 * freq2 );
+    out.addMessage("/loop/transpose",   scale( sin( total_elapsed * M_PI * 2 * 0.001 * lfo2), -1., 1., 250., 251.1) );
 
-    double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
-    double freq = scale( cos(elapsed_section * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
-    double lfo = cos(elapsed_section * M_PI * 2 * freq * fadein);
-    b.addMessage("/repos_amt", scale( lfo, -1., 1., 0.17, 0.5));
-
-    b.addMessage("/hsflow_scale", scale( lfo, -1., 1., 0.1, 0.01));
-    b.addMessage("/repos_scale", scale( lfo, -1., 1., 0.998, 1.) );
-
-    // move lfos to previous cue!
-
-    double noisefade = 20;
-    if( elapsed_section <= noisefade )
-    {
-        double curve = pow( scale(elapsed_section, 0., noisefade, 0., 1), 1);
-        b.addMessage("/noise_mix", curve );
-    }
-    else
-        b.addMessage("/noise_mix", 1. );
-
-    double noise_mult_fade = 30;
-    if( elapsed_section <= noise_mult_fade )
-    {
-        double curve = pow( scale(elapsed_section, 0., noise_mult_fade, 0., 1), 0.2);
-        b.addMessage("/noise_mult", scale(curve, 0., 1., 1, 0.)  );
-    }
-    else
-        b.addMessage("/noise_mult", 0. );
 
     if( isNewCue )
     {
@@ -69,7 +42,9 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
 
         b.addMessage("/luma_mix", 1.);
         b.addMessage("/flow_mix", 1.);
-        b.addMessage("/noise_mix", 0.);
+        b.addMessage("/noise_mix", 1.);
+        b.addMessage("/noise_mult", 0. );
+
 
 
         out.addMessage("/dpo/pregain/dB",          -100);
@@ -77,7 +52,7 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -12);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);
@@ -107,83 +82,9 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
         out.addMessage("/loop/transpose", 0);
         out.addMessage("/loop/buffer/idx", 0);
 
-        out.addMessage("/korg/maths/cycle", 1);
 
     }
 
-    out.addMessage("/elapsed_section", elapsed_section );
-    double area_sum = data.contour_area.sum();
-    out.addMessage("/contour_area_sum", area_sum );
-
-    double sum_mag = 0, sum_area = 0, sum_x = 0, sum_y = 0;
-
-    double avg_x = 0;
-
-    if( data.ncontours > 0 )
-    {
-        for( size_t i = 0 ; i < data.ncontours; i++ )
-        {
-            double w = data.contour_area[i];
-            sum_area += w;
-
-            avg_x += data.center_x[i] * w;
-
-            if( data.pix_channel_stats[i].size() == 5 ) // focus channel is added to whatever the channel count is
-            {
-           //     sum_angle += data.pix_channel_stats[i][0].mean * w;
-                sum_mag += data.pix_channel_stats[i][1].mean * w;
-                sum_x += data.pix_channel_stats[i][2].mean * w;
-                sum_y += data.pix_channel_stats[i][3].mean * w;
-            }
-            else
-            {
-                out.addMessage("/nchannels", (int32_t)i, (int32_t)data.pix_channel_stats[i].size() );
-            }
-
-
-        }
-
-        out.addMessage("/korg/spat/1/az", 0);
-        out.addMessage("/korg/spat/2/az", scale(avg_x / sum_area, 0., 1., -90, 90) );
-
-        //if( sum_mag > 0 )
-        {
-            double scalar = sum_area == 0 ? 1 : sum_area;
-            double mag_avg = sum_mag / scalar;
-
-
-            /*
-                        double avg_dist_x = sum_x / scalar;
-                        double avg_dist_y = sum_y / scalar;
-
-                        out.addMessage("/avg/mag", mag_avg );
-                        out.addMessage("/avg/x", avg_dist_x);
-                        out.addMessage("/avg/y", avg_dist_y );
-            */
-
-
-            double norm_mag_avg = mag_avg / 255. ;
-            double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
-
-            out.addMessage("/data/norm_mag_avg", norm_mag_avg);
-
-            out.addMessage("/korg/amp", norm_2);
-            out.addMessage("/korg/slide/down", 0);
-            out.addMessage("/korg/slide/up", 5);
-            out.addMessage("/korg/q1/val", 0.65 );
-            out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
-            out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
-            out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-            out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
-     }
-
-
-    }
-    else
-    {
-        out.addMessage("/korg/amp", 0);
-
-    }
 
 
     return out;

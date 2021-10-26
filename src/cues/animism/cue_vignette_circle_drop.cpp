@@ -99,6 +99,19 @@ MapOSC cue_vignette_circle_drop( cueArgs args )
         b.addMessage("/noise_mult", 0. );
         b.addMessage("/noise_mix", 1. );
 
+
+        out.addMessage("/dpo/pregain/dB",          -100);
+        out.addMessage("/dpo/sarah/pregain/dB",    -100);
+        out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/gran/send/fuzz",          -100.);
+
+        out.addMessage("/fuzz/pregain/dB",         -100);
+
+        out.addMessage("/loop/pregain/dB",         -100);
+        out.addMessage("/korg/pregain/dB",         -70);
+
+        out.addMessage("/sine/pregain/dB",  -70);
+
     }
 
 
