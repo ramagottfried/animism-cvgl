@@ -57,6 +57,8 @@ MapOSC cue_string_creature(cueArgs args);
 
 
 MapOSC cue_heart_fadein(cueArgs args);
+MapOSC cue_heart_fadein_overlay(cueArgs args);
+
 MapOSC cue_heart_continued(cueArgs args);
 
 MapOSC cue_lungs(cueArgs args);
@@ -195,6 +197,7 @@ public:
                &cue_black_silent ); // silent electronics
     }
 
+    // move plant scene 1 platform off the puppet stage so that the hands are ready for scene 3
     void setScene2()
     {
         setCue("2I",
@@ -203,30 +206,29 @@ public:
                &cue_thunderclap_field );
     }
 
-    // consider adding other type of field rec? or clip from iceland, w/o birds?
     void setScene3()
     {
         setCue("3A",
                "start black, shhh",
-               "fog-hands (cam2)",
+               "fog-hands (cam 2)",
                &cue_black_silent ); //cue_black_fadeout_field
 
         // cam 2
-        // maybe add filter sounds like plastisphere scene 2, no field rec (saving it for scene 5)
         setCue("3B",
                "fog-hands (snares), moving very slowly and cloudlike, grandually becoming bigger and bigger",
                "fog-hands",
-               &cue_fog_hands  ); //cue_fog_hands_field
+               &cue_fog_hands  ); // arne fade in electronics maybe
 
         // strings go into harmonics + oboe pedal gliss
         setCue("3C",
-               "fog-hands + strings + field rec? but no plants",
+               "fog-hands continued (strings & oboe)",
                "cam 1, origami",
-               &cue_fog_hands ); // continuing field recording
+               &cue_fog_hands );
 
         // cuts to cam 1, brass solo
         // add fuzz to brass here?
         // electronic lead in to perc would be good
+        // or none?
 
         setCue("3D",
                "brass section (+ field rec?), cam1 white -> origami -> bioplastic skin / becoming mirrored -> dome thread",
@@ -247,19 +249,19 @@ public:
     void setScene4()
     {
         setCue("4A",
-               "start black, quickly move cam 1 to heart",
-               "cut to heart video",
+               "start black, move cam 1 to heart",
+               "cut to heart video (cam 2)",
                &cue_black_silent );
 
         setCue("4B",
-               "heart",
-               "heart",
+               "heart sound fades in (cam 2)",
+               "heart overlay cam 1 fades in",
                &cue_heart_fadein );
 
         setCue("4C",
+               "heart overlay cam 1 fades in",
                "heart",
-               "heart",
-               &cue_heart_continued );
+               &cue_heart_fadein_overlay );
 
         setCue("4D",
                "heart",

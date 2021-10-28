@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_heart_fadein(cueArgs args)
+MapOSC cue_heart_fadein_overlay(cueArgs args)
 {
 
     MapOSC out;
@@ -19,14 +19,14 @@ MapOSC cue_heart_fadein(cueArgs args)
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
-        out.addMessage("/gran/pregain/dB",         -100);
-        out.addMessage("/fuzz/pregain/dB",         -100);
+        out.addMessage("/gran/pregain/dB",         0);
+        out.addMessage("/fuzz/pregain/dB",         0);
 
         b.addMessage("/video/black",  0);
         b.addMessage("/use/preprocess",  3);
 
         b.addMessage("/use/camera",  2);
-        b.addMessage("/overlap/cameras", 0. );
+    //    b.addMessage("/overlap/cameras", 0. );
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
@@ -170,9 +170,9 @@ MapOSC cue_heart_fadein(cueArgs args)
     double fadetime = 20;
     if( elapsed_section <= (fadetime+1) )
     {
-     //   b.addMessage("/overlap/cameras",  scale_clip(elapsed_section, 0., fadetime, 1., 0.5) );
-        out.addMessage("/gran/pregain/dB", scale_clip(elapsed_section, 0., 10., -70, 0.) );
-        out.addMessage("/fuzz/pregain/dB",  scale_clip(elapsed_section, 0., 10., -70, 0.) );
+        b.addMessage("/overlap/cameras",  scale_clip(elapsed_section, 0., fadetime, 1., 0.5) );
+    //    out.addMessage("/gran/pregain/dB", scale_clip(elapsed_section, 0., 10., -70, 0.) );
+    //    out.addMessage("/fuzz/pregain/dB",  scale_clip(elapsed_section, 0., 10., -70, 0.) );
     }
 
 

@@ -33,6 +33,7 @@ MapOSC cue_cam2_silent(cueArgs args)
         b.addMessage("/invert", 0 );
 
         b.addMessage("/use/camera",  2);
+        b.addMessage("/overlap/cameras", 0. );
 
     }
 

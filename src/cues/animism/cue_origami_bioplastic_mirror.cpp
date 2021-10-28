@@ -18,7 +18,7 @@ MapOSC cue_origami_bioplastic_mirror(cueArgs args)
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
 
         b.addMessage("/video/black",  0);
@@ -53,7 +53,7 @@ MapOSC cue_origami_bioplastic_mirror(cueArgs args)
     double fadetime = 30;
     if( elapsed_section <= (fadetime+1) )
     {
-        out.addMessage("/loop/pregain/dB",  scale_clip(elapsed_section, 0., 10, 0, -12) );
+   //     out.addMessage("/loop/pregain/dB",  scale_clip(elapsed_section, 0., 10, 0, -12) );
         b.addMessage("/overlap/flip", scale_clip(elapsed_section, 10., fadetime, 0., 0.5));
 
     }
