@@ -118,6 +118,7 @@ public:
 
     }
 
+    // add field recording to scene 1??
 
     void setScene1()
     {
@@ -202,7 +203,7 @@ public:
                &cue_thunderclap_field );
     }
 
-// maybe not much electronics until drums
+    // consider adding other type of field rec? or clip from iceland, w/o birds?
     void setScene3()
     {
         setCue("3A",
@@ -210,29 +211,32 @@ public:
                "fog-hands (cam2)",
                &cue_black_silent ); //cue_black_fadeout_field
 
-        // moved thuderclap to end of scene 2, any electronics in strings/oboe part?
-        // maybe not...
+        // cam 2
+        // maybe add filter sounds like plastisphere scene 2, no field rec (saving it for scene 5)
         setCue("3B",
-               "fog-hands (snares), start black, hands on black, fog, moving very slowly and cloudlike, grandually becoming bigger and bigger",
+               "fog-hands (snares), moving very slowly and cloudlike, grandually becoming bigger and bigger",
                "fog-hands",
-               &cue_fog_hands_field );
+               &cue_fog_hands  ); //cue_fog_hands_field
 
+        // strings go into harmonics + oboe pedal gliss
         setCue("3C",
                "fog-hands + strings + field rec? but no plants",
                "cam 1, origami",
                &cue_fog_hands ); // continuing field recording
 
-        setCue("3D", // first cut field recording when brass enters, then fade back in ? or change type of field rec
+        // cuts to cam 1, brass solo
+        // add fuzz to brass here?
+        // electronic lead in to perc would be good
+
+        setCue("3D",
                "brass section (+ field rec?), cam1 white -> origami -> bioplastic skin / becoming mirrored -> dome thread",
                "percussion enters",
-               &cue_origami_bioplastic_mirror ); // transition to double image
-// add field recording to scene 1??
-
+               &cue_origami_bioplastic_mirror ); // transition to double image        
 
         setCue("3E",
                "dome thread (with tuba and 808)",
                "transition to heartbeat",
-               &cue_string_creature ); // add field rec?
+               &cue_string_creature );
 
         setCue("3F",
                "dome thread (with tuba and 808), transitioning to heartbeat",

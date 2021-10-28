@@ -24,7 +24,7 @@ MapOSC cue_string_creature(cueArgs args)
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
         out.addMessage("/spring/pregain/dB",       -100);
-    //    out.addMessage("/sine/pregain/dB",         -40);
+        out.addMessage("/sine/pregain/dB",         -100);
 
         b.addMessage("/video/black",  0);
         b.addMessage("/use/preprocess",  3);
