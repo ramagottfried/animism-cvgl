@@ -219,4 +219,12 @@ inline double easeOutExpo(double x)
 
 }
 
+inline double triangleWave(double t, double hz, double curve)
+{
+    const double duration = 1. / hz;
+    const double half_dur = duration* 0.5;
+    const double scalar = 1. / half_dur;
+    return pow( abs( fmod(t, duration) - half_dur ) * scalar, curve);
+}
+
 }

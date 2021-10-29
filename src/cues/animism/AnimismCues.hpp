@@ -58,6 +58,9 @@ MapOSC cue_cam1_click(cueArgs args);
 
 MapOSC cue_wire_slug(cueArgs args);
 MapOSC cue_wire_slug2(cueArgs args);
+
+MapOSC cue_wire_leaf_eating(cueArgs args);
+
 MapOSC cue_leaf_shell_nest(cueArgs args);
 MapOSC cue_sync_wires(cueArgs args);
 
@@ -159,17 +162,17 @@ public:
         setCue("1B",
                "wire slug on leaf, leaf-creatures nibble on head",
                "back to wire material, then pan",
-               &cue_wire_slug2 );
+               &cue_wire_leaf_eating );
 
         setCue("1C",
                "wire slug, then pan to shells",
                "leaves pushing shells",
-               &cue_wire_slug );
+               &cue_wire_slug2 );
 
         setCue("1D",
                "leaves pushing shells",
                "back to wires, (pan back while still on this cue)",
-               &cue_leaf_shell_nest );
+               &cue_wire_slug  );
 
         setCue("1E",
                "freeze, then wire slug on leaf",

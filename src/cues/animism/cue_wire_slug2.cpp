@@ -16,9 +16,9 @@ MapOSC cue_wire_slug2(cueArgs args)
     if( isNewCue )
     {
 
-        out.addMessage("/dpo/pregain/dB",          -24);
-        out.addMessage("/dpo/sarah/pregain/dB",    -12);
-        out.addMessage("/gran/pregain/dB",         0);
+        out.addMessage("/dpo/pregain/dB",          -100);
+        out.addMessage("/dpo/sarah/pregain/dB",    -40);
+        out.addMessage("/gran/pregain/dB",         -12);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
@@ -69,7 +69,7 @@ MapOSC cue_wire_slug2(cueArgs args)
         out.addMessage("/dpo/amp/val", 0);
         out.addMessage("/dpo/sarah/amp/val", 0);
 
-        out.addMessage("/dpo/vcf1_q/val", 1);
+        out.addMessage("/dpo/vcf1_q/val", 0.2);
         out.addMessage("/dpo/vcf2_q/val", 0.478);
 
 
@@ -99,6 +99,11 @@ MapOSC cue_wire_slug2(cueArgs args)
     }
 
 
+    double filter_lfo = triangleWave(elapsed_section, 0.01, 2);//  sin( elapsed_section * M_PI * 1);
+    out.addMessage("/dpo/vcf1_hz/val", scale(filter_lfo, -1, 1, -0.5, 0.5), 100 );
+    out.addMessage("/dpo/vcf2_hz/val", scale(filter_lfo, -1, 1, -0.6, -1), 100);
+
+
     if( !isNewCue && data.ncontours > 0 )
     {
 
@@ -123,10 +128,9 @@ MapOSC cue_wire_slug2(cueArgs args)
 
         double ease = easeInOutSine(area_sum_norm);
 
-        double lfo1 = scale( sin( elapsed_section * M_PI * 0.12 ), -M_PI, M_PI, 0., 1.);
-        out.addMessage("/dpo/f1/val", floor(scale(ease, 0, 1, 125, 138)) );
+        double lfo_offsetMidi = scale( sin( elapsed_section * M_PI * 0.12 ), -1, 1, 0, 20);
+        out.addMessage("/dpo/f1/val", floor(scale(ease, 0, 1, 100 + lfo_offsetMidi, 138)) );
 
-        double lfo2 = scale( sin( elapsed_section * M_PI * 0.03), -M_PI, M_PI, 0., 1.);
         out.addMessage("/dpo/f2/val", floor(scale(ease, 0, 1, 138, 120)) );
 
 
@@ -143,8 +147,6 @@ MapOSC cue_wire_slug2(cueArgs args)
         }
 */
 
-        out.addMessage("/dpo/vcf1_hz/val", -area_sum_norm );
-        out.addMessage("/dpo/vcf2_hz/val", scale(area_sum_norm, 0, 1, 0.6, 0.8));
 
         out.addMessage("/gran/1/amp", dpo_amp, 100 ); //dpo_amp, 100
 
