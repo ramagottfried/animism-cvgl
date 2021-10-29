@@ -34,6 +34,11 @@
  * hz1 LP -1 is off, -0.4 nice, stay < 0
  * hz2 HP 1 is off, 0.5 is nice, stay > 0
  * maths offset effects both
+ *
+ * sarah is the opposite
+ * vcf1_hz is hp
+ * vcf2_hz is lp
+ *
  */
 
 
@@ -54,7 +59,7 @@ MapOSC cue_cam1_click(cueArgs args);
 MapOSC cue_wire_slug(cueArgs args);
 MapOSC cue_wire_slug2(cueArgs args);
 MapOSC cue_leaf_shell_nest(cueArgs args);
-
+MapOSC cue_sync_wires(cueArgs args);
 
 MapOSC cue_thunderclap_field(cueArgs args);
 
@@ -138,12 +143,12 @@ public:
 
         setCue("0A",
                "start black click",
-               "0B white screen on cam 1",
+               "white screen on cam 1",
                &cue_black_click ); // what is the click?
 
         setCue("0B",
-               "camera 1 white + click",
-               "",
+               "white + click (cam 1)",
+               "wire slug on leaf (cam 2)",
                &cue_cam1_click ); // what is the click?
 
         setCue("1A",
@@ -169,22 +174,23 @@ public:
         setCue("1E",
                "freeze, then wire slug on leaf",
                "sync moment with ensemble",
-               &cue_wire_slug2 );
+               &cue_wire_slug );
 
         setCue("1F",
                "sync moment with ensemble",
                "wire slug on leaf",
-               &cue_wire_slug ); //maybe same as 1E
+               &cue_sync_wires ); // closer but not quite right yet
 
         setCue("1G",
                "wire slug on leaf",
                "slug rips apart",
-               &cue_wire_slug ); // back to 1B
+               &cue_wire_slug2 ); // back to 1B
 
+        // climax part
         setCue("1H",
                "slug rips apart",
                "cut to cam1, origami all white",
-               &cue_wire_slug ); // maybe no change here? cresc in ensemble
+               &cue_wire_slug );
 
         setCue("1I",
                "origami, overexposed & out of focus, gradually focus in, then pan down to goldleaf, then pan to thread on white paper",

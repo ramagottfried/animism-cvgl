@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_leaf_shell_nest(cueArgs args)
+MapOSC cue_sync_wires(cueArgs args)
 {
 
     MapOSC out;
@@ -17,8 +17,8 @@ MapOSC cue_leaf_shell_nest(cueArgs args)
     {
 
         out.addMessage("/dpo/pregain/dB",          -40);
-        out.addMessage("/dpo/sarah/pregain/dB",    -40);
-        out.addMessage("/gran/pregain/dB",         -12);
+        out.addMessage("/dpo/sarah/pregain/dB",    -30);
+        out.addMessage("/gran/pregain/dB",         -22);
         out.addMessage("/korg/pregain/dB",         -6);
 
         out.addMessage("/fuzz/pregain/dB",         -100);
@@ -40,7 +40,7 @@ MapOSC cue_leaf_shell_nest(cueArgs args)
 
 
         b.addMessage("/use/preprocess", 1);
-        b.addMessage("/size/min", 0.0001 );
+        b.addMessage("/size/min", 0.001 );
         b.addMessage("/size/max", 0.01 );
         b.addMessage("/thresh", 10 );
 
@@ -95,7 +95,7 @@ MapOSC cue_leaf_shell_nest(cueArgs args)
         out.addMessage("/loop/send/fuzz", 0);
 
         out.addMessage("/korg/q1/val", 0.68 );
-        out.addMessage("/korg/q2/val", 0.68 );
+        out.addMessage("/korg/q2/val", 0. );
 
         out.addMessage("/korg/maths/speed/val", 0);
         out.addMessage("/korg/maths/cycle", 1);
@@ -148,31 +148,39 @@ MapOSC cue_leaf_shell_nest(cueArgs args)
 
 
         double area_sum_norm = scale(area_sum, min, max, 0., 1);
+        double area_phase = area_sum_norm * M_PI;
+        double sin_area_phase = sin(area_phase); // 0 1 0
+        double cos_area_phase = cos(area_phase); // 1 0 -1
+
 
         double ease = easeInOutSine(area_sum_norm);
-        out.addMessage("/dpo/f1/val", floor(scale(ease, 0, 1, 125, 138)) );
-        out.addMessage("/dpo/f2/val", floor(scale(ease, 0, 1, 138, 120)) );
-        out.addMessage("/dpo/index1/val", scale_clip(ease, 0, 1, 0.505, 0.516) ); //+ scale(area_sum, 0, 1, 0.2, 0.8), 20
 
-        double dpo_amp = ease;
-        out.addMessage("/dpo/sarah/amp", dpo_amp, 20 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
-        out.addMessage("/dpo/amp/val", dpo_amp, 20  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+        out.addMessage("/dpo/f1/val", (scale(sin_area_phase, 0, 1, 138, 0)), 100 );
+        out.addMessage("/dpo/f2/val", (scale(sin_area_phase, 0, 1, 127, 0)), 100 );
+        out.addMessage("/dpo/index1/val", scale_clip(sin_area_phase, 0, 1, 0.1, 0), 100 ); //+ scale(area_sum, 0, 1, 0.2, 0.8), 20
 
-        out.addMessage("/dpo/vcf1_hz/val", -area_sum_norm );
-        out.addMessage("/dpo/vcf2_hz/val", scale(area_sum_norm, 0, 1, 0.6, 0.8));
+        out.addMessage("/dpo/sarah/amp", sin_area_phase, 20 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+        out.addMessage("/dpo/amp/val", sin_area_phase, 20  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
 
-        out.addMessage("/gran/1/amp", dpo_amp, 100 ); //dpo_amp, 100
+        out.addMessage("/dpo/vcf1_hz/val", scale( cos_area_phase, 0., 1., -0.8,  -0.4), 20 );
+        out.addMessage("/dpo/vcf2_hz/val",  scale( cos_area_phase, 0., 1., 0.6, 0.8), 20 );// scale(area_sum_norm, 0, 1, 0.6, 0.8));
+
+        out.addMessage("/gran/1/amp", clip(cos_area_phase, 0., 1), 100 ); //dpo_amp, 100
         out.addMessage("/gran/1/position", scale(area_sum_norm, 0., 1, 0.04382, 0.14), 100 );
 
+        out.addMessage("/gran/*/rate", scale(area_sum_norm, 0., 1, 15., 117.) );
 
-        out.addMessage("/korg/amp", dpo_amp, 100  );
+        out.addMessage("/korg/amp", sin_area_phase, 100  );
 
-        double area_phase = area_sum_norm * M_PI;
-        out.addMessage("/korg/hz1", scale_clip( cos(area_phase), 0., 1., -1,  -0.5), 20);
-        out.addMessage("/korg/hz2", scale_clip( cos(area_phase), 0., 1.,  1,   0.5), 20);
+        out.addMessage("/korg/spat/1/az", x_ctr - 10 );
+        out.addMessage("/korg/spat/2/az", x_ctr + 10 );
 
-        out.addMessage("/korg/maths/speed", scale( area_sum_norm, 0., 1., 0., 0.5), 20);
-        out.addMessage("/korg/maths/offset", scale( cos(area_phase), 0., 1.,  0., -0.75 ), 20);
+
+        out.addMessage("/korg/hz1", scale_clip( sin_area_phase, 0., 1., -0.8,  -0.3), 20);
+        out.addMessage("/korg/hz2", scale_clip( cos_area_phase, 0., 1.,  1,   0.8), 20);
+
+        out.addMessage("/korg/maths/speed", scale( area_sum_norm, 0., 1., 0., 1), 20);
+        out.addMessage("/korg/maths/offset", scale( cos_area_phase, -1., 1.,  0, 1), 20);
 
         // mabye something like this for sync wires
 //         out.addMessage("/korg/maths/offset", scale( cos(area_phase), 0., 1.,  -0.5, 0.5 ), 20);
