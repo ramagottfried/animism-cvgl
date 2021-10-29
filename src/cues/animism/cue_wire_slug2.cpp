@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_wire_slug(cueArgs args)
+MapOSC cue_wire_slug2(cueArgs args)
 {
 
     MapOSC out;
@@ -16,8 +16,8 @@ MapOSC cue_wire_slug(cueArgs args)
     if( isNewCue )
     {
 
-        out.addMessage("/dpo/pregain/dB",          -36);
-        out.addMessage("/dpo/sarah/pregain/dB",    -24);
+        out.addMessage("/dpo/pregain/dB",          -24);
+        out.addMessage("/dpo/sarah/pregain/dB",    -12);
         out.addMessage("/gran/pregain/dB",         0);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);

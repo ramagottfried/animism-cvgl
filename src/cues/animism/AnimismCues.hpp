@@ -29,6 +29,14 @@
 */
 
 
+/*
+ * korg notes:
+ * hz1 LP -1 is off, -0.4 nice, stay < 0
+ * hz2 HP 1 is off, 0.5 is nice, stay > 0
+ * maths offset effects both
+ */
+
+
 
 MapOSC cue_nothing(cueArgs args);
 
@@ -44,6 +52,9 @@ MapOSC cue_cam1_click(cueArgs args);
 
 
 MapOSC cue_wire_slug(cueArgs args);
+MapOSC cue_wire_slug2(cueArgs args);
+MapOSC cue_leaf_shell_nest(cueArgs args);
+
 
 MapOSC cue_thunderclap_field(cueArgs args);
 
@@ -138,27 +149,27 @@ public:
         setCue("1A",
                "wire slug on leaf, light from behind, raised up to be more depth angle",
                "leaf-creature",
-               &cue_wire_slug ); // *
+               &cue_wire_slug );
 
         setCue("1B",
                "wire slug on leaf, leaf-creatures nibble on head",
                "back to wire material, then pan",
-               &cue_wire_slug ); // maybe no change in electronics here?
+               &cue_wire_slug2 );
 
         setCue("1C",
                "wire slug, then pan to shells",
                "leaves pushing shells",
-               &cue_wire_slug );  // maybe no change in electronics here?
+               &cue_wire_slug );
 
         setCue("1D",
                "leaves pushing shells",
-               "back to wires",
-               &cue_wire_slug ); // maybe no change in electronics here?
+               "back to wires, (pan back while still on this cue)",
+               &cue_leaf_shell_nest );
 
         setCue("1E",
-               "wire slug on leaf",
+               "freeze, then wire slug on leaf",
                "sync moment with ensemble",
-               &cue_wire_slug ); // * new
+               &cue_wire_slug2 );
 
         setCue("1F",
                "sync moment with ensemble",
