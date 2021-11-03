@@ -229,7 +229,7 @@ MapOSC cue_antlers( cueArgs args )
 
 
 
-    out.addMessage("/cache", cache);
+  // out.addMessage("/cache", cache);
 
     return out;
 }

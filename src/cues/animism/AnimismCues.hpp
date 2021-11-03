@@ -124,7 +124,8 @@ public:
 
     AnimismCues()
     {
-        m_cue = "5E";
+        // screen is setup by cam1 so init cue has to be cam 1
+        m_cue = "0B";
 
         setCue("-1",
                "start black",
@@ -390,6 +391,7 @@ public:
                "descend into the forest, sun gets brighter, then wind picks up as we go deeper into the woods",
                "branch rips off and falls",
                &cue_forest );                   // field rec comes in here
+        // getting bored of field rec here?
 
         setCue("5N",
                "branch rips off and falls (fade in field recording? or add 5Nb for fall?)",

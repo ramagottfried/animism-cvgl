@@ -96,8 +96,8 @@ MapOSC cue_grass( cueArgs args )
     if( data.ncontours > 0 && data.delta_centroid_dist.size() > 0 )
     {
 
-        out.addMessage("/data/delta", data.delta_centroid_dist);
-        out.addMessage("/data/dur", data.elapsed_contour);
+     //   out.addMessage("/data/delta", data.delta_centroid_dist);
+     //   out.addMessage("/data/dur", data.elapsed_contour);
 
 
         // adaptive range
@@ -168,7 +168,7 @@ MapOSC cue_grass( cueArgs args )
     }
 
 
-    out.addMessage("/cache", args.cache);
+   // out.addMessage("/cache", args.cache);
 
     return out;
 }

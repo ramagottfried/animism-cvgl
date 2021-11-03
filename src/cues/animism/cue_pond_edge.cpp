@@ -117,7 +117,7 @@ MapOSC cue_pond_edge( cueArgs args )
     double duration = m_state_cache.addressExists("/duration") ? m_state_cache["/duration"].getInt() : 0;
 
 
-    out.addMessage("/cache", m_state_cache);
+  //  out.addMessage("/cache", m_state_cache);
     if( prev_step != seq_minIdx )
     {
         // new step

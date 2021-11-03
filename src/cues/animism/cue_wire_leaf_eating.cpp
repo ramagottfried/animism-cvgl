@@ -167,7 +167,7 @@ MapOSC cue_wire_leaf_eating(cueArgs args)
     }
 
 
-    out.addMessage("/cache", cache);
+   // out.addMessage("/cache", cache);
 
     return out;
 }

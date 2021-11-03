@@ -199,7 +199,7 @@ MapOSC cue_string_creature(cueArgs args)
 
 
 
-    out.addMessage("/cache", cache);
+  //  out.addMessage("/cache", cache);
 
     return out;
 }

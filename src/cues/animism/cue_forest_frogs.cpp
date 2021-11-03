@@ -28,6 +28,11 @@ MapOSC cue_forest_frogs( cueArgs args )
     if( isNewCue )
     {
 
+        b.addMessage("/glitch_tri/alpha", 0);
+        b.addMessage("/big_triangle1/alpha", 0 );
+        b.addMessage("/big_triangle2/alpha", 0 );
+        b.addMessage("/half_mirror/alpha", 0 );
+
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
@@ -41,7 +46,7 @@ MapOSC cue_forest_frogs( cueArgs args )
         b.addMessage("/video/black",  0);
         b.addMessage("/use/preprocess",  3);
 
-        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/camera",  2);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);
@@ -99,8 +104,9 @@ MapOSC cue_forest_frogs( cueArgs args )
 
         }
 
+        double norm_x = sum_area == 0 ? avg_x : avg_x / sum_area;
         out.addMessage("/korg/spat/1/az", 0);
-        out.addMessage("/korg/spat/2/az", scale(avg_x / sum_area, 0., 1., -90, 90) );
+        out.addMessage("/korg/spat/2/az", scale(norm_x, 0., 1., -90, 90) );
 
         //if( sum_mag > 0 )
         {

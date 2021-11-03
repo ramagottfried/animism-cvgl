@@ -274,7 +274,7 @@ MapOSC cue_burdock_roll_out(cueArgs args)
     double duration = m_state_cache.addressExists("/duration") ? m_state_cache["/duration"].getInt() : 0;
 
 
-    out.addMessage("/cache", m_state_cache);
+   // out.addMessage("/cache", m_state_cache);
     if( prev_step != seq_minIdx )
     {
         // new step
@@ -334,8 +334,9 @@ MapOSC cue_burdock_roll_out(cueArgs args)
 
         }
 
+        double norm_x = sum_area == 0 ? avg_x : avg_x / sum_area;
         out.addMessage("/korg/spat/1/az", 0);
-        out.addMessage("/korg/spat/2/az", scale(avg_x / sum_area, 0., 1., -90, 90) );
+        out.addMessage("/korg/spat/2/az", scale(norm_x, 0., 1., -90, 90) );
 
         //if( sum_mag > 0 )
         {

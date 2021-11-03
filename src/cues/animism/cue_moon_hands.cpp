@@ -33,7 +33,7 @@ MapOSC cue_moon_hands(cueArgs args)
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/hull/color", 1, 0, 1., 1 );
-        b.addMessage("/enable/minrect", 1);
+        b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 0);
         //b.addMessage("/contour/color", 1, 1, 1., 0.5 );
 

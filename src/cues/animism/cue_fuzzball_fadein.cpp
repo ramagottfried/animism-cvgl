@@ -46,7 +46,7 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
         b.addMessage("/overlap/flip", 0.);
 
         b.addMessage("/enable/hull", 0);
-        b.addMessage("/enable/minrect", 1);
+        b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 1);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
@@ -100,8 +100,9 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
 
         }
 
+        double norm_x = sum_area == 0 ? avg_x : avg_x / sum_area;
         out.addMessage("/korg/spat/1/az", 0);
-        out.addMessage("/korg/spat/2/az", scale(avg_x / sum_area, 0., 1., -90, 90) );
+        out.addMessage("/korg/spat/2/az", scale(norm_x, 0., 1., -90, 90) );
 
         //if( sum_mag > 0 )
         {

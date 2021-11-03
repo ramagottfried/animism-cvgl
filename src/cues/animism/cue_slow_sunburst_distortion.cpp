@@ -60,7 +60,7 @@ MapOSC cue_slow_sunburst_distortion( cueArgs args )
         b.addMessage("/video/black",  0);
         b.addMessage("/use/preprocess",  3);
 
-        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/camera",  2);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);

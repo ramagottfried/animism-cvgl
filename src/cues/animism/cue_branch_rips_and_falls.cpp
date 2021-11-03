@@ -32,7 +32,7 @@ MapOSC cue_branch_rips_and_falls(cueArgs args)
         b.addMessage("/thresh", 60 );
         b.addMessage("/invert", 0 );
 
-        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/camera",  2);
 
     }
 

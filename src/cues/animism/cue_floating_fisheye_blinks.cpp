@@ -20,7 +20,7 @@ MapOSC cue_floating_fisheye_blinks(cueArgs args)
     if( isNewCue )
     {
         b.addMessage("/contrast", 1.3);
-        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/camera",  2);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);

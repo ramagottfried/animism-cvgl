@@ -110,8 +110,8 @@ MapOSC cue_grass_fadeout( cueArgs args )
         // grass creature
         if( data.delta_centroid_dist.size() > 0 )
         {
-            out.addMessage("/data/delta", data.delta_centroid_dist);
-            out.addMessage("/data/dur", data.elapsed_contour);
+         //   out.addMessage("/data/delta", data.delta_centroid_dist);
+         //   out.addMessage("/data/dur", data.elapsed_contour);
 
 
             // adaptive range
@@ -195,14 +195,15 @@ MapOSC cue_grass_fadeout( cueArgs args )
             }
             else
             {
-                out.addMessage("/nchannels", (int32_t)i, (int32_t)data.pix_channel_stats[i].size() );
+          //      out.addMessage("/nchannels", (int32_t)i, (int32_t)data.pix_channel_stats[i].size() );
             }
 
 
         }
 
+        double norm_x = sum_area == 0 ? avg_x : avg_x / sum_area;
         out.addMessage("/korg/spat/1/az", 0);
-        out.addMessage("/korg/spat/2/az", scale(avg_x / sum_area, 0., 1., -90, 90) );
+        out.addMessage("/korg/spat/2/az", scale(norm_x, 0., 1., -90, 90) );
 
         //if( sum_mag > 0 )
         {
@@ -246,7 +247,7 @@ MapOSC cue_grass_fadeout( cueArgs args )
     }
 
 
-    out.addMessage("/cache", args.cache);
+  //  out.addMessage("/cache", args.cache);
 
     return out;
 }

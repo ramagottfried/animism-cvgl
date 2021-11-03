@@ -51,7 +51,7 @@ MapOSC cue_forest_loops_triZ( cueArgs args )
 
         b.addMessage("/video/black",  0);
 
-        b.addMessage("/use/camera",  1);
+        b.addMessage("/use/camera",  2);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);

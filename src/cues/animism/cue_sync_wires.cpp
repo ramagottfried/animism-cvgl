@@ -198,7 +198,7 @@ MapOSC cue_sync_wires(cueArgs args)
     }
 
 
-    out.addMessage("/cache", cache);
+  //  out.addMessage("/cache", cache);
 
     return out;
 }

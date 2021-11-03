@@ -30,7 +30,7 @@ MapOSC cue_fog_hands(cueArgs args)
         b.addMessage("/enable/hull", 1);
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 0);
-        b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
+        b.addMessage("/hull/color", 1, 1., 1., 0.125 );
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);

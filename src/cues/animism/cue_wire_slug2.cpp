@@ -165,7 +165,7 @@ MapOSC cue_wire_slug2(cueArgs args)
     }
 
 
-    out.addMessage("/cache", cache);
+  // out.addMessage("/cache", cache);
 
     return out;
 }
