@@ -14,6 +14,8 @@ MapOSC cue_underwater( cueArgs args )
     MapOSC &b = args.b;
     AnalysisData data = args.data;
     const double elapsed_section = args.elapsed_section.count();
+    const double total_elapsed = args.total_elapsed.count();
+
     bool isNewCue = args.isNewCue;
 
 
@@ -47,7 +49,7 @@ MapOSC cue_underwater( cueArgs args )
         out.addMessage("/sine/pregain/dB",         -70);
 
         b.addMessage("/video/black",  0);
-        b.addMessage("/use/preprocess",  3);
+        b.addMessage("/use/preprocess",  0);
 
 
         b.addMessage("/overlap/cameras", 0.);
@@ -55,7 +57,7 @@ MapOSC cue_underwater( cueArgs args )
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 1);
+        b.addMessage("/enable/contour", 0);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
       //  cout << "use camera" << 2 << endl;
@@ -87,14 +89,15 @@ MapOSC cue_underwater( cueArgs args )
     }
     else
     {
-        double fm_lfo = cos(elapsed_section * M_PI * 2 * 0.03 );
+        double fadein = clip(elapsed_section / 3., 0., 1.);
+        double fm_lfo = cos(total_elapsed * M_PI * 2 * 0.03 * fadein );
         double freq = scale(fm_lfo, -1., 1., 0.15, 0.05);
-        double lfo = cos(elapsed_section * M_PI * 2 * freq * 300);
+        double lfo = cos(total_elapsed * M_PI * 2 * freq * 300 * fadein);
        // double signOf = lfo > 0 ? -1 : 1;
         double lfo_rect = tanh(lfo * 7);
        // b.addMessage("/glitch_tri/z_offset", scale( lfo_rect, -1., 1., 0.1, 0.75));
 
-        int32_t maxDiv = scale(cos(elapsed_section * M_PI * 2 * 0.01), -1, 1, 13, 7) ;
+        int32_t maxDiv = scale(cos(total_elapsed * M_PI * 2 * 0.01), -1, 1, 13, 7) ;
         int32_t div = scale( lfo, -1., 1., 0.1, maxDiv);
         out.addMessage("/dpo/mod_bus_phase/ms",  div ) ;
         out.addMessage("/dpo/mod_bus_phase/loop", 1);

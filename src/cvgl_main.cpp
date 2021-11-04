@@ -91,6 +91,8 @@ int main( void )
 
     cout << "starting draw loop " << endl;
 
+    app.context.flip(1,0);
+
     // main GL loop`
     while( !app.context.shouldClose() )
     {

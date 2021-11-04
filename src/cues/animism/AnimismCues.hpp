@@ -379,11 +379,14 @@ public:
                "in the deep black",
                "floating fish eye blinks",
                &cue_underwater_deep );
+        // sink sinewaves to low drones, hold for a while, and gradually fade out (over 30"?)
 
         setCue("5L",
                "floating fish eye blinks",
                "descend into the forest",
                &cue_floating_fisheye_blinks );
+        // cut low sine drones
+
 
         // cam 1 if eye is on cam 2, or visa versa
         // maybe the sun is not too too bright, so that it is more climatic later

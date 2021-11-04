@@ -55,12 +55,14 @@ public:
     {
         glClearColor(r, g, b, a);
     }
-    
+
+    /*
     inline void resetTransform()
     {
         glUniformMatrix4fv(m_transformAttrib, 1, GL_FALSE, &m_transform_matrix[0][0]);
         m_update_transform_matrix = false;
     }
+    */
 
     inline glm::mat4 getTransform()
     {

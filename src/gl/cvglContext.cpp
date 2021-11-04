@@ -49,7 +49,7 @@ void cvglContext::resize_callback(int w, int h)
 
 void cvglContext::flip( bool x, bool y)
 {
-    if( m_transformAttrib )
+//    if( m_transformAttrib )
     {
         m_x_scale = x ? -1 : 1;
         m_y_scale = y ? -1 : 1;
