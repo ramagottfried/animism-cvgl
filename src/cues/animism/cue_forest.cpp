@@ -15,6 +15,11 @@ MapOSC cue_forest( cueArgs args )
     //MapOSC& m_state_cache = args.cache;
     //cvglRandom& m_rand_generator = args.randGen;
 
+    double fadetime = 30;
+    if( elapsed_section <= (fadetime+1) )
+    {
+        out.addMessage("/loop/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -60., -12) );
+    }
 
     if( isNewCue )
     {
@@ -29,7 +34,7 @@ MapOSC cue_forest( cueArgs args )
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -60);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);
@@ -44,7 +49,7 @@ MapOSC cue_forest( cueArgs args )
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 1);
+        b.addMessage("/enable/contour", 0);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
       //  cout << "use camera" << 2 << endl;
@@ -62,6 +67,7 @@ MapOSC cue_forest( cueArgs args )
         out.addMessage("/korg/maths/cycle", 1);
 
     }
+
 
 
 

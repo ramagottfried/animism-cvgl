@@ -61,11 +61,6 @@ MapOSC cue_fog_hands_field(cueArgs args)
     }
 
 
-    out.addMessage("/elapsed_section", elapsed_section );
-
-    double area_sum = data.contour_area.sum();
-    out.addMessage("/contour_area_sum", area_sum );
-
 
     return out;
 

@@ -19,10 +19,7 @@ MapOSC cue_forest_loops( cueArgs args )
     if( elapsed_section <= fadetime )
     {
 
-        // transition, to sped up version
-       // out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, 0., -12));
-        out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., -6));
-        out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 0., 12) );
+        out.addMessage("/gran/pregain/dB",  scale(elapsed_section, 0., fadetime, 0., -60));
 
       //  b.addMessage("/big_triangle/x", scale( cvgl::easeInOutSine( scale(elapsed_section, 0., fadetime, 0., 1.)),0., 1., -1, 0) );
         b.addMessage("/big_triangle1/alpha", cvgl::easeInSine( scale(elapsed_section, 0., fadetime*0.5, 0., 1.)) );
@@ -41,10 +38,10 @@ MapOSC cue_forest_loops( cueArgs args )
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
-        out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/gran/pregain/dB",         0);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -70);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);

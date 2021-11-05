@@ -51,7 +51,7 @@ MapOSC cue_slow_sunburst_mirror_flow( cueArgs args )
         b.addMessage("/hsflow_offset", 0.3);
 
         b.addMessage("/repos_amt", 0.17);
-        b.addMessage("/repos_scale", 0.997);
+        b.addMessage("/repos_scale", 1);
         b.addMessage("/repos_bias", 0.00);
 
         b.addMessage("/luma_mix", 0.);
@@ -63,7 +63,7 @@ MapOSC cue_slow_sunburst_mirror_flow( cueArgs args )
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -70);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);

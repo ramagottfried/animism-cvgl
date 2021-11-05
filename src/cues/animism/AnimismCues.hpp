@@ -360,12 +360,14 @@ public:
         setCue("5H",
                "fuzzball climbs up to water",
                "at water's edge",
-               &cue_pond_edge );
+               &cue_pond_edge ); // no change?
 
         setCue("5I",
                "at water's edge",
                "blur and dive underwater",
-               &cue_pond_edge ); // with drones? maybe quiet noisy texture drone...
+               &cue_pond_edge ); // no change?
+
+        // with drones? maybe quiet noisy texture drone...
                 // respond to light on water?? not sure if this is possible with the camera angle
 
         setCue("5J",
@@ -388,23 +390,22 @@ public:
         // cut low sine drones
 
 
-        // cam 1 if eye is on cam 2, or visa versa
-        // maybe the sun is not too too bright, so that it is more climatic later
+        // slow to daytime, slow fade of williston field rec, 30s
         setCue("5M",
-               "descend into the forest, sun gets brighter, then wind picks up as we go deeper into the woods",
+               "very slowly descend into plant, forcus on first leaf (top) and then very slowly continue downward",
                "branch rips off and falls",
-               &cue_forest );                   // field rec comes in here
-        // getting bored of field rec here?
+               &cue_forest );
+
 
         setCue("5N",
-               "branch rips off and falls (fade in field recording? or add 5Nb for fall?)",
+               "(still near top of plant) actions in ensemble, field rec continues",
                "frogs and other pond and forest creatures",
-               &cue_branch_rips_and_falls );    // no field rec here?
+               &cue_branch_rips_and_falls );  // granular attack like antlers, then bring in fast traffic?
 
         setCue("5O",
                "frogs and other pond and forest creatures",
                "natural sounds begin to loop",
-               &cue_forest_frogs );             // field rec comes back in here?
+               &cue_forest_frogs );             // or traffic bugs here?
 
 
         // slowly fade in different types of mirror images?
@@ -413,21 +414,20 @@ public:
         setCue("5P",
                "natural sounds begin to loop",
                "fade in triangles",
-               &cue_forest_loops );
+               &cue_forest_loops ); // fast insect traffic becomes cars
 
         setCue("5P_b",
                "fade in triangles, then shadow heartbeat",
                "slow spectral sunburst",
                &cue_forest_loops_triZ );
 
-        // then fade out mirrors when sunburst comes in?
         setCue("5Q",
-               "slow spectral sunburst",
+               "slow spectral sunburst, fade out triangles",
                "mirror",
                &cue_slow_sunburst );
 
         setCue("5Q_b",
-               "mirror",
+               "fade in mirror",
                "mirror flow",
                &cue_slow_sunburst_mirror );
 
@@ -446,7 +446,7 @@ public:
         setCue("5R",
                "increasingly dissonant becoming white noise",
                "distortion fuzz",
-               &cue_slow_sunburst_noise_start );
+               &cue_slow_sunburst_noise_start ); // fades in iceland again, speeding up to noise
 
         setCue("5S",
                "distortion fuzz of ensemble becoming white noise",

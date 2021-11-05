@@ -27,6 +27,22 @@ MapOSC cue_forest_frogs( cueArgs args )
 
     if( isNewCue )
     {
+        b.addMessage("/luma_mix", 0.);
+        b.addMessage("/flow_mix", 0.);
+        b.addMessage("/noise_mix", 0.);
+
+
+        b.addMessage("/luma_target", 0.24);
+        b.addMessage("/luma_tol", 0.5);
+        b.addMessage("/luma_fade", 0.0);
+
+        b.addMessage("/hsflow_lambda", 0.);
+        b.addMessage("/hsflow_scale", 0.01);
+        b.addMessage("/hsflow_offset", 0.3);
+
+        b.addMessage("/repos_amt", 0.17);
+        b.addMessage("/repos_scale", 0.997);
+        b.addMessage("/repos_bias", 0.00);
 
         b.addMessage("/glitch_tri/alpha", 0);
         b.addMessage("/big_triangle1/alpha", 0 );
@@ -35,10 +51,10 @@ MapOSC cue_forest_frogs( cueArgs args )
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
-        out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/gran/pregain/dB",         -0);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -70);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);
@@ -72,81 +88,70 @@ MapOSC cue_forest_frogs( cueArgs args )
 
     }
 
-    out.addMessage("/elapsed_section", elapsed_section );
-    double area_sum = data.contour_area.sum();
-    out.addMessage("/contour_area_sum", area_sum );
-
-    double sum_mag = 0, sum_area = 0, sum_x = 0, sum_y = 0;
-
-    double avg_x = 0;
-
-    if( data.ncontours > 0 )
+   // double burdock_fade = 40;
+   // if( elapsed_section < (burdock_fade+1) )
     {
-        for( size_t i = 0 ; i < data.ncontours; i++ )
-        {
-            double w = data.contour_area[i];
-            sum_area += w;
+        double fadeout_amp = dbtoa(-36);
 
-            avg_x += data.center_x[i] * w;
+        double lfo = sin( args.total_elapsed.count() * M_PI * 0.01);
 
-            if( data.pix_channel_stats[i].size() == 5 ) // focus channel is added to whatever the channel count is
-            {
-           //     sum_angle += data.pix_channel_stats[i][0].mean * w;
-                sum_mag += data.pix_channel_stats[i][1].mean * w;
-                sum_x += data.pix_channel_stats[i][2].mean * w;
-                sum_y += data.pix_channel_stats[i][3].mean * w;
-            }
-            else
-            {
-                out.addMessage("/nchannels", (int32_t)i, (int32_t)data.pix_channel_stats[i].size() );
-            }
+        double fadeout_ms4 = scale(lfo, -1, 1,  500, 1000);
+        double fadeout_ms5 = scale(lfo, -1, 1,  100, 1000);
+        double fadeout_motor_max = scale(lfo, -1, 1, 20, 200);
+        double fadeout_motor_min = scale(lfo, -1, 1, 200, 2);
 
+        double fadeout_motor5_min = scale(lfo, -1, 1, 10, 1);
 
-        }
-
-        double norm_x = sum_area == 0 ? avg_x : avg_x / sum_area;
-        out.addMessage("/korg/spat/1/az", 0);
-        out.addMessage("/korg/spat/2/az", scale(norm_x, 0., 1., -90, 90) );
-
-        //if( sum_mag > 0 )
-        {
-            double scalar = sum_area == 0 ? 1 : sum_area;
-            double mag_avg = sum_mag / scalar;
+        out.addMessage("/gran/1/play", 0);
+        out.addMessage("/gran/1/ms", 20000);
+        out.addMessage("/gran/1/loop", 1);
+        out.addMessage("/gran/1/rate/scale", 15., 100.);
+        out.addMessage("/gran/1/amp/scale", 0, fadeout_amp * 0.5);
+        out.addMessage("/gran/1/motor/scale", 50, 500);
+        out.addMessage("/gran/1/overlap/scale", 0.001, 0.1);
+        out.addMessage("/gran/1/pan", 0.);
 
 
-            /*
-                        double avg_dist_x = sum_x / scalar;
-                        double avg_dist_y = sum_y / scalar;
-
-                        out.addMessage("/avg/mag", mag_avg );
-                        out.addMessage("/avg/x", avg_dist_x);
-                        out.addMessage("/avg/y", avg_dist_y );
-            */
-
-
-            double norm_mag_avg = mag_avg / 255. ;
-            double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
-
-            out.addMessage("/data/norm_mag_avg", norm_mag_avg);
-
-            out.addMessage("/korg/amp", norm_2);
-            out.addMessage("/korg/slide/down", 0);
-            out.addMessage("/korg/slide/up", 5);
-            out.addMessage("/korg/q1/val", 0.65 );
-            out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
-            out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
-            out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-            out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
-     }
+        out.addMessage("/gran/2/play", 1);
+        out.addMessage("/gran/2/ms", fadeout_ms4 - 250);
+        out.addMessage("/gran/2/loop", 1);
+        out.addMessage("/gran/2/rate/scale", 15., 100.);
+        out.addMessage("/gran/2/amp", fadeout_amp );
+        out.addMessage("/gran/2/motor/scale", fadeout_motor_min, fadeout_motor_max);
+        out.addMessage("/gran/2/overlap/scale", 0.001, 0.1);
+        out.addMessage("/gran/2/pan", -0.5);
 
 
+        out.addMessage("/gran/3/play", 1);
+        out.addMessage("/gran/3/ms", fadeout_ms5 + 250);
+        out.addMessage("/gran/3/loop", 1);
+        out.addMessage("/gran/3/rate/scale", 15., 100.);
+        out.addMessage("/gran/3/amp/scale", 0, fadeout_amp);
+        out.addMessage("/gran/3/motor/scale", fadeout_motor5_min, fadeout_motor_max);
+        out.addMessage("/gran/3/overlap/scale", 0.001, 5);
+        out.addMessage("/gran/3/pan", 0.5);
+
+
+
+        out.addMessage("/gran/4/play", 1);
+        out.addMessage("/gran/4/ms", fadeout_ms4);
+        out.addMessage("/gran/4/loop", 1);
+        out.addMessage("/gran/4/rate/scale", 15., 100.);
+        out.addMessage("/gran/4/amp", fadeout_amp );
+        out.addMessage("/gran/4/motor/scale", fadeout_motor_min, fadeout_motor_max);
+        out.addMessage("/gran/4/overlap/scale", 0.001, 0.1);
+        out.addMessage("/gran/4/pan", -1);
+
+
+        out.addMessage("/gran/5/play", 1);
+        out.addMessage("/gran/5/ms", fadeout_ms5);
+        out.addMessage("/gran/5/loop", 1);
+        out.addMessage("/gran/5/rate/scale", 15., 100.);
+        out.addMessage("/gran/5/amp/scale", 0, fadeout_amp);
+        out.addMessage("/gran/5/motor/scale", fadeout_motor5_min, fadeout_motor_max);
+        out.addMessage("/gran/5/overlap/scale", 0.001, 5);
+        out.addMessage("/gran/5/pan", 1);
     }
-    else
-    {
-        out.addMessage("/korg/amp", 0);
-
-    }
-
 
     return out;
 }

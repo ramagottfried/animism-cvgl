@@ -26,13 +26,16 @@ MapOSC cue_slow_sunburst_mirror( cueArgs args )
         b.addMessage("/big_triangle2/alpha", 0 );
         b.addMessage("/half_mirror/alpha", 0 );
 
+        b.addMessage("/luma_mix", 0.);
+        b.addMessage("/flow_mix", 0.);
+        b.addMessage("/noise_mix", 0.);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -70);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);

@@ -23,6 +23,11 @@ MapOSC cue_slow_sunburst( cueArgs args )
     if( isNewCue )
     {
 
+        b.addMessage("/luma_mix", 0.);
+        b.addMessage("/flow_mix", 0.);
+        b.addMessage("/noise_mix", 0.);
+
+
         b.addMessage("/glitch_tri/alpha", 1);
         b.addMessage("/big_triangle1/alpha", 1 );
         b.addMessage("/big_triangle2/alpha", 1 );
@@ -33,7 +38,7 @@ MapOSC cue_slow_sunburst( cueArgs args )
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -70);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);

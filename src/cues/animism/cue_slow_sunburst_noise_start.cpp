@@ -35,7 +35,7 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
     if( elapsed_section <= lrt_p1 )
     {
         out.addMessage("/loop/transpose",   pow( scale_clip(elapsed_section, 0., loop_ramp_time, 0., 1.), 2) * 200 );
-        out.addMessage("/loop/pregain/dB",   scale_clip(elapsed_section, 0., loop_ramp_time, 0., -12) );
+        out.addMessage("/loop/pregain/dB",   scale_clip(elapsed_section, 0., loop_ramp_time, -24., -12) );
     }
     else
     {
@@ -100,7 +100,7 @@ MapOSC cue_slow_sunburst_noise_start( cueArgs args )
 
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         0);
+        out.addMessage("/loop/pregain/dB",         -70);
         out.addMessage("/korg/pregain/dB",         -70);
 
         out.addMessage("/sine/pregain/dB",  -70);
