@@ -32,6 +32,11 @@ MapOSC cue_cam1_click(cueArgs args)
         b.addMessage("/thresh", 60 );
         b.addMessage("/invert", 0 );
 
+
+        b.addMessage("/enable/hull", 0);
+        b.addMessage("/enable/minrect", 0);
+        b.addMessage("/enable/contour", 0);
+
         b.addMessage("/use/camera",  1);
 
     }

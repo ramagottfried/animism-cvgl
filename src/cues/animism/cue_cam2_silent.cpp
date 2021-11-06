@@ -35,6 +35,10 @@ MapOSC cue_cam2_silent(cueArgs args)
         b.addMessage("/use/camera",  2);
         b.addMessage("/overlap/cameras", 0. );
 
+        b.addMessage("/enable/hull", 0);
+        b.addMessage("/enable/minrect", 0);
+        b.addMessage("/enable/contour", 0);
+
     }
 
     return out;

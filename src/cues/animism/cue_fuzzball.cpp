@@ -56,7 +56,8 @@ MapOSC cue_fuzzball( cueArgs args )
         out.addMessage("/loop/buffer/idx", 0);
 
         out.addMessage("/korg/maths/cycle", 1);
-
+        out.addMessage("/korg/hz1", 0);
+        out.addMessage("/korg/hz2", 0);
     }
 
     out.addMessage("/elapsed_section", elapsed_section );

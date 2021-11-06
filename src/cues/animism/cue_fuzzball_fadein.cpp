@@ -65,6 +65,8 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
         out.addMessage("/loop/retrigger/click", 1);
 
         out.addMessage("/korg/maths/cycle", 1);
+        out.addMessage("/korg/hz1", 0);
+        out.addMessage("/korg/hz2", 0);
 
     }
 

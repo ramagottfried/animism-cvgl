@@ -26,6 +26,11 @@ MapOSC cue_black_click(cueArgs args)
         b.addMessage("/overlap/flip", 0.);
         b.addMessage("/overlap/cameras", 0.);
 
+
+        b.addMessage("/enable/hull", 0);
+        b.addMessage("/enable/minrect", 0);
+        b.addMessage("/enable/contour", 0);
+
     }
 
     return out;

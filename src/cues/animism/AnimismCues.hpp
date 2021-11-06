@@ -62,7 +62,16 @@ MapOSC cue_wire_slug2(cueArgs args);
 MapOSC cue_wire_leaf_eating(cueArgs args);
 
 MapOSC cue_leaf_shell_nest(cueArgs args);
+MapOSC cue_leaf_shell_nest_m(cueArgs args);
+
 MapOSC cue_sync_wires(cueArgs args);
+MapOSC cue_sync_wires_m(cueArgs args);
+
+// similar to sync_wires, but less attack with movement
+// more envirnmental
+// maybe cut korg from this, and expand background layers
+
+MapOSC cue_leaf_in_slug(cueArgs args);
 
 MapOSC cue_thunderclap_field(cueArgs args);
 
@@ -156,43 +165,43 @@ public:
                &cue_cam1_click ); // what is the click?
 
         setCue("1A",
-               "wire slug on leaf, light from behind, raised up to be more depth angle",
-               "leaf-creature",
+               "wire slug on leaf",
+               "leaf comes alive",
                &cue_wire_slug );
 
         setCue("1B",
-               "wire slug on leaf, leaf-creatures nibble on head",
-               "back to wire material, then pan",
-               &cue_wire_leaf_eating );
+               "leaf-creature moves around slug (electronics out)",
+               "transition to shells",
+               &cue_cam2_silent );
 
         setCue("1C",
-               "wire slug, then pan to shells",
-               "leaves pushing shells",
+               "transition to shells *arrive before ensemble finishes*",
+               "leaf with shells",
                &cue_wire_slug2 );
 
         setCue("1D",
-               "leaves pushing shells",
-               "back to wires, (pan back while still on this cue)",
-               &cue_wire_slug  );
+               "leaf with shells, start pan back during long pause before next cue",
+               "pan back to wires, delayed until long chord",
+               &cue_cam2_silent  );
 
         setCue("1E",
-               "freeze, then wire slug on leaf",
+               "wire sounds, start in long chord",
                "sync moment with ensemble",
                &cue_wire_slug );
 
         setCue("1F",
                "sync moment with ensemble",
                "wire slug on leaf",
-               &cue_sync_wires ); // closer but not quite right yet
+               &cue_sync_wires_m ); // closer but not quite right yet
 
         setCue("1G",
                "wire slug on leaf",
-               "slug rips apart",
+               "leaves transform, pan down to goldleaf",
                &cue_wire_slug2 ); // back to 1B
 
         // climax part
         setCue("1H",
-               "slug rips apart",
+               "leaves transform, pan down to goldleaf",
                "cut to cam1, origami all white",
                &cue_wire_slug );
 
@@ -205,12 +214,12 @@ public:
         setCue("1J",
                "leaf surrouded by gel",
                "curling wave",
-               &cue_wire_slug ); // * new
+               &cue_sync_wires_m ); // * new scene, based on sync wires
 
         setCue("1K",
                "curling wave",
                "singing D",
-               &cue_wire_slug ); // * change or same as 1J
+               &cue_sync_wires_m ); // * change or same as 1J
 
         setCue("1L",
                "singing D",

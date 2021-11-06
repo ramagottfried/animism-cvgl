@@ -82,6 +82,10 @@ MapOSC cue_pond_edge( cueArgs args )
 
         out.addMessage("/sine/amp", 1);
 
+        out.addMessage("/korg/maths/cycle", 1);
+        out.addMessage("/korg/hz1", 0);
+        out.addMessage("/korg/hz2", 0);
+
     }
 
     double dpo_db = scale( sin(args.total_elapsed.count() * M_PI * 0.15), -1, 1, -20, 0);
