@@ -72,6 +72,7 @@ MapOSC cue_sync_wires_m(cueArgs args);
 // maybe cut korg from this, and expand background layers
 
 MapOSC cue_leaf_in_slug(cueArgs args);
+MapOSC cue_leaf_in_slug_end(cueArgs args);
 
 MapOSC cue_thunderclap_field(cueArgs args);
 
@@ -180,7 +181,7 @@ public:
                &cue_wire_slug2 );
 
         setCue("1D",
-               "leaf with shells, start pan back during long pause before next cue",
+               "flowing leaf with shells, start pan back during long pause before next cue",
                "pan back to wires, delayed until long chord",
                &cue_cam2_silent  );
 
@@ -212,14 +213,14 @@ public:
 // add field recording here?
 
         setCue("1J",
-               "leaf surrouded by gel",
+               "leaf stuck in bioplastic venus flytrap",
                "curling wave",
-               &cue_sync_wires_m ); // * new scene, based on sync wires
+               &cue_leaf_in_slug ); // * new scene, based on sync wires
 
         setCue("1K",
-               "curling wave",
+               "curling wave, then bioplastic gel eats leaf",
                "singing D",
-               &cue_sync_wires_m ); // * change or same as 1J
+               &cue_leaf_in_slug_end ); // * change or same as 1J
 
         setCue("1L",
                "singing D",

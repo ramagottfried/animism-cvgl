@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_leaf_in_slug(cueArgs args)
+MapOSC cue_leaf_in_slug_end(cueArgs args)
 {
 
     MapOSC out;
@@ -13,12 +13,27 @@ MapOSC cue_leaf_in_slug(cueArgs args)
     bool isNewCue = args.isNewCue;
     MapOSC& cache = args.cache;
 
+/*
+    double fadetime = 30;
+    if( elapsed_section <= fadetime )
+    {
+        // transition, to sped up version
+        out.addMessage("/dpo/pregain/dB",           scale(elapsed_section, 0., fadetime, -30., -60) );
+        out.addMessage("/dpo/sarah/pregain/dB",     scale(elapsed_section, 0., fadetime, -24., -60) );
+        out.addMessage("/gran/pregain/dB",          scale(elapsed_section, 0., fadetime, -12,   0) );
+    }
+*/
+
     if( isNewCue )
     {
-
-        out.addMessage("/dpo/pregain/dB",          -36);
-        out.addMessage("/dpo/sarah/pregain/dB",    -30);
+        out.addMessage("/dpo/pregain/dB",          -30);
+        out.addMessage("/dpo/sarah/pregain/dB",    -24);
         out.addMessage("/gran/pregain/dB",         -12);
+/*
+        out.addMessage("/dpo/pregain/dB",          -50);
+        out.addMessage("/dpo/sarah/pregain/dB",    -40);
+        out.addMessage("/gran/pregain/dB",         -6);
+  */
         out.addMessage("/korg/pregain/dB",         -60);
 
         out.addMessage("/fuzz/pregain/dB",         -100);
@@ -42,15 +57,15 @@ MapOSC cue_leaf_in_slug(cueArgs args)
         b.addMessage("/use/preprocess", 1);
         b.addMessage("/size/min", 0.001 );
         b.addMessage("/size/max", 0.01 );
-        b.addMessage("/thresh", 30 );
+        b.addMessage("/thresh", 10 );
 
         b.addMessage("/invert", 0 );
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 1);
-        b.addMessage("/contour/color", 0., 1, 0.334, 0.2 );
-       // b.addMessage("/contour_triangles/color", 0.821, 1, 0.785, 0.05 );
+        b.addMessage("/contour/color", 1., 0., 1, 0.2 );
+        //b.addMessage("/contour_triangles/color", 0.821, 1, 0.785, 0.05 );
 
      //   b.addMessage("/hull/color", 0., 0.83, 0.334, 1 );
 
@@ -117,12 +132,6 @@ MapOSC cue_leaf_in_slug(cueArgs args)
     // adaptive range
     double range_reset_s = 10;
     double prev_t = cache["/prev_t"].getFloat();
-    if( (elapsed_section - prev_t) >= range_reset_s )
-    {
-        cache.addMessage("/min", 1);
-        cache.addMessage("/max", 0);
-        cache.addMessage("/prev_t", elapsed_section);
-    }
 
 
     if( !isNewCue && data.ncontours > 0 )
