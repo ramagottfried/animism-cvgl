@@ -15,8 +15,8 @@ MapOSC cue_grass_fadeout( cueArgs args )
     double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
-        out.addMessage("/dpo/pregain/dB",  scale(elapsed_section, 0., fadetime, -24., -70));
-        out.addMessage("/dpo/sarah/pregain/dB",   scale(elapsed_section, 0., fadetime, 0., -70) );
+        out.addMessage("/dpo/pregain/dB",  scale(elapsed_section, 0., fadetime, -36., -70));
+        out.addMessage("/dpo/sarah/pregain/dB",   scale(elapsed_section, 0., fadetime, -24., -70) );
 
         out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., -6));
         out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 0., 12) );
@@ -34,8 +34,8 @@ MapOSC cue_grass_fadeout( cueArgs args )
 
     if( isNewCue )
     {
-        out.addMessage("/dpo/pregain/dB",          -24);
-        out.addMessage("/dpo/sarah/pregain/dB",    0);
+        out.addMessage("/dpo/pregain/dB",          -36);
+        out.addMessage("/dpo/sarah/pregain/dB",    -24);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);

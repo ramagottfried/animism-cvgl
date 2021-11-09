@@ -79,6 +79,7 @@ MapOSC cue_wire_slug(cueArgs args)
         out.addMessage("/gran/*/amp/val", 0);
         out.addMessage("/gran/*/buffer/scale", 3, 16 );
         out.addMessage("/gran/send/fuzz", 1);
+
         cache.addMessage("/position", 0);
         cache.addMessage("/direction", 1);
 
@@ -87,16 +88,19 @@ MapOSC cue_wire_slug(cueArgs args)
         cache.addMessage("/prev_t", elapsed_section);
 
     }
-
-    // adaptive range
-    double range_reset_s = 10;
-    double prev_t = cache["/prev_t"].getFloat();
-    if( (elapsed_section - prev_t) >= range_reset_s )
+    else
     {
-        cache.addMessage("/min", 1);
-        cache.addMessage("/max", 0);
-        cache.addMessage("/prev_t", elapsed_section);
+        // adaptive range
+        double range_reset_s = 10;
+        double prev_t = cache["/prev_t"].getFloat();
+        if( (elapsed_section - prev_t) >= range_reset_s )
+        {
+            cache.addMessage("/min", 1);
+            cache.addMessage("/max", 0);
+            cache.addMessage("/prev_t", elapsed_section);
+        }
     }
+
 
 
     if( !isNewCue && data.ncontours > 0 )

@@ -25,7 +25,7 @@ MapOSC cue_pond_edge( cueArgs args )
         b.addMessage("/noise_mix", 0.);
 
         out.addMessage("/dpo/pregain/dB",          -28);
-        out.addMessage("/loop/pregain/dB",         -8);
+        out.addMessage("/loop/pregain/dB",         -8); // LOOP INFO MISSING IN INIT CUE
         out.addMessage("/korg/pregain/dB",         0);
 
         out.addMessage("/dpo/sarah/pregain/dB",    -100);

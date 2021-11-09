@@ -44,6 +44,7 @@ MapOSC cue_heart_continued(cueArgs args)
         out.addMessage("/loop/start/ratio", 0);
         out.addMessage("/loop/transpose", 24);
         out.addMessage("/loop/buffer/idx", 0);
+        out.addMessage("/loop/send/fuzz", 0);
 
         out.addMessage("/gran/*/amp/val", 0);
 

@@ -66,7 +66,7 @@ MapOSC cue_branch_rips_and_falls(cueArgs args)
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
-        out.addMessage("/gran/pregain/dB",         0);
+        out.addMessage("/gran/pregain/dB",         -12);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
         out.addMessage("/loop/pregain/dB",         -100); // sudden cut

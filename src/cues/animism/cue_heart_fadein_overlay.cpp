@@ -44,6 +44,8 @@ MapOSC cue_heart_fadein_overlay(cueArgs args)
         out.addMessage("/loop/start/ratio", 0);
         out.addMessage("/loop/transpose", 24);
         out.addMessage("/loop/buffer/idx", 0);
+        out.addMessage("/loop/send/korg", 1);
+        out.addMessage("/loop/send/fuzz", 0);
 
         out.addMessage("/gran/*/amp/val", 0);
 

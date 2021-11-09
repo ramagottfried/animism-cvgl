@@ -45,6 +45,9 @@ MapOSC cue_heart_fadein(cueArgs args)
         out.addMessage("/loop/transpose", 24);
         out.addMessage("/loop/buffer/idx", 0);
 
+        out.addMessage("/loop/send/korg", 1);
+        out.addMessage("/loop/send/fuzz", 0);
+
         out.addMessage("/gran/*/amp/val", 0);
 
         out.addMessage("/gran/1/motor/val", 84.);
@@ -105,6 +108,8 @@ MapOSC cue_heart_fadein(cueArgs args)
             double avg_dist_x = sum_x / scalar;
             double avg_dist_y = sum_y / scalar;
 
+            out.addMessage("/data/avg_dist", avg_dist_x, avg_dist_y );
+
             double norm_mag_avg = mag_avg / 255. ;
             double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
 
@@ -137,7 +142,7 @@ MapOSC cue_heart_fadein(cueArgs args)
 
                 out.addMessage("/fuzz/drive/val", 0.5);
                 out.addMessage("/fuzz/fat/val", 0.);
-                out.addMessage("/fuzz/stab/val", clip( scale( abs(avg_dist_y), 0., 8,  0.3, 0.5), 0.3, 0.5) );
+                out.addMessage("/fuzz/stab/val", scale_clip( abs(avg_dist_y), 0., 8,  0.3, 0.5) );
                 out.addMessage("/fuzz/amp", norm_2 );
 
             }

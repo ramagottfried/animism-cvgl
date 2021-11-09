@@ -22,8 +22,9 @@ MapOSC cue_moon_hands(cueArgs args)
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
-        out.addMessage("/fuzz/pregain/dB",         -12);
+        out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
+
         out.addMessage("/korg/pregain/dB",         0);
 
         b.addMessage("/video/black",  0);
@@ -31,7 +32,7 @@ MapOSC cue_moon_hands(cueArgs args)
         b.addMessage("/use/camera",  1);
         b.addMessage("/overlap/cameras", 0.0 );
 
-        b.addMessage("/enable/hull", 0);
+        b.addMessage("/enable/hull", 1);
         b.addMessage("/hull/color", 1, 0, 1., 1 );
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 0);
@@ -44,7 +45,7 @@ MapOSC cue_moon_hands(cueArgs args)
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 60 );
+        b.addMessage("/thresh", 100 );
         b.addMessage("/invert", 0 );
 
         out.addMessage("/loop/amp", 1);
@@ -96,11 +97,11 @@ MapOSC cue_moon_hands(cueArgs args)
         out.addMessage("/korg/spat/1/az", x_ctr - 5);
         out.addMessage("/korg/spat/2/az", x_ctr + 5);
 
-        out.addMessage("/korg/amp", 1  );
+        out.addMessage("/korg/amp", 1 );
         //out.addMessage("/korg/hz1", scale_clip(normed, 0., 1., 0.5,  -0.3));
         //out.addMessage("/korg/hz2", scale_clip(normed, 0., 1., 0.6, -0.4));
 
-        out.addMessage("/korg/maths/speed/val", scale(normed, 0., 1., -0.1, 0.1));
+        out.addMessage("/korg/maths/speed/val", scale(normed, 0., 1., -0.1, 1));
         out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
         out.addMessage("/korg/maths/offset/val", scale(normed, 0., 1.,  0.2, -0.2 ));
 

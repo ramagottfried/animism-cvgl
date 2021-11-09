@@ -158,12 +158,12 @@ public:
         setCue("0A",
                "start black click",
                "white screen on cam 1",
-               &cue_black_click ); // what is the click?
+               &cue_black_click ); // what is the click? ernst, but also add a click in the elctronics? could be fun
 
         setCue("0B",
                "white + click (cam 1)",
                "wire slug on leaf (cam 2)",
-               &cue_cam1_click ); // what is the click?
+               &cue_cam1_click ); // what is the click? ernst
 
         setCue("1A",
                "wire slug on leaf",
@@ -251,10 +251,14 @@ public:
                &cue_fog_hands  ); // arne fade in electronics maybe
 
         // strings go into harmonics + oboe pedal gliss
+
+        // can probably just cut this and all repeatin cues from the electronics, and then tell chatschatur which ones to cue us on
+        /*
         setCue("3C",
                "fog-hands continued (strings & oboe)",
                "cam 1, origami",
                &cue_fog_hands );
+        */
 
         // cuts to cam 1, brass solo
         // add fuzz to brass here?
@@ -262,19 +266,21 @@ public:
         // or none?
 
         setCue("3D",
-               "brass section (+ field rec?), cam1 white -> origami -> bioplastic skin / becoming mirrored -> dome thread",
+               "brass section (+ field rec?), cam1 white -> origami -> bioplastic skin / becoming mirrored -> string creature",
                "percussion enters",
                &cue_origami_bioplastic_mirror ); // transition to double image        
 
         setCue("3E",
-               "dome thread (with tuba and 808)",
+               "string creature (with tuba and 808)",
                "transition to heartbeat",
                &cue_string_creature );
-
+/*
         setCue("3F",
                "dome thread (with tuba and 808), transitioning to heartbeat",
                "heartbeat, scene 4",
-               &cue_string_creature );
+               &cue_string_creature ); // no change in electronics? then cut this cue
+*/
+
     }
 
     void setScene4()
@@ -291,9 +297,9 @@ public:
 
         setCue("4C",
                "heart overlay cam 1 fades in",
-               "heart",
+               "desync -> lungs",
                &cue_heart_fadein_overlay );
-
+/*
         setCue("4D",
                "heart",
                "heart",
@@ -303,17 +309,18 @@ public:
                "heart",
                "heart",
                &cue_heart_continued );
+*/
 
         setCue("4F",
                "desync -> lungs",
-               "lungs",
+               "landscape, scene 5, holding breath",
                &cue_lungs );
-
+/*
         setCue("4G",
                "lungs",
                "landscape, scene 5, holding breath",
                &cue_lungs );
-
+*/
 
     }
 
@@ -335,7 +342,7 @@ public:
         setCue("5B_b",
                "fuzzball fade before grass",
                "grass creature",
-               &cue_fuzzball_fadeout );
+               &cue_fuzzball_fadeout ); // maybe combine the fade out with the fade in of the grass into one cue
 
         setCue("5C",
                "grass creature",
@@ -368,15 +375,15 @@ public:
                &cue_burdock_roll_out ); // gran attack, mirror fades out
 
         setCue("5H",
-               "fuzzball climbs up to water",
-               "at water's edge",
+               "fuzzball climbs up to water, then camera continues to mirror on water",
+               "underwater",
                &cue_pond_edge ); // no change?
-
+/*
         setCue("5I",
                "at water's edge",
                "blur and dive underwater",
                &cue_pond_edge ); // no change?
-
+*/
         // with drones? maybe quiet noisy texture drone...
                 // respond to light on water?? not sure if this is possible with the camera angle
 
@@ -408,7 +415,7 @@ public:
 
 
         setCue("5N",
-               "(still near top of plant) actions in ensemble, field rec continues",
+               "branch rips off and falls, (still near top of plant) actions in ensemble, -? grain bugs",
                "frogs and other pond and forest creatures",
                &cue_branch_rips_and_falls );  // granular attack like antlers, then bring in fast traffic?
 
@@ -427,7 +434,7 @@ public:
                &cue_forest_loops ); // fast insect traffic becomes cars
 
         setCue("5P_b",
-               "fade in triangles, then shadow heartbeat",
+               "fade in triangles, then shadow heartbeat, pan down through triangles (triangles move eventually)",
                "slow spectral sunburst",
                &cue_forest_loops_triZ );
 
@@ -437,12 +444,12 @@ public:
                &cue_slow_sunburst );
 
         setCue("5Q_b",
-               "fade in mirror",
+               "fade in mirror, squeeze plant to make animals with mirror image",
                "mirror flow",
                &cue_slow_sunburst_mirror );
 
         setCue("5Q_c",
-               "mirror flow",
+               "mirror flow lumakey",
                "more flow, mirror fade out",
                &cue_slow_sunburst_mirror_flow );
 

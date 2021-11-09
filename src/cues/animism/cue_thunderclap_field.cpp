@@ -55,7 +55,7 @@ MapOSC cue_thunderclap_field(cueArgs args)
         trigger1.addMessage("/play", 1);
         trigger1.addMessage("/dur", -1);
         trigger1.addMessage("/rate", 0.75);
-        trigger1.addMessage("/amp", 1);
+        trigger1.addMessage("/amp", dbtoa(-12) );
         trigger1.addMessage("/buffer", 8);
 
         out.addMessage("/sample/multi",  trigger1);
@@ -66,8 +66,9 @@ MapOSC cue_thunderclap_field(cueArgs args)
     double fadetime = 30;
     if( elapsed_section <= fadetime )
     {
+        double phase = scale_clip(elapsed_section, 0., fadetime, 0., 1);
         // transition, to sped up version
-        out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, -6., 0) );
+        out.addMessage("/loop/pregain/dB",  scale( pow(phase, 2), 0., 1, -18., -12) );
         out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, 100., 0) );
     }
 

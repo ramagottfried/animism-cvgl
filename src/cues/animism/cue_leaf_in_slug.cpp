@@ -49,7 +49,7 @@ MapOSC cue_leaf_in_slug(cueArgs args)
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 1);
-        b.addMessage("/contour/color", 0., 1, 0.334, 0.2 );
+        b.addMessage("/contour/color", 0., 1, 0.334, 0.25 );
        // b.addMessage("/contour_triangles/color", 0.821, 1, 0.785, 0.05 );
 
      //   b.addMessage("/hull/color", 0., 0.83, 0.334, 1 );
@@ -113,17 +113,18 @@ MapOSC cue_leaf_in_slug(cueArgs args)
         cache.addMessage("/prev_t", elapsed_section);
 
     }
-
-    // adaptive range
-    double range_reset_s = 10;
-    double prev_t = cache["/prev_t"].getFloat();
-    if( (elapsed_section - prev_t) >= range_reset_s )
+    else
     {
-        cache.addMessage("/min", 1);
-        cache.addMessage("/max", 0);
-        cache.addMessage("/prev_t", elapsed_section);
+        // adaptive range
+        double range_reset_s = 1;
+        double prev_t = cache["/prev_t"].getFloat();
+        if( (elapsed_section - prev_t) >= range_reset_s )
+        {
+            cache.addMessage("/min", 1);
+            cache.addMessage("/max", 0);
+            cache.addMessage("/prev_t", elapsed_section);
+        }
     }
-
 
     if( !isNewCue && data.ncontours > 0 )
     {

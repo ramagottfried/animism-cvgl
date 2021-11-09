@@ -15,8 +15,8 @@ MapOSC cue_grass( cueArgs args )
     double fadetime = 10;
     if( elapsed_section <= fadetime )
     {
-        out.addMessage("/dpo/pregain/dB",       scale(elapsed_section, 0., fadetime, -70, -24) );
-        out.addMessage("/dpo/sarah/pregain/dB", scale(elapsed_section, 0., fadetime, -70, 0) );
+        out.addMessage("/dpo/pregain/dB",       scale(elapsed_section, 0., fadetime, -70, -36) );
+        out.addMessage("/dpo/sarah/pregain/dB", scale(elapsed_section, 0., fadetime, -70, -24) );
         out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime,  0, -70));
     }
 

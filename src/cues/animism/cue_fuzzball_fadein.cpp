@@ -15,7 +15,7 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
     //MapOSC& m_state_cache = args.cache;
     //cvglRandom& m_rand_generator = args.randGen;
 
-    double fadetime = 10;
+    double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
         // transition, to sped up version

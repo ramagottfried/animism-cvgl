@@ -69,7 +69,7 @@ MapOSC cue_forest_frogs( cueArgs args )
 
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
-        b.addMessage("/enable/contour", 1);
+        b.addMessage("/enable/contour", 0);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
       //  cout << "use camera" << 2 << endl;

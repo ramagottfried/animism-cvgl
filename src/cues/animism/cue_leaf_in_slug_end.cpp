@@ -64,8 +64,8 @@ MapOSC cue_leaf_in_slug_end(cueArgs args)
         b.addMessage("/enable/hull", 0);
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 1);
-        b.addMessage("/contour/color", 1., 0., 1, 0.2 );
-        //b.addMessage("/contour_triangles/color", 0.821, 1, 0.785, 0.05 );
+        b.addMessage("/contour/color", 1., 0., 1, 0.25 );
+        b.addMessage("/contour_triangles/color", 1., 0., 1, 0.125 );
 
      //   b.addMessage("/hull/color", 0., 0.83, 0.334, 1 );
 

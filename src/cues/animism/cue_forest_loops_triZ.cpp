@@ -62,11 +62,6 @@ MapOSC cue_forest_loops_triZ( cueArgs args )
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.2 );
 
 
-        b.addMessage("/enable/hull", 0);
-        b.addMessage("/enable/minrect", 1);
-        b.addMessage("/enable/contour", 1);
-
-
 
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/use/preprocess", 3);

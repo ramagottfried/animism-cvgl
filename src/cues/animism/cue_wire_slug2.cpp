@@ -87,15 +87,17 @@ MapOSC cue_wire_slug2(cueArgs args)
         cache.addMessage("/prev_t", elapsed_section);
 
     }
-
-    // adaptive range
-    double range_reset_s = 10;
-    double prev_t = cache["/prev_t"].getFloat();
-    if( (elapsed_section - prev_t) >= range_reset_s )
+    else
     {
-        cache.addMessage("/min", 1);
-        cache.addMessage("/max", 0);
-        cache.addMessage("/prev_t", elapsed_section);
+        // adaptive range
+        double range_reset_s = 10;
+        double prev_t = cache["/prev_t"].getFloat();
+        if( (elapsed_section - prev_t) >= range_reset_s )
+        {
+            cache.addMessage("/min", 1);
+            cache.addMessage("/max", 0);
+            cache.addMessage("/prev_t", elapsed_section);
+        }
     }
 
 
