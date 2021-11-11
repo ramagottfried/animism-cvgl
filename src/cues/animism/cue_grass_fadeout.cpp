@@ -12,7 +12,7 @@ MapOSC cue_grass_fadeout( cueArgs args )
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 
-    double fadetime = 20;
+    double fadetime = 0;
     if( elapsed_section <= fadetime )
     {
         out.addMessage("/dpo/pregain/dB",  scale(elapsed_section, 0., fadetime, -36., -70));
@@ -34,12 +34,12 @@ MapOSC cue_grass_fadeout( cueArgs args )
 
     if( isNewCue )
     {
-        out.addMessage("/dpo/pregain/dB",          -36);
-        out.addMessage("/dpo/sarah/pregain/dB",    -24);
+        out.addMessage("/dpo/pregain/dB",          -70);
+        out.addMessage("/dpo/sarah/pregain/dB",    -70);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
-        out.addMessage("/korg/pregain/dB",         -100);
+        out.addMessage("/korg/pregain/dB",         -0);
         out.addMessage("/spring/pregain/dB",       -100);
         out.addMessage("/sine/pregain/dB",         -100);
 
@@ -84,7 +84,7 @@ MapOSC cue_grass_fadeout( cueArgs args )
         out.addMessage("/loop/length/ms", -1);
         out.addMessage("/loop/retrigger/enable", 0);
         out.addMessage("/loop/start/ratio", 0);
-        out.addMessage("/loop/transpose", 0);
+        out.addMessage("/loop/transpose", 12);
         out.addMessage("/loop/buffer/idx", 0);
 
         out.addMessage("/korg/maths/cycle", 1);

@@ -54,6 +54,8 @@ MapOSC cue_string_creature(cueArgs args)
         out.addMessage("/gran/*/overlap/scale", 0.01, 0.8);
         out.addMessage("/gran/*/rate/scale", 15., 117.);
         out.addMessage("/gran/*/amp/val", 0);
+        out.addMessage("/gran/*/pan", 0);
+
         out.addMessage("/gran/*/buffer/scale", 3, 9 );
         out.addMessage("/gran/send/fuzz", 1);
         cache.addMessage("/position", 0);

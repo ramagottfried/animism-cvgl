@@ -15,15 +15,19 @@ MapOSC cue_slow_sunburst_mirror( cueArgs args )
     double fadetime = 20;
     if( elapsed_section <= fadetime )
     {
-        b.addMessage("/half_mirror/alpha", scale(elapsed_section, 0., fadetime, 0., 1.) );
+        b.addMessage("/half_mirror/alpha", scale_clip(elapsed_section, 0., fadetime, 0., 1.) );
+
+        b.addMessage("/big_triangle1/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime*0.5, 1., 0.)) );
+        b.addMessage("/big_triangle2/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime, 1., 0.)) );
+
     }
 
     if( isNewCue )
     {
 
         b.addMessage("/glitch_tri/alpha", 0);
-        b.addMessage("/big_triangle1/alpha", 0 );
-        b.addMessage("/big_triangle2/alpha", 0 );
+        b.addMessage("/big_triangle1/alpha", 1 );
+        b.addMessage("/big_triangle2/alpha", 1 );
         b.addMessage("/half_mirror/alpha", 0 );
 
         b.addMessage("/luma_mix", 0.);

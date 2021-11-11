@@ -3,7 +3,7 @@
 using namespace cvgl;
 using namespace Eigen;
 
-MapOSC cue_fuzzball( cueArgs args )
+MapOSC cue_slow_sunburst_fadeout_mirror( cueArgs args )
 {
 
     MapOSC out;
@@ -12,25 +12,38 @@ MapOSC cue_fuzzball( cueArgs args )
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 
-    //MapOSC& m_state_cache = args.cache;
-    //cvglRandom& m_rand_generator = args.randGen;
-
+    double fadetime = 20;
+    if( elapsed_section <= fadetime )
+    {
+        b.addMessage("/half_mirror/alpha", scale_clip(elapsed_section, 0., fadetime, 1., 0.) );
+    }
 
     if( isNewCue )
     {
+
+        b.addMessage("/glitch_tri/alpha", 0);
+        b.addMessage("/big_triangle1/alpha", 0);
+        b.addMessage("/big_triangle2/alpha", 0 );
+        b.addMessage("/half_mirror/alpha", 1 );
+
+        b.addMessage("/luma_mix", 0.);
+        b.addMessage("/flow_mix", 0.);
+        b.addMessage("/noise_mix", 0.);
 
         out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
 
-        out.addMessage("/loop/pregain/dB",         -8);
-        out.addMessage("/korg/pregain/dB",          0);
+        out.addMessage("/loop/pregain/dB",         -70);
+        out.addMessage("/korg/pregain/dB",         -70);
 
-        out.addMessage("/sine/pregain/dB",         -70);
+        out.addMessage("/sine/pregain/dB",  -70);
 
         b.addMessage("/video/black",  0);
+        b.addMessage("/use/preprocess",  3);
 
+        b.addMessage("/use/camera",  2);
 
         b.addMessage("/overlap/cameras", 0.);
         b.addMessage("/overlap/flip", 0.);
@@ -40,24 +53,20 @@ MapOSC cue_fuzzball( cueArgs args )
         b.addMessage("/enable/contour", 1);
         b.addMessage("/contour/color", 0.25, 0.5, 1., 0.125 );
 
-        b.addMessage("/use/camera",  1);
-        b.addMessage("/use/preprocess",  3);
+      //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 0.9 );
-        b.addMessage("/thresh", 21 );
+        b.addMessage("/thresh", 41 );
         b.addMessage("/invert", 0 );
 
         out.addMessage("/loop/length/ms", -1);
         out.addMessage("/loop/retrigger/enable", 0);
-        out.addMessage("/loop/start/ratio", 0.1); // ** updated to match fade in
-
-        out.addMessage("/loop/transpose", 12); // ***
-
+        out.addMessage("/loop/start/ratio", 0);
+        out.addMessage("/loop/transpose", 0);
         out.addMessage("/loop/buffer/idx", 0);
 
         out.addMessage("/korg/maths/cycle", 1);
-        out.addMessage("/korg/hz1", 0);
-        out.addMessage("/korg/hz2", 0);
+
     }
 
     out.addMessage("/elapsed_section", elapsed_section );
@@ -92,9 +101,6 @@ MapOSC cue_fuzzball( cueArgs args )
 
         }
 
-        if( sum_area == 0 )
-            throw std::runtime_error("sum_area 0");
-
         double norm_x = sum_area == 0 ? avg_x : avg_x / sum_area;
         out.addMessage("/korg/spat/1/az", 0);
         out.addMessage("/korg/spat/2/az", scale(norm_x, 0., 1., -90, 90) );
@@ -116,7 +122,7 @@ MapOSC cue_fuzzball( cueArgs args )
 
 
             double norm_mag_avg = mag_avg / 255. ;
-            double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 1000, 0., 1.);
+            double norm_2 = clip( pow( norm_mag_avg, exp(1.5)) * 100, 0., 1.);
 
             out.addMessage("/data/norm_mag_avg", norm_mag_avg);
 
@@ -125,7 +131,7 @@ MapOSC cue_fuzzball( cueArgs args )
             out.addMessage("/korg/slide/up", 5);
             out.addMessage("/korg/q1/val", 0.65 );
             out.addMessage("/korg/q2/val", 0.68 ); // q-drive now at 12:00
-            out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.5, 0.2) );
+            out.addMessage("/korg/maths/speed/val", scale(norm_2, 0., 1., -0.6, 0.2) );
             out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
             out.addMessage("/korg/maths/offset/val", scale(pow( norm_mag_avg, exp(-0.1)), 0., 1., 0.2, -0.3));
      }

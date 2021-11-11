@@ -40,7 +40,7 @@ MapOSC cue_slow_sunburst_mirror_flow( cueArgs args )
         b.addMessage("/glitch_tri/alpha", 0);
         b.addMessage("/big_triangle1/alpha", 0 );
         b.addMessage("/big_triangle2/alpha", 0 );
-        b.addMessage("/half_mirror/alpha", 1 );
+        b.addMessage("/half_mirror/alpha", 0 );
 
         b.addMessage("/luma_target", 0.24);
         b.addMessage("/luma_tol", 0.3);

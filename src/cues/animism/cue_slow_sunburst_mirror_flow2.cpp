@@ -17,11 +17,12 @@ MapOSC cue_slow_sunburst_mirror_flow2( cueArgs args )
     //cvglRandom& m_rand_generator = args.randGen;
 
     double fadetime = 20;
+ /*
     if( elapsed_section <= fadetime )
     {
         b.addMessage("/half_mirror/alpha", scale(elapsed_section, 0., fadetime, 1., 0)  );
     }
-
+*/
 
     double fadein =  scale_clip(elapsed_section, 0., fadetime, 0., 1.);
     double freq = scale( cos(total_elapsed * M_PI * 2 * 0.05 * fadein), -1., 1., 0.005, 0.003);
@@ -55,7 +56,7 @@ MapOSC cue_slow_sunburst_mirror_flow2( cueArgs args )
         b.addMessage("/glitch_tri/alpha", 0);
         b.addMessage("/big_triangle1/alpha", 0 );
         b.addMessage("/big_triangle2/alpha", 0 );
-        b.addMessage("/half_mirror/alpha", 1 );
+        b.addMessage("/half_mirror/alpha", 0 );
         b.addMessage("/vignette/xyr", 0.5, 0.5, 1);
 
 

@@ -42,7 +42,7 @@ MapOSC cue_sync_wires_m(cueArgs args)
         b.addMessage("/use/preprocess", 1);
         b.addMessage("/size/min", 0.001 );
         b.addMessage("/size/max", 0.01 );
-        b.addMessage("/thresh", 10 );
+        b.addMessage("/thresh", 40 );
 
         b.addMessage("/invert", 0 );
 

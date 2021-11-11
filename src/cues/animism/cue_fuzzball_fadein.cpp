@@ -16,11 +16,11 @@ MapOSC cue_fuzzball_fadein( cueArgs args )
     //cvglRandom& m_rand_generator = args.randGen;
 
     double fadetime = 20;
-    if( elapsed_section <= fadetime )
+    if( elapsed_section <= (fadetime+1) )
     {
         // transition, to sped up version
-        out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, -36., -8) );
-        out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime, -70., 0));
+        out.addMessage("/loop/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -36., -8) );
+        out.addMessage("/korg/pregain/dB",  scale_clip(elapsed_section, 0., fadetime, -70., 0));
        // out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, -12., 12) );
 
     }

@@ -117,8 +117,11 @@ MapOSC cue_forest_frogs( cueArgs args );
 MapOSC cue_forest_loops( cueArgs args );
 MapOSC cue_forest_loops_triZ( cueArgs args );
 
-MapOSC cue_slow_sunburst( cueArgs args ); // fade out tris
+
 MapOSC cue_slow_sunburst_mirror( cueArgs args ); // fade in mirror
+MapOSC cue_slow_sunburst_fadeout_mirror( cueArgs args );
+
+MapOSC cue_slow_sunburst( cueArgs args ); // fade out tris
 MapOSC cue_slow_sunburst_mirror_flow( cueArgs args ); // fade flow
 MapOSC cue_slow_sunburst_mirror_flow2( cueArgs args ); // fade out mirror and increase flow
 
@@ -198,7 +201,7 @@ public:
         setCue("1G",
                "wire slug on leaf",
                "leaves transform, pan down to goldleaf",
-               &cue_wire_slug2 ); // back to 1B
+               &cue_wire_slug ); // back to 1B
 
         // climax part
         setCue("1H",
@@ -348,12 +351,12 @@ public:
                "grass creature",
                "fuzzball continues on",
                &cue_grass ); // fade out field recording here?
+/*
 
         setCue("5D",
                "fuzzball continues on",
                "moonrise with birds",
                &cue_grass_fadeout ); // fade field recording back in ?
-
         setCue("5E",
                "moonrise with birds",
                "moonrise fadeout, fuzzball continues",
@@ -363,7 +366,7 @@ public:
                "moonrise fadeout, fuzzball continues",
                "antler creature",
                &cue_moon_hands_fadeout );
-
+*/
         setCue("5F",
                "antler creature",
                "burdock/corona children roll out",
@@ -417,37 +420,38 @@ public:
         setCue("5N",
                "branch rips off and falls, (still near top of plant) actions in ensemble, -? grain bugs",
                "frogs and other pond and forest creatures",
-               &cue_branch_rips_and_falls );  // granular attack like antlers, then bring in fast traffic?
-
+               &cue_branch_rips_and_falls );  // move fast on downbeat
+// can merge Q and N cues for electronics
         setCue("5O",
                "frogs and other pond and forest creatures",
                "natural sounds begin to loop",
                &cue_forest_frogs );             // or traffic bugs here?
 
 
-        // slowly fade in different types of mirror images?
+        // slowly fade in different types of mirror images?+
+
         // might work better than pure mirror fragments
         // could also pre-record this part and make hardcore forwards/backwards loops etc.
         setCue("5P",
                "natural sounds begin to loop",
-               "fade in triangles",
+               "loops, xfade to mirror",
                &cue_forest_loops ); // fast insect traffic becomes cars
 
         setCue("5P_b",
-               "fade in triangles, then shadow heartbeat, pan down through triangles (triangles move eventually)",
+               "loops, xfade to mirror",
                "slow spectral sunburst",
-               &cue_forest_loops_triZ );
+               &cue_slow_sunburst_mirror );
 
         setCue("5Q",
-               "slow spectral sunburst, fade out triangles",
-               "mirror",
-               &cue_slow_sunburst );
-
+               "slow spectral sunburst, fade out mirror",
+               "luma",
+               &cue_slow_sunburst_fadeout_mirror  ); //cue_slow_sunburst
+/*
         setCue("5Q_b",
                "fade in mirror, squeeze plant to make animals with mirror image",
                "mirror flow",
                &cue_slow_sunburst_mirror );
-
+*/
         setCue("5Q_c",
                "mirror flow lumakey",
                "more flow, mirror fade out",
