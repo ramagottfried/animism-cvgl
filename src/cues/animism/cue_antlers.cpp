@@ -48,6 +48,8 @@ MapOSC cue_antlers( cueArgs args )
         out.addMessage("/gran/*/amp/val", 0);
 
         out.addMessage("/dpo/pregain/dB",          -100);
+        out.addMessage("/dpo/sarah/pregain/dB",          -100);
+
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);

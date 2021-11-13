@@ -40,7 +40,7 @@ MapOSC cue_fog_hands(cueArgs args)
       //  cout << "use camera" << 2 << endl;
         b.addMessage("/size/min", 0.000 );
         b.addMessage("/size/max", 1 );
-        b.addMessage("/thresh", 30 );
+        b.addMessage("/thresh", 40 );
         b.addMessage("/invert", 0 );
 
         out.addMessage("/loop/amp", 1);
@@ -80,6 +80,33 @@ MapOSC cue_fog_hands(cueArgs args)
 
         double avg_x = data.centroid_x.mean();
 
+        double avg_y = data.centroid_y.mean();
+
+        double max_y = 0;
+        double max_x = 0;
+        for( const auto& rot_rec : data.minRect_vec )
+        {
+            auto rect = rot_rec.boundingRect2f();
+            double bottom_y = rect.y + abs(rect.height);
+            double left = rect.x;
+
+            if( bottom_y > max_y )
+            {
+                max_y = bottom_y;
+            }
+
+            if( left > max_x )
+                max_x = left;
+        }
+
+        if( max_y != 0 )
+            max_y = max_y / (data.halfH * 2.);
+
+        if( max_x != 0 )
+            max_x = max_x / (data.halfW * 2.);
+
+//       cout << min_y << endl;
+
         double x_range = data.centroid_x.maxCoeff() - data.centroid_x.minCoeff();
         double y_range = data.centroid_y.maxCoeff() - data.centroid_y.minCoeff();
         double xy_area = x_range * y_range;
@@ -98,14 +125,16 @@ MapOSC cue_fog_hands(cueArgs args)
         out.addMessage("/korg/spat/1/az", x_ctr - 5);
         out.addMessage("/korg/spat/2/az", x_ctr + 5);
 
-        out.addMessage("/korg/amp", sin( pow(normed, 0.5) * M_PI)  );
+        out.addMessage("/korg/amp", pow( normed, 2)  );
         out.addMessage("/korg/hz1", scale_clip( sum_area, 0., 1., -0.8,  -0.3));
-        out.addMessage("/korg/hz2", scale_clip( sin( pow(normed, 0.5) * M_PI), 0., 1., 0.3,  0.8)); // mainly hp here, since there isn't much low end freq in loop
+        out.addMessage("/korg/hz2", scale_clip( ( pow((max_x+normed)/2, 0.5) ), 0., 1., 0.3,  0.8)); // mainly hp here, since there isn't much low end freq in loop
 
       //  out.addMessage("/korg/maths/speed", scale( sin( pow(defectSum, 0.25) * M_PI), 0., 1., 0., -0.25));
 //        out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-        out.addMessage("/korg/maths/offset", scale( sin( pow(normed, 1) * M_PI), 0., 1.,  -1., 1 ));
-        out.addMessage("/loop/transpose", scale(pow(defectSum, 0.25), 0., 1.,  222, 0. ));
+        out.addMessage("/korg/maths/offset", scale( pow( sin( (max_x+normed) * 0.5 * M_PI), 2), 0., 1.,  -1., 1 ));
+        out.addMessage("/loop/transpose", scale( 0.9 * (( pow(max_y, 2) + normed) / 2.), 0., 1.,  322, 0. ));
+
+        //cout << (0.5 * (max_y+normed)) << endl;
 
     }
     else

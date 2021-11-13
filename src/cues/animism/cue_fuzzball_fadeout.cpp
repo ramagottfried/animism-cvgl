@@ -19,12 +19,12 @@ MapOSC cue_fuzzball_fadeout( cueArgs args )
     if( elapsed_section <= fadetime )
     {
         // transition, to sped up version
+
         out.addMessage("/loop/pregain/dB",  scale(elapsed_section, 0., fadetime, -8, -70) );
     //    out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime,  0, -70));
        // out.addMessage("/loop/transpose",   scale(elapsed_section, 0., fadetime, -12., 12) );
 
     }
-
     if( isNewCue )
     {
 

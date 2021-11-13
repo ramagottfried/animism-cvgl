@@ -336,17 +336,17 @@ public:
                "holding breath, fuzzball fade in with field rec",
                "fuzzball",
                &cue_fuzzball_fadein );
-
+/*
         setCue("5B",
                "fuzzball",
                "fade before grass",
                &cue_fuzzball );
 
-        setCue("5B_b",
+        setCue("5B",
                "fuzzball fade before grass",
                "grass creature",
                &cue_fuzzball_fadeout ); // maybe combine the fade out with the fade in of the grass into one cue
-
+*/
         setCue("5C",
                "grass creature",
                "fuzzball continues on",

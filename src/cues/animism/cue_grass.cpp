@@ -12,23 +12,24 @@ MapOSC cue_grass( cueArgs args )
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 
-    double fadetime = 10;
-    if( elapsed_section <= fadetime )
+    double grassFadein = 10;
+
+    if( elapsed_section <= (grassFadein + 1) )
     {
-        out.addMessage("/dpo/pregain/dB",       scale(elapsed_section, 0., fadetime, -70, -36) );
-        out.addMessage("/dpo/sarah/pregain/dB", scale(elapsed_section, 0., fadetime, -70, -24) );
-        out.addMessage("/korg/pregain/dB",  scale(elapsed_section, 0., fadetime,  0, -70));
+        out.addMessage("/loop/pregain/dB",      scale(elapsed_section, 0, grassFadein, -8, -70) );
+        out.addMessage("/dpo/pregain/dB",       scale(elapsed_section, 0, grassFadein, -70, -36) );
+        out.addMessage("/dpo/sarah/pregain/dB", scale(elapsed_section, 0, grassFadein, -70, -24) );
     }
 
 
     if( isNewCue )
     {
-        out.addMessage("/dpo/pregain/dB",          -24);
+        out.addMessage("/dpo/pregain/dB",          -100);
         out.addMessage("/dpo/sarah/pregain/dB",    -100);
         out.addMessage("/gran/pregain/dB",         -100);
         out.addMessage("/fuzz/pregain/dB",         -100);
-        out.addMessage("/loop/pregain/dB",         -100);
-        out.addMessage("/korg/pregain/dB",         -100);
+        out.addMessage("/loop/pregain/dB",         -8);
+        out.addMessage("/korg/pregain/dB",         -70);
         out.addMessage("/spring/pregain/dB",       -100);
         out.addMessage("/sine/pregain/dB",         -100);
 
@@ -102,7 +103,7 @@ MapOSC cue_grass( cueArgs args )
 
         // adaptive range
 
-        double range_reset_s = 10;
+        double range_reset_s = 2;
 
         double area_sum = data.contour_area.sum();
         double dist_sum = data.delta_centroid_dist.sum();

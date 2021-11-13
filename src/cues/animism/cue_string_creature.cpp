@@ -152,7 +152,7 @@ MapOSC cue_string_creature(cueArgs args)
             out.addMessage("/gran/1/position", pos, 100 );
             out.addMessage("/gran/3/position", pos, 100 );
 
-            double thresh = 0.3;
+            double thresh = 0.4;
             if( adaptive_norm_mag_avg > thresh )
             {
                 out.addMessage("/gran/3/amp/val", adaptive_norm_mag_avg, 20);
@@ -176,10 +176,10 @@ MapOSC cue_string_creature(cueArgs args)
 //                    out.addMessage("/gran/1/amp/val", norm_2, 20);
             }
 
-            out.addMessage("/gran/1/amp/val", adaptive_norm_mag_avg, 20);
-            out.addMessage("/gran/1/rate/val", scale(adaptive_norm_mag_avg, 0., 1., 4, 0.1) );
+            out.addMessage("/gran/1/amp/val", sin( adaptive_norm_mag_avg * M_PI), 20);
+            out.addMessage("/gran/1/rate/val", scale(adaptive_norm_mag_avg, 0., 1., 4, 0.5) );
             out.addMessage("/gran/1/buffer/val", 0 );
-            out.addMessage("/gran/1/overlap/val", scale(adaptive_norm_mag_avg, 0., 1., 1, 2));
+            out.addMessage("/gran/1/overlap/val", scale(adaptive_norm_mag_avg, 0., 1., 1, 5));
             out.addMessage("/gran/1/motor/val", scale(adaptive_norm_mag_avg, 0., 1., 20, 200));
 
 
