@@ -131,8 +131,8 @@ MapOSC cue_fog_hands(cueArgs args)
 
       //  out.addMessage("/korg/maths/speed", scale( sin( pow(defectSum, 0.25) * M_PI), 0., 1., 0., -0.25));
 //        out.addMessage("/korg/maths/speed/smooth", 100 ); // adjusted for 32 vector size in max
-        out.addMessage("/korg/maths/offset", scale( pow( sin( (max_x+normed) * 0.5 * M_PI), 2), 0., 1.,  -1., 1 ));
-        out.addMessage("/loop/transpose", scale( 0.9 * (( pow(max_y, 2) + normed) / 2.), 0., 1.,  322, 0. ));
+        out.addMessage("/korg/maths/offset", scale( pow( sin( ( sin(max_x * M_PI) + normed) * 0.5 * M_PI), 2), 0., 1.,  -1., 1 ));
+        out.addMessage("/loop/transpose", scale( pow((max_y*0.3 + normed*0.6 + defectSum*0.1), 2), 0., 1.,  500, -100 ));
 
         //cout << (0.5 * (max_y+normed)) << endl;
 

@@ -93,7 +93,7 @@ int main( void )
 
     app.context.flip(1,0);
 
-    // main GL loop`
+    // main GL loop
     while( !app.context.shouldClose() )
     {
         app.draw();
