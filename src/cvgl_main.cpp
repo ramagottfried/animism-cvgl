@@ -27,8 +27,6 @@ int main( void )
         bm_cam.setProcessFrameCallback( [&app](cv::UMat& mat) { app.processFrame(mat, 1); } );
         app.context.setupWindow( bm_cam.getWidth(), bm_cam.getHeight() );
         bm_cam.start();
-
-
     }
 
     if( bm_cam2.hasCamera() )

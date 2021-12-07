@@ -161,6 +161,8 @@ public:
         glBindTexture(GL_TEXTURE_2D, tex_id);
     }
 
+    inline GLFWwindow* getWindow(){ return m_window; }
+
 private:
     
     GLFWwindow* m_window = nullptr;

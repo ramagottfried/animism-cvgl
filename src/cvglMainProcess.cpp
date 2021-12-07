@@ -688,6 +688,23 @@ void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
 /**
  *  called from GL thread
  */
+
+void cvglMainProcess::handleKeyInput()
+{
+    /*
+    if( glfwGetKey(context.getWindow(), GLFW_KEY_RIGHT ) == GLFW_PRESS )
+    {
+        for( auto& c : m_cues.getCueNames() )
+            cout << c << endl;
+
+    }
+    else if( glfwGetKey(context.getWindow(), GLFW_KEY_LEFT ) == GLFW_PRESS )
+    {
+
+    }
+    */
+}
+
 void cvglMainProcess::draw()
 {
     //cout << ">> draw LOCK" << endl;

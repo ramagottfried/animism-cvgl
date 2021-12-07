@@ -74,6 +74,7 @@ public:
 
     vector<string> getCueNames()
     {
+        /*
         vector<string> cuenames;
         for( auto& c : m_cueFunctions )
         {
@@ -81,12 +82,16 @@ public:
         }
 
         sort(cuenames.begin(), cuenames.end());
-        return cuenames;
+        */
+        return m_cuenames;
     }
 
     void setCue(string label, string descr, string next_cue, cueFunction_t fn)
     {
         m_cueFunctions.emplace(label, LabeledCue({ fn, descr, next_cue}) );
+
+        m_cuenames.emplace_back( label );
+
     }
 
 
@@ -97,6 +102,8 @@ protected:
     MapOSC m_state_cache;
     
     string m_cue = "0";
+
+    vector<string> m_cuenames;
 
     timepoint_t m_section_start = sys_clock_t::now();
     duration_t m_elapsed_section, total_elapsed;

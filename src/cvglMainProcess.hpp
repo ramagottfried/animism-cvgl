@@ -66,6 +66,9 @@ public:
     void drawShapes(cvglShader& shapeRenderShader);
     void initObjs();
     
+    void handleKeyInput();
+
+
     void initCues();
 
   //  vector<cvglVertex> genTriangle(int i, float nTriangles, float yrange, float overlap, float x_offset = 0 );
