@@ -17,8 +17,8 @@ MapOSC cue_underwater_deep( cueArgs args )
 
     if( isNewCue )
     {
-        b.addMessage("/contrast", 1.3); // *** increased contrast for eye ball
-        b.addMessage("/use/camera",  2);
+    //    b.addMessage("/contrast", 1.3); // *** increased contrast for eye ball
+        b.addMessage("/use/camera",  1);
 
 //        out.addMessage("/dpo/pregain/dB",          -36);
 //        out.addMessage("/dpo/sarah/pregain/dB",    -6);

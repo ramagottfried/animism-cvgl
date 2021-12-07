@@ -170,6 +170,21 @@ public:
 
         setCue("1A",
                "wire slug on leaf",
+               "leaf with shells overlay off",
+               &cue_wire_slug );
+
+        setCue("1B",
+               "leaf with shells overlay off",
+               "wire slug",
+               &cue_cam2_silent );
+
+        setCue("1C",
+               "wire slug on leaf",
+               "white - string - origami - bioplastic",
+               &cue_wire_slug );
+        /*
+        setCue("1A",
+               "wire slug on leaf",
                "leaf comes alive",
                &cue_wire_slug );
 
@@ -208,7 +223,7 @@ public:
                "leaves transform, pan down to goldleaf",
                "cut to cam1, origami all white",
                &cue_wire_slug );
-
+*/
         setCue("1I",
                "origami, overexposed & out of focus, gradually focus in, then pan down to goldleaf, then pan to thread on white paper",
                "cut to cam2, leaf surrouded by gel (prepare cam2 during brass/origami section!)",
@@ -219,12 +234,12 @@ public:
                "leaf stuck in bioplastic venus flytrap",
                "curling wave",
                &cue_leaf_in_slug ); // * new scene, based on sync wires
-
+/*
         setCue("1K",
                "curling wave, then bioplastic gel eats leaf",
                "singing D",
                &cue_leaf_in_slug_end ); // * change or same as 1J
-
+*/
         setCue("1L",
                "singing D",
                "next cue 2I, last sequence of scene 2 (thunderclap)",
@@ -433,17 +448,17 @@ public:
         // might work better than pure mirror fragments
         // could also pre-record this part and make hardcore forwards/backwards loops etc.
         setCue("5P",
-               "natural sounds begin to loop",
-               "loops, xfade to mirror",
+               "natural sounds begin to loop, fade in mirror, mirror stays until ending, first use for bugs, then in plants, slow expansion",
+               "fade out mirror",
                &cue_forest_loops ); // fast insect traffic becomes cars
-
+/*
         setCue("5P_b",
                "loops, xfade to mirror",
                "slow spectral sunburst",
                &cue_slow_sunburst_mirror );
-
+*/
         setCue("5Q",
-               "slow spectral sunburst, fade out mirror",
+               "fade out mirror",
                "luma",
                &cue_slow_sunburst_fadeout_mirror  ); //cue_slow_sunburst
 /*
@@ -453,24 +468,24 @@ public:
                &cue_slow_sunburst_mirror );
 */
         setCue("5Q_c",
-               "mirror flow lumakey",
-               "more flow, mirror fade out",
+               " flow lumakey",
+               "more flow",
                &cue_slow_sunburst_mirror_flow );
 
 
         setCue("5Q_d",
-               "more flow, mirror fade out",
-               "increasingly dissonant becoming white noise",
+               "more flow",
+               "becoming white noise",
                &cue_slow_sunburst_mirror_flow2 );
 
 
         setCue("5R",
-               "increasingly dissonant becoming white noise",
-               "distortion fuzz",
+               "becoming white noise",
+               "white noise",
                &cue_slow_sunburst_noise_start ); // fades in iceland again, speeding up to noise
 
         setCue("5S",
-               "distortion fuzz of ensemble becoming white noise",
+               "white noise",
                "screen vignette with trumpet solo",
                &cue_slow_sunburst_distortion );
 

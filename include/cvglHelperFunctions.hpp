@@ -227,4 +227,9 @@ inline double triangleWave(double t, double hz, double curve)
     return pow( abs( fmod(t, duration) - half_dur ) * scalar, curve);
 }
 
+inline double sinEnvelopeShape(double t, double xshape, double yshape)
+{
+    return pow( sin( M_PI * pow(t, exp(xshape)) ), exp(yshape));
+}
+
 }

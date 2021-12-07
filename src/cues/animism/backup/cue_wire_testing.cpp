@@ -13,26 +13,12 @@ MapOSC cue_wire_slug(cueArgs args)
     bool isNewCue = args.isNewCue;
     MapOSC& cache = args.cache;
 
-/*
-    double fadetime = 30;
-    if( elapsed_section <= fadetime )
-    {
-
-        out.addMessage("/dpo/pregain/dB",          scale(elapsed_section, 0., fadetime, -36., -60));
-        out.addMessage("/dpo/sarah/pregain/dB",    scale(elapsed_section, 0., fadetime, -24., -60));
-        out.addMessage("/gran/pregain/dB",         scale(elapsed_section, 0., fadetime, -0., -60));
-    }
-*/
     if( isNewCue )
     {
-/*
+
         out.addMessage("/dpo/pregain/dB",          -36);
-        out.addMessage("/dpo/sarah/pregain/dB",    -24);
-        out.addMessage("/gran/pregain/dB",         0);
-*/
-        out.addMessage("/dpo/pregain/dB",          -100);
-        out.addMessage("/dpo/sarah/pregain/dB",    -100);
-        out.addMessage("/gran/pregain/dB",         -100);
+        out.addMessage("/dpo/sarah/pregain/dB",    -10);
+        out.addMessage("/gran/pregain/dB",         -12);
         out.addMessage("/fuzz/pregain/dB",         -100);
         out.addMessage("/loop/pregain/dB",         -100);
         out.addMessage("/korg/pregain/dB",         -100);
@@ -63,7 +49,7 @@ MapOSC cue_wire_slug(cueArgs args)
         b.addMessage("/enable/minrect", 0);
         b.addMessage("/enable/contour", 2);
         b.addMessage("/contour/color", 0., 0.83, 0.334, 0.2 );
-        b.addMessage("/contour_triangles/color", 0.821, 1, 0.785, 0.6 );
+        b.addMessage("/contour_triangles/color", 0.821, 1, 0.785, 1 );
 
      //   b.addMessage("/hull/color", 0., 0.83, 0.334, 1 );
 
@@ -137,34 +123,36 @@ MapOSC cue_wire_slug(cueArgs args)
 
 
 
-        double area_sum_norm = scale(area_sum, min, max, 0., 1);
+        double area_sum_norm = scale_clip(area_sum, 0, 0.05, 0., 1);
+        out.addMessage("/area_sum", area_sum);
 
         double ease = easeInOutSine(area_sum_norm);
 
         double lfo1 = scale( sin( elapsed_section * M_PI * 0.12 ), -M_PI, M_PI, 0., 1.);
+        double lfo2 = scale( sin( elapsed_section * M_PI * 0.03), -M_PI, M_PI, 0., 1.);
+
         out.addMessage("/dpo/f1/val", floor(scale(ease, 0, 1, 125, 138)) );
 
-        double lfo2 = scale( sin( elapsed_section * M_PI * 0.03), -M_PI, M_PI, 0., 1.);
-        out.addMessage("/dpo/f2/val", floor(scale(ease, 0, 1, 138, 120)) );
+        out.addMessage("/dpo/f2/val", floor(scale(ease, 0, 1, 138, 125)) );
 
 
         out.addMessage("/dpo/index1/val", scale_clip(ease, 0, 1, 0.505, 0.516) ); //+ scale(area_sum, 0, 1, 0.2, 0.8), 20
 
         double amp_thresh = 0.25;
-        double dpo_amp = ease;//pow(area_sum_norm, 1.15);
+        double dpo_amp = sin( pow(area_sum_norm, 2) * M_PI);
        // if( dpo_amp < amp_thresh ){
-            out.addMessage("/dpo/sarah/amp", pow(dpo_amp, 2), 20 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
-            out.addMessage("/dpo/amp/val", pow(dpo_amp, 2), 20  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+            out.addMessage("/dpo/sarah/amp", sinEnvelopeShape(area_sum_norm, -0, 3), 20 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
+            out.addMessage("/dpo/amp/val", sinEnvelopeShape(area_sum_norm, 1.76, 0), 20  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
         /*} else {
             out.addMessage("/dpo/sarah/amp/val", (1 - dpo_amp) * amp_thresh, 20 ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
             out.addMessage("/dpo/amp/val", 0, 20  ); // area_sum * area_sum + scale(dist_sum, dmin, dmax, 0.00, 1 - area_sum)
         }
 */
 
-        out.addMessage("/dpo/vcf1_hz/val", -area_sum_norm );
+        out.addMessage("/dpo/vcf1_hz/val", -1); //-area_sum_norm );
         out.addMessage("/dpo/vcf2_hz/val", scale(area_sum_norm, 0, 1, 0.6, 0.8));
 
-        out.addMessage("/gran/1/amp", pow(dpo_amp, 1.5) , 100 ); //dpo_amp, 100
+        out.addMessage("/gran/1/amp", sinEnvelopeShape(area_sum_norm, 1, 2) , 100 ); //dpo_amp, 100 //  pow(dpo_amp, 1.5)
 
         double lfo3 = scale( fmod( elapsed_section, 20.), 0, 20, 0., 1);
         out.addMessage("/gran/1/position", scale( pow(area_sum_norm, 1.5), 0., 1, 0.04382, 0.14), 100 );
@@ -181,7 +169,6 @@ MapOSC cue_wire_slug(cueArgs args)
     }
 
 
-//    out.addMessage("/cache", cache);
 
     return out;
 }

@@ -20,10 +20,11 @@ MapOSC cue_forest_loops( cueArgs args )
     {
 
         out.addMessage("/gran/pregain/dB",  scale(elapsed_section, 0., fadetime, 0., -60));
+        b.addMessage("/half_mirror/alpha", scale_clip(elapsed_section, 0., fadetime, 0., 1.) );
 
       //  b.addMessage("/big_triangle/x", scale( cvgl::easeInOutSine( scale(elapsed_section, 0., fadetime, 0., 1.)),0., 1., -1, 0) );
-        b.addMessage("/big_triangle1/alpha", cvgl::easeInSine( scale(elapsed_section, 0., fadetime*0.5, 0., 1.)) );
-        b.addMessage("/big_triangle2/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime, 0., 1.)) );
+      //  b.addMessage("/big_triangle1/alpha", cvgl::easeInSine( scale(elapsed_section, 0., fadetime*0.5, 0., 1.)) );
+      //  b.addMessage("/big_triangle2/alpha", cvgl::easeInSine( scale_clip(elapsed_section, 0., fadetime, 0., 1.)) );
 
 
     }
