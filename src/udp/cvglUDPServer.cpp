@@ -162,7 +162,7 @@ void cvglUDPServer::resizeSendBuffer()
     
     int res = 0 ;
     socklen_t optlen = sizeof(int);
-    int val;
+    int val = 0;
     
     getsockopt(m_fd, SOL_SOCKET, SO_SNDBUF , &val, &optlen);
     if(res == -1)
@@ -310,7 +310,7 @@ void cvglUDPServer::close()
 void cvglUDPServer::loop()
 {
     
-    if( m_recv_fd < 0 )
+    if( m_recv_fd < 0 || m_max_buf_size == 0 )
     {
         printf("no open port!\n");
         return;
@@ -320,10 +320,11 @@ void cvglUDPServer::loop()
     
    // struct sockaddr_in from;
   //  socklen_t fromlen = sizeof(from);
-    
+
+    printf("starting loop (buffersize %ld)\n", m_max_buf_size);
+
     char buf[m_max_buf_size];
     
-    printf("starting loop \n");
 
     fd_set readfds;
     struct timeval timeout;
