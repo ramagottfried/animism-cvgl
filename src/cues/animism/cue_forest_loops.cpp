@@ -61,7 +61,7 @@ MapOSC cue_forest_loops( cueArgs args )
 
 
       //  cout << "use camera" << 2 << endl;
-        b.addMessage("/use/preprocess", 3);
+        b.addMessage("/use/preprocess", 1);
         b.addMessage("/size/min", 0.0001 );
         b.addMessage("/size/max", 0.9 );
         b.addMessage("/thresh", 10.0 );

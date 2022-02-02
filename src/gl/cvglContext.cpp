@@ -72,7 +72,6 @@ cvglContext::cvglContext()
         // throw exception here?
         return;
     }
-    
 }
 
 cvglContext::~cvglContext()

@@ -4,13 +4,36 @@
 #include "cvglDeckLinkCamera.hpp"
 #include "cvglVideoPlayer.hpp"
 
+cvglMainProcess app;
+
+
+void keyboardcallback(GLFWwindow *window, int key, int scanmode, int action, int mods)
+{
+    if( key == GLFW_KEY_RIGHT && action == GLFW_PRESS )
+    {
+        MapOSC b;
+        string next = app.cues().getNext();
+        cout << "right " << next << endl;
+
+        b.addMessage("/cue", next );
+        app.receivedBundle(b);
+    }
+    else if( key == GLFW_KEY_LEFT && action == GLFW_PRESS )
+    {
+        MapOSC b;
+        string prev = app.cues().getPrev();
+        cout << "left " << prev << endl;
+        b.addMessage("/cue", prev );
+        app.receivedBundle(b);
+    }
+}
+
 int main( void )
 {
     
     std::cout << "hardware_concurrency " << std::thread::hardware_concurrency() << std::endl;
     std::string sendIp = "192.168.100.1";
 
-    cvglMainProcess app;
     app.init(8888, 9999, sendIp);
 
     cvglDeckLinkCamera bm_cam(2);
@@ -24,7 +47,7 @@ int main( void )
     if( bm_cam.hasCamera() )
     {
         cout << "found blackmagic 2 " << endl;
-        bm_cam.setProcessFrameCallback( [&app](cv::UMat& mat) { app.processFrame(mat, 1); } );
+        bm_cam.setProcessFrameCallback( [](cv::UMat& mat) { app.processFrame(mat, 1); } );
         app.context.setupWindow( bm_cam.getWidth(), bm_cam.getHeight() );
         bm_cam.start();
     }
@@ -32,7 +55,7 @@ int main( void )
     if( bm_cam2.hasCamera() )
     {
        cout << "found blackmagic 4" << endl;
-       bm_cam2.setProcessFrameCallback( [&app](cv::UMat& mat) { app.processFrame(mat, 2); } );
+       bm_cam2.setProcessFrameCallback( [](cv::UMat& mat) { app.processFrame(mat, 2); } );
        bm_cam2.start();
 
        if( !bm_cam.hasCamera() )
@@ -45,7 +68,7 @@ int main( void )
     if( cvcam.hasCamera() )
     {
         cout << "doing cv camera " << endl;
-        cvcam.setProcessFrameCallback( [&app](cv::UMat& mat){ app.processFrame(mat, 3); } );
+        cvcam.setProcessFrameCallback( [](cv::UMat& mat){ app.processFrame(mat, 3); } );
         cvcam.start();
     }
 
@@ -82,7 +105,7 @@ int main( void )
     */
     // start UDP server
     app.start();
-    
+
     app.initObjs();
     
     app.initCues();
@@ -90,6 +113,8 @@ int main( void )
     cout << "starting draw loop " << endl;
 
     app.context.flip(1,0);
+
+    glfwSetKeyCallback(app.context.getWindow(), keyboardcallback );
 
     // main GL loop
     while( !app.context.shouldClose() )

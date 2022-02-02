@@ -94,6 +94,35 @@ public:
 
     }
 
+    inline string getCue(){ return m_cue; }
+
+    inline size_t getCueIDX(){
+        for( size_t i = 0; i < m_cuenames.size(); i++)
+        {
+            if( m_cuenames[i] == m_cue )
+                return i;
+        }
+        return -1;
+    }
+
+    inline string getNext()
+    {
+        size_t i = getCueIDX();
+        if( i >= 0 && i < (m_cuenames.size() - 2) ){
+            return m_cuenames[i+1];
+        }
+        else
+            return m_cue;
+    }
+
+    inline string getPrev()
+    {
+        size_t i = getCueIDX();
+        if( i > 0 && i < m_cuenames.size() - 1 )
+            return m_cuenames[i-1];
+        else
+            return m_cue;
+    }
 
 protected:
 

@@ -8,7 +8,7 @@ MapOSC cue_fuzzball( cueArgs args )
 
     MapOSC out;
     MapOSC &b = args.b;
-    AnalysisData data = args.data;
+    const AnalysisData &data = args.data;
     const double elapsed_section = args.elapsed_section.count();
     bool isNewCue = args.isNewCue;
 

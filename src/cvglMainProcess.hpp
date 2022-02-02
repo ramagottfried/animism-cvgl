@@ -22,6 +22,7 @@ public:
     
     // GL context
     cvglContext context;
+    void keyboard_cb(GLFWwindow *window, int key, int scanmode, int action, int mods);
 
     cvglShader screen_shader, luma_shader, flow_shader;
 
@@ -92,6 +93,7 @@ public:
 
     int loadShaders();
 
+    AnimismCues& cues(){ return m_cues; }
 
 private:
 

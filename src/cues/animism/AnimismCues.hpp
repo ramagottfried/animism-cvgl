@@ -138,7 +138,7 @@ public:
     AnimismCues()
     {
         // screen is setup by cam1 so init cue has to be cam 1
-        m_cue = "0B";
+        m_cue = "-1";
 
         setCue("-1",
                "start black",
@@ -232,7 +232,7 @@ public:
 
         setCue("1J",
                "leaf stuck in bioplastic venus flytrap",
-               "curling wave",
+               "singing D",
                &cue_leaf_in_slug ); // * new scene, based on sync wires
 /*
         setCue("1K",
@@ -349,7 +349,7 @@ public:
         // cam 1
         setCue("5A",
                "holding breath, fuzzball fade in with field rec",
-               "fuzzball",
+               "grass creature",
                &cue_fuzzball_fadein );
 /*
         setCue("5B",
@@ -364,7 +364,7 @@ public:
 */
         setCue("5C",
                "grass creature",
-               "fuzzball continues on",
+               "antler creature",
                &cue_grass ); // fade out field recording here?
 /*
 
@@ -406,20 +406,20 @@ public:
                 // respond to light on water?? not sure if this is possible with the camera angle
 
         setCue("5J",
-               "underwater, paste white dots and arrow",
+               "underwater, paste white dots and arrow (high sine waves)",
                "in the deep black",
                &cue_underwater );
 
         // cut to cam2 or prerec for floating bright eye
         // shift pitches a little here
         setCue("5K",
-               "in the deep black",
+               "in the deep black (low sine waves)",
                "floating fish eye blinks",
                &cue_underwater_deep );
         // sink sinewaves to low drones, hold for a while, and gradually fade out (over 30"?)
 
         setCue("5L",
-               "floating fish eye blinks",
+               "floating fish eye blinks (sine waves off)",
                "descend into the forest",
                &cue_floating_fisheye_blinks );
         // cut low sine drones
@@ -470,13 +470,13 @@ public:
         setCue("5Q_c",
                " flow lumakey",
                "more flow",
-               &cue_slow_sunburst_mirror_flow );
+               &cue_slow_sunburst_mirror_flow ); // now removed mirror
 
 
         setCue("5Q_d",
                "more flow",
                "becoming white noise",
-               &cue_slow_sunburst_mirror_flow2 );
+               &cue_slow_sunburst_mirror_flow2 ); // now removed mirror
 
 
         setCue("5R",
@@ -487,12 +487,12 @@ public:
         setCue("5S",
                "white noise",
                "screen vignette with trumpet solo",
-               &cue_slow_sunburst_distortion );
+               &cue_slow_sunburst_distortion ); // hold noise
 
         setCue("5T",
                "screen vignette with trumpet solo, circle falls to ground for screen drop, prepare for puppet performance (electronics end here)",
                "screen drop",
-               &cue_vignette_circle_drop );
+               &cue_vignette_circle_drop ); // audio noise cuts, then vignette
 
     }
 };

@@ -23,6 +23,7 @@ public:
     cvglContext();
     ~cvglContext();
     void resize_callback(int w, int h);
+
     void setupWindow(int width, int height );
     void flip( bool x, bool y);
 

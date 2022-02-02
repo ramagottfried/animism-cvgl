@@ -31,6 +31,8 @@ MapOSC cvglCues::procDataAndMixer(const AnalysisData& data, MapOSC& b)
     if( b.addressExists("/cue") )
     {
         string cue = b["/cue"].get<string>();
+        cout << "got cue message " << cue << " currently at " << m_cue << endl;
+
         if( cue != m_cue && m_cueFunctions.count(cue) > 0 )
         {
             cout << "setting new cue " << cue << " was " << m_cue << endl;

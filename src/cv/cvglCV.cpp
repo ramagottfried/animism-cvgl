@@ -932,14 +932,17 @@ void cvglCV::analysisThread(AnalysisData data)
         double dist_sum = 0;
 //        vector<Vec4i>::iterator d =  data.defects_vec[i].begin();
 //        vector<Vec4i>::iterator d_end =  data.defects_vec[i].end();
-        
+
+   //     std::cout << "defects " << data.defects_vec[i].size() << "\n";
+
         ArrayXd defect_x(data.defects_vec[i].size());
         ArrayXd defect_y(data.defects_vec[i].size());
         ArrayXd defect_depth(data.defects_vec[i].size());
         
        // cout << "rows " << data.contours[i].rows << " columns " <<  data.contours[i].cols << " depth " << (data.contours[i].depth() == CV_32S) << endl;
-        
-        for( size_t j = 0; j < data.defects_vec[i].size(); ++j )
+        size_t n_defects = data.defects_vec[i].size();
+
+        for( size_t j = 0; j < n_defects; ++j )
         {
             Vec4i& v = data.defects_vec[i][j];
             cv::Point2i * ptFar = data.contours[i].ptr<cv::Point2i>( v[2] );

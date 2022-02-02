@@ -370,6 +370,7 @@ void cvglMainProcess::processAnalysis(const AnalysisData& data)
 
 }
 
+
 void cvglMainProcess::setVignette(float x, float y, float r)
 {
     if( r > 0 )
@@ -600,10 +601,33 @@ void cvglMainProcess::initObjs()
     halfMirror->addVertex(cvglVertex({{ 1, -1, 0.0f},  {0.f, 1.0f} }));
     halfMirror->addVertex(cvglVertex({{ 0, -1, 0.0f},  {0.5f, 1.0f} }));
     halfMirror->addVertex(cvglVertex({{ 0,  1, 0.0f},  {0.5f, 0.0f} }));
-
     halfMirror->endObj();
     halfMirror->initStaticDraw();
 
+
+/*
+    halfMirror->newObj(GL_TRIANGLES);
+    halfMirror->addVertex(cvglVertex({{ 1,  0, 0.0f},  {1.f, 0.5f} }));
+    halfMirror->addVertex(cvglVertex({{ 1,  1, 0.0f},  {1.f, 1.f} }));
+    halfMirror->addVertex(cvglVertex({{ -1, 1, 0.0f},  {0.f, 1.f} }));
+    halfMirror->addVertex(cvglVertex({{ -1, 1, 0.0f},  {0.f, 1.f} }));
+    halfMirror->addVertex(cvglVertex({{ -1, 0, 0.0f},  {0.f, 0.5f} }));
+    halfMirror->addVertex(cvglVertex({{ 1,  0, 0.0f},  {1.f, 0.5f} }));
+    halfMirror->endObj();
+    halfMirror->initStaticDraw();
+*/
+
+/*
+    halfMirror->newObj(GL_TRIANGLES);
+    halfMirror->addVertex(cvglVertex({{ 1,  -1, 0.0f},  {1.f, 0.f} }));
+    halfMirror->addVertex(cvglVertex({{ 1,  0, 0.0f},  {1.f, 0.5f} }));
+    halfMirror->addVertex(cvglVertex({{ -1, 0, 0.0f},  {0.f, 0.5f} }));
+    halfMirror->addVertex(cvglVertex({{ -1, 0, 0.0f},  {0.f, 0.5f} }));
+    halfMirror->addVertex(cvglVertex({{ -1, -1, 0.0f},  {0.f, 0.f} }));
+    halfMirror->addVertex(cvglVertex({{ 1,  -1, 0.0f},  {1.f, 0.f} }));
+    halfMirror->endObj();
+    halfMirror->initStaticDraw();
+*/
 
     objects_initialized = true;
 
@@ -617,8 +641,10 @@ void cvglMainProcess::initObjs()
     glUniform1i(texLocation, 0);
     glUniform1i(prevTexLocation, 1);
 */
+
     cout << objects_initialized << endl;
 }
+
 
 
 void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
@@ -691,22 +717,22 @@ void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
 
 void cvglMainProcess::handleKeyInput()
 {
-    /*
+
     if( glfwGetKey(context.getWindow(), GLFW_KEY_RIGHT ) == GLFW_PRESS )
     {
-        for( auto& c : m_cues.getCueNames() )
-            cout << c << endl;
-
+        cout << m_cues.getNext() << endl;
     }
     else if( glfwGetKey(context.getWindow(), GLFW_KEY_LEFT ) == GLFW_PRESS )
     {
+        cout << m_cues.getPrev() << endl;
 
     }
-    */
+
 }
 
 void cvglMainProcess::draw()
 {
+
     //cout << ">> draw LOCK" << endl;
     // auto start = std::chrono::system_clock::now();
 
