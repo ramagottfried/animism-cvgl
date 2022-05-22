@@ -272,9 +272,30 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             noise_mix = val.getFloat();
         }
+        else if( addr == "/captureFrame")
+        {
+            if( val.size() == 2 )
+            {
+                captureFrame( val.get<int>(0), val.get<string>(1) );
+            }
+            else if( val.size() == 1 )
+            {
+                using namespace std::chrono;
+                milliseconds ms = duration_cast< milliseconds >(
+                    system_clock::now().time_since_epoch()
+                );
+
+                string filename = "./capture_" + to_string( ms.count() ) + ".png";
+                captureFrame( val.get<int>(0), filename );
+            }
+        }
     }
 }
 
+void cvglMainProcess::captureFrame( int camera_id, const string& filename )
+{
+    cv::imwrite(filename, frames[camera_id == 0 ? m_use_camera_id : camera_id]);
+}
 
 /**
  *  callback from camera thread

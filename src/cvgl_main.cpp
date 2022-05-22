@@ -26,11 +26,17 @@ void keyboardcallback(GLFWwindow *window, int key, int scanmode, int action, int
         b.addMessage("/cue", prev );
         app.receivedBundle(b);
     }
+    else if( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
+    {
+        MapOSC b;
+        b.addMessage("/captureFrame", 0 ); // default cam
+        app.receivedBundle(b);
+    }
 }
 
 int main( void )
 {
-    
+
     std::cout << "hardware_concurrency " << std::thread::hardware_concurrency() << std::endl;
     std::string sendIp = "192.168.100.1";
 
@@ -38,10 +44,10 @@ int main( void )
 
     cvglDeckLinkCamera bm_cam(2);
     cvglDeckLinkCamera bm_cam2(4); // 2 & 4
-    
+
     cout << "blackmagic " << bm_cam.hasCamera() << " checking cv cam" << endl;
     cvglCVCamera cvcam(0);
-   
+
     //cvglVideoPlayer cvcam("/home/rama/opencv/doc/js_tutorials/js_assets/cup.mp4");
 
     if( bm_cam.hasCamera() )
@@ -87,13 +93,13 @@ int main( void )
 
     }
 
-    
+
     if( !app.loadShaders() )
     {
         cout << "failed to load shaders" << endl;
         return -1;
     }
-    
+
   //  app.context.setupWindow( 1920, 1080 );
     /*
     std::string shader_path = "/home/rama/animism-cvgl/src/";
@@ -107,12 +113,12 @@ int main( void )
     app.start();
 
     app.initObjs();
-    
+
     app.initCues();
 
     cout << "starting draw loop " << endl;
 
-    app.context.flip(1,0);
+    app.context.flip(0,0);
 
     glfwSetKeyCallback(app.context.getWindow(), keyboardcallback );
 
@@ -121,12 +127,12 @@ int main( void )
     {
         app.draw();
     }
-    
+
   //  cvcam.stop();
 //    bm_cam.stop();
-    
+
     app.close();
-    
+
     return 0;
 }
 

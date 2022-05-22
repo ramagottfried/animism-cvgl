@@ -399,7 +399,7 @@ void cvglCV::preprocessDenseFlow()
     erode( src_blur_gray, src_blur_gray, m_er_element );
     dilate( src_blur_gray, src_blur_gray, m_di_element );
 
-
+    src_blur_gray = src_gray;
     if( m_prev_frame.empty() ){
         m_prev_frame = src_blur_gray.clone();
         threshold_output = UMat();
@@ -424,7 +424,7 @@ void cvglCV::preprocessDenseFlow()
         cartToPolar(flow_vec[0], flow_vec[1], dist, angle, true);
 
         // some scaling
-        dist.convertTo(dist, CV_32F, 10);
+        dist.convertTo(dist, CV_32F, 1. );
 
         // used for threshold
         dist.convertTo(mag_gray, CV_8U, 1.);
@@ -435,22 +435,54 @@ void cvglCV::preprocessDenseFlow()
 
         subtract(angle, 360.0f, angle, mask); // 0-1
 
-        /*
-        minMaxIdx(angle, &min, &max);
-        cout << "angle " << min << " " << max << endl;
-        cout << "angle type " << angle.type() << " dist type " <<  dist.type() << endl;
-        */
+        const double resize_scalar = 1.0 / m_resize;
 
+// working on creating a mask to use with Mask-RCNN
+// the contrast makes a big difference, so maybe it's worth setting up a real set as usual and tweaking the light, and then see if it still works when the background changes?
+        UMat dist_mask;
+        GaussianBlur(mag_gray, dist_mask, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
+        dilate( dist_mask, dist_mask, m_di_element );
+
+        threshold( dist_mask, dist_mask, 2, 255, cv::THRESH_BINARY );
+
+        vector<vector<Point> > contours;
+        findContours( dist_mask, contours, RETR_TREE, CHAIN_APPROX_SIMPLE );
+        vector<vector<Point> >hull( contours.size() );
+        for( size_t i = 0; i < contours.size(); i++ )
+        {
+            convexHull( contours[i], hull[i] );
+        }
+
+        RNG rng(12345);
+        UMat drawing = UMat::zeros( dist_mask.size(), CV_8UC3 );
+        for( size_t i = 0; i< contours.size(); i++ )
+        {
+            Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
+            drawContours( drawing, contours, (int)i, color );
+            drawContours( drawing, hull, (int)i, color );
+        }
+
+        cv::resize(drawing, drawing, cv::Size(), resize_scalar, resize_scalar);
+        cv::add(drawing, m_img, m_img);
+
+        /*
+        dilate( dist_mask, dist_mask, m_di_element );
+
+        cvtColor(dist_mask, dist_mask, COLOR_GRAY2RGB);
+       // add(m_img, dist_mask, m_img);
+        dist_mask.copyTo(m_img);
+*/
         // manually scale to 0-255
        // multiply(dist, 255., dist);
        // multiply(angle_scaled, 255., angle_scaled);
 
-/*
+
+        double min, max;
         minMaxIdx(dist, &min, &max);
         cout << "dist " << min << " " << max << endl;
         minMaxIdx(mag_gray, &min, &max);
         cout << "mag_gray " << min << " " << max << endl;
-*/
+/*
         vector<UMat> xy_dist = { angle, dist, flow_vec[0], flow_vec[1] };
 
         UMat merged_xy_dist;
@@ -459,8 +491,9 @@ void cvglCV::preprocessDenseFlow()
         merged_xy_dist.copyTo(src_color_sized);
         //merged_xy_dist.convertTo(src_color_sized, CV_8U);
 
-/*
 
+
+        // display
         vector<UMat> hsv_vec;
         hsv_vec.push_back(angle);
         hsv_vec.push_back(UMat::ones(angle.size(), angle.type()));
@@ -469,17 +502,16 @@ void cvglCV::preprocessDenseFlow()
         UMat hsv;
         merge(hsv_vec, hsv);
 
-        UMat img;
-        cvtColor(hsv, img, COLOR_HSV2BGR);
+        UMat flow_img;
+        cvtColor(hsv, flow_img, COLOR_HSV2BGR);
 
-        img.convertTo(img, CV_8UC3, 255);
+        flow_img.convertTo(flow_img, CV_8UC3, 255);
 
-        const double resize_scalar = 1.0 / m_resize;
 
-        cv::resize(img, img, cv::Size(), resize_scalar, resize_scalar);
-        img.copyTo(m_img);
+        cv::resize(flow_img, flow_img, cv::Size(), resize_scalar, resize_scalar);
+        cv::add(flow_img, m_img, m_img);
+        //img.copyTo();
 */
-
     }
 
 

@@ -70,6 +70,9 @@ public:
     void handleKeyInput();
 
 
+    void captureFrame( int camera_id = 1, const std::string& filename = "imageCap.png");
+
+
     void initCues();
 
   //  vector<cvglVertex> genTriangle(int i, float nTriangles, float yrange, float overlap, float x_offset = 0 );

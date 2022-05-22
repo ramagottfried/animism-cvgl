@@ -151,7 +151,7 @@ protected:
     cv::UMat m_img, m_prev_frame;
     cv::UMat src_color_sized, threshold_output, src_gray, src_blur_gray, sob, flow;
     
-    float m_resize = 0.5; // { (512. / 1920), (512. / 1080.) };
+    float m_resize = 0.75; // { (512. / 1920), (512. / 1080.) };
     
     bool m_invert = false;
     double m_thresh = 102;
