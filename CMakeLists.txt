@@ -8,7 +8,7 @@ set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
 
-
+set(WITH_BLACKMAGIC true )
 
 if( DEFINED WITH_BLACKMAGIC )
     # setup BlackMagic
