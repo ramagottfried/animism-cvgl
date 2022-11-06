@@ -122,7 +122,12 @@ int cvglDeckLinkCamera::blackmagicScan( int index )
         }
     }
     
+#if defined(__APPLE__)
+    CFStringRef name;
+#elif defined(__linux__)
     const char* name;
+#endif
+    
     m_deckLink->GetDisplayName(&name);
     //const char *cs = CFStringGetCStringPtr( name, kCFStringEncodingMacRoman ) ;
     cout << "device check : " << name << endl;
@@ -208,20 +213,21 @@ HRESULT STDMETHODCALLTYPE cvglDeckLinkCamera::QueryInterface (REFIID iid, LPVOID
 
 ULONG STDMETHODCALLTYPE cvglDeckLinkCamera::AddRef ()
 {
-    return AtomicIncrement(&m_refCount);
+//    return AtomicIncrement(&m_refCount);
+    return ++m_refCount;
 }
 
 ULONG STDMETHODCALLTYPE cvglDeckLinkCamera::Release ()
 {
-    INT32_UNSIGNED newRefValue = AtomicDecrement(&m_refCount);
-    
+//    INT32_UNSIGNED newRefValue = AtomicDecrement(&m_refCount);
+    ULONG newRefValue = --m_refCount;
+
     if (newRefValue == 0)
         ;
     //  delete this;
     
     return newRefValue;
 }
-
 
 struct FourCCNameMapping
 {
@@ -367,7 +373,7 @@ HRESULT cvglDeckLinkCamera::VideoInputFormatChanged (BMDVideoInputFormatChangedE
 
     }
 
-    std::cout << "unlocking with size " << m_width << " " << m_height << std::endl;
+    std::cout << "unlocking camera " << m_deckLink << " with size " << m_width << " " << m_height << std::endl;
 /*
     if( !m_width || !m_height )
     {
@@ -382,8 +388,7 @@ bail:
 
 
 
-HRESULT STDMETHODCALLTYPE cvglDeckLinkCamera::VideoInputFrameArrived (IDeckLinkVideoInputFrame* videoFrame,
-                                                              IDeckLinkAudioInputPacket* audioPacket )
+HRESULT STDMETHODCALLTYPE cvglDeckLinkCamera::VideoInputFrameArrived( IDeckLinkVideoInputFrame* videoFrame, IDeckLinkAudioInputPacket* audioPacket )
 {
     // std::cout << "new frame : " << videoFrame->GetWidth() << " " << videoFrame->GetHeight() << std::endl;
     
@@ -419,10 +424,10 @@ HRESULT STDMETHODCALLTYPE cvglDeckLinkCamera::VideoInputFrameArrived (IDeckLinkV
         /**
                 note: processFrameCallback may take ownership of Mat
          */
-        if( blackmagic && m_processFrameCallback )
-             m_thread_pool->enqueue([&](cv::UMat _data){ m_processFrameCallback(_data);}, std::move(mRGB));
+        if( blackmagic && m_processFrameCallback ){
+            m_thread_pool->enqueue([&](cv::UMat _data){ m_processFrameCallback(_data);}, std::move(mRGB));
             //m_processFrameCallback( mRGB );
-
+        }
            // m_thread_pool->enqueue([&](cv::Mat _data){ m_processFrameCallback(_data);}, std::move(mRGB));
            // m_processFrameCallback( mRGB );
 
