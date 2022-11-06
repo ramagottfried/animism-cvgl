@@ -54,6 +54,12 @@ message(STATUS "    version: ${OpenCV_VERSION}")
 message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    find_library(FoundationLib CoreFoundation)
+    list(APPEND LIB_LIST ${FoundationLib} )
+    message(STATUS "    include path: ${FoundationLib}")
+endif()
+
 find_package(Eigen3 REQUIRED)
 list(APPEND LIB_LIST Eigen3::Eigen)
 

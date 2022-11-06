@@ -158,6 +158,66 @@ MapOSC OSCAtom::newMap(){
 }
 
 
+template <typename T>
+T OSCAtom::get()
+{
+    if constexpr ( std::is_same<T, std::string>::value )
+    {
+        switch (type) {
+            case 's':
+                return str_val;
+            case 'f':
+                return std::to_string(f_val);
+            case 'd':
+                return std::to_string(d_val);
+            case 'i':
+                return std::to_string(i_val);
+            case 'h':
+                return std::to_string(l_val);
+            case 'c':
+                return std::to_string(c_val);
+            case 'b':
+                return std::to_string(b_val);
+            case OSC_BUNDLE_TYPETAG:
+               return std::string("#bundle");
+            default:
+                return std::string("unhandled type");
+        }
+    }
+    else if constexpr ( std::is_same<T, MapOSC>::value )
+    {
+        if (type == OSC_BUNDLE_TYPETAG )
+            return *map_val;
+
+        return newMap();
+
+    }
+    else
+    {
+        switch (type) {
+            case 'f':
+                return (T)f_val;
+            case 'd':
+                return (T)d_val;
+            case 'i':
+                return (T)i_val;
+            case 'h':
+                return (T)l_val;
+            case 'c':
+                return (T)c_val;
+            case 'b':
+                return (T)b_val;
+            case 's':
+            case OSC_BUNDLE_TYPETAG:
+                return (T)0;
+            default:
+                return (T)0;
+        }
+    }
+
+}
+
+
 size_t OSCAtom::getSizeInBytes()
 {
     switch ( type )
@@ -202,8 +262,6 @@ OSCAtomVector::OSCAtomVector( const OSCAtomVector & other )
         obj_vec.emplace_back( std::make_unique<OSCAtom>( *other.obj_vec[i] ) );
     }
 }
-
-
 
 
 /**

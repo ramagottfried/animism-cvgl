@@ -1,5 +1,8 @@
-﻿#include "opencv2/cudaoptflow.hpp"
+#ifdef WITH_CUDA
+#include "opencv2/cudaoptflow.hpp"
 #include "opencv2/cudaarithm.hpp"
+#endif
+
 #include "opencv2/video/tracking.hpp"
 
 #include "cvglCV.hpp"
