@@ -6,24 +6,33 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
-
 set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
 
-# setup BlackMagic
-#set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 11.7")
-set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 12.1")
-set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Linux" )
-set(DECKLINK_SDK_INCLUDE_DIR "${DECKLINK_SDK}/Linux/include" )
 
-#set(PLATFORM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Linux)
 
-set(BLACKMAGIC_PLATFORM_SOURCES
-            ${DECKLINK_SDK_INCLUDE_DIR}/DeckLinkAPIDispatch.cpp
-            ${DECKLINK_PLATFORM_INCLUDE}/platform.cpp
-)
+if( DEFINED WITH_BLACKMAGIC )
+    # setup BlackMagic
+    
+    set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 12.4")
 
-#${CMAKE_CURRENT_SOURCE_DIR}/Linux/platform.h
-#${CMAKE_CURRENT_SOURCE_DIR}/Linux/platform.cpp
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Linux" )
+        set(DECKLINK_SDK_INCLUDE_DIR "${DECKLINK_SDK}/Linux/include" )
+        set(BLACKMAGIC_PLATFORM_SOURCES
+                    ${DECKLINK_SDK_INCLUDE_DIR}/DeckLinkAPIDispatch.cpp
+                    ${DECKLINK_PLATFORM_INCLUDE}/platform.cpp
+        )
+    elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+        set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Mac" )
+        set(DECKLINK_SDK_INCLUDE_DIR "${DECKLINK_SDK}/Mac/include" )
+        set(BLACKMAGIC_PLATFORM_SOURCES
+                    ${DECKLINK_SDK_INCLUDE_DIR}/DeckLinkAPIDispatch.cpp
+                    ${DECKLINK_PLATFORM_INCLUDE}/platform.cpp
+        )
+    endif()
+    
+endif()
+
 
 list(APPEND LIB_LIST dl pthread) #${CMAKE_DL_LIBS}
 
@@ -50,7 +59,7 @@ list(APPEND LIB_LIST Eigen3::Eigen)
 
 message(STATUS "    eigen include path: ${Eigen3_INCLUDE_DIRS}")
 
-add_library(libcvgl STATIC
+list(APPEND SRCLIST
     src/mixer/cvglMixer.cpp
     src/camera/cvglCameraBase.cpp
     src/camera/cvglCVCamera.cpp
@@ -78,14 +87,27 @@ add_library(libcvgl STATIC
     src/utils/cvglRandom.cpp
     src/utils/cvglLookupFigure.cpp
     src/cues/cvglCues.cpp
-
     ${GLAD_DIR}/src/glad.c
-    ${BLACKMAGIC_PLATFORM_SOURCES}
 )
 
+if( DEFINED WITH_BLACKMAGIC )
+    list(APPEND SRCLIST
+        src/camera/cvglDeckLinkCamera.cpp
+        ${BLACKMAGIC_PLATFORM_SOURCES} 
+    )
+endif()
+
+add_library(libcvgl STATIC
+    ${SRCLIST}
+)
+
+if( DEFINED WITH_BLACKMAGIC )
+    target_include_directories(libcvgl PUBLIC ${DECKLINK_SDK_INCLUDE_DIR} PUBLIC ${DECKLINK_PLATFORM_INCLUDE})
+endif()
+
 target_include_directories(libcvgl PUBLIC ${GLAD_DIR}/include )
-target_include_directories(libcvgl PUBLIC ${DECKLINK_SDK_INCLUDE_DIR} PUBLIC ${DECKLINK_PLATFORM_INCLUDE})
 target_include_directories(libcvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+
 target_link_libraries(libcvgl ${LIB_LIST}  )
 
 list(APPEND LIB_LIST libcvgl)
@@ -96,8 +118,6 @@ file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 add_executable(cvgl
     ${RES_FILES}
     ${CUE_FILES}
-    src/animShader1.cpp
-    src/MirrorTriangles.cpp
     src/cvgl_main.cpp
     src/cvglMainProcess.cpp
 )
