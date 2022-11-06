@@ -5,7 +5,7 @@ using namespace std;
 
 cvglCVCamera::cvglCVCamera(int index)
 {
-    cap.open(index, cv::CAP_V4L2);
+    cap.open(index); // , cv::CAP_V4L2
     if(!cap.isOpened())  // check if we succeeded
     {
         return;

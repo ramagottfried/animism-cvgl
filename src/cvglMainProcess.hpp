@@ -6,8 +6,6 @@
 #include "cvglFramebuffer.hpp"
 #include "cvglShader.hpp"
 
-#include "animShader1.hpp"
-
 #include "cvglUDPServer.hpp"
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
@@ -25,8 +23,6 @@ public:
     void keyboard_cb(GLFWwindow *window, int key, int scanmode, int action, int mods);
 
     cvglShader screen_shader, luma_shader, flow_shader;
-
-    std::unique_ptr<animShader1> shader1;
 
     // globals
     
