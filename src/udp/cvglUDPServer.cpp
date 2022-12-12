@@ -224,7 +224,7 @@ cvglUDPServer::~cvglUDPServer()
     
 }
 
-void cvglUDPServer::sendBundle( MapOSC & b )
+void cvglUDPServer::sendBundle( const MapOSC & b )
 {
     if( m_fd < 0 )
         return;

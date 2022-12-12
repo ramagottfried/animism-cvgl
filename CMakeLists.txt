@@ -4,13 +4,13 @@ project(cvgl)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+set(WITH_BLACKMAGIC True )
+
+# set(WITH_CUDA True ) 
+# << no cuda on mac...
 
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
-set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
-
-set(WITH_BLACKMAGIC true )
 
 if( DEFINED WITH_BLACKMAGIC )
     # setup BlackMagic
@@ -35,9 +35,7 @@ if( DEFINED WITH_BLACKMAGIC )
     
 endif()
 
-
 list(APPEND LIB_LIST dl pthread) #${CMAKE_DL_LIBS}
-
 
 # setup OpenGL / GLFW / GLAD / OPENCV
 set(GLAD_DIR "${PROJECT_SOURCE_DIR}/../glad")
@@ -120,13 +118,18 @@ target_link_libraries(libcvgl ${LIB_LIST}  )
 
 list(APPEND LIB_LIST libcvgl)
 
-file(GLOB RES_FILES src/*.fs src/*.vs )
+
+# ANIMISM build
+
+set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
+
+file(GLOB SHADER_FILES src/*.fs src/*.vs ) # << move this to shader folder...
 file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 
 add_executable(cvgl
-    ${RES_FILES}
+    ${SHADER_FILES}
     ${CUE_FILES}
-    src/cvgl_main.cpp
+    src/cvgl_main.cpp # << should not put this in the main src dir
     src/cvglMainProcess.cpp
 )
 
@@ -134,17 +137,33 @@ target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
 target_include_directories(cvgl PUBLIC ${CUE_DIR})
 
-#target_include_directories(cvgl PRIVATE ${GLAD_DIR}/include )
-#target_include_directories(cvgl PRIVATE ${DECKLINK_SDK_INCLUDE_DIR} PRIVATE ${DECKLINK_PLATFORM_INCLUDE})
+target_link_libraries(cvgl libcvgl)
+
+message("CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
+message("CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
+message("Shders found ${SHADER_FILES}")
+message("Cues found ${CUE_FILES}")
+
+
+# basic-ex setup
+
+add_executable(basic_app
+    cvgl-basic/basicMainProcess.cpp
+    cvgl-basic/cvgl-basic_main.cpp
+)
+
+target_include_directories(basic_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_include_directories(basic_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
+target_include_directories(basic_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cvgl-basic)
+
+target_link_libraries(basic_app libcvgl)
+
+
+
 
 # this is a funny idea, maybe useful someday, but for now too much work
 #target_compile_definitions(cvgl PRIVATE "CUE_FILE_NAMES=\"yo\"")
 #target_compile_definitions(main PRIVATE "MY_FILE_PATH=\"${MY_FILE_PATH}\"")
 
-target_link_libraries(cvgl libcvgl)
-
-message("CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
-message("CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
-message("Shders found ${RES_FILES}")
-message("Cues found ${CUE_FILES}")
-
+# also potentially to log file path for loading shaders / future lua files?
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")

@@ -10,7 +10,9 @@ using namespace cv;
 void basicMainProcess::initCues()
 {
     MapOSC bndl;
-    bndl.addMessage("/init/cueNames", m_cues.getCueNames() );
+    
+    // bndl.addMessage("/init/cueNames", m_cues.getCueNames() );
+    
     sendBundle(bndl);
 }
 
@@ -31,8 +33,9 @@ void basicMainProcess::receivedBundle( MapOSC & b )
     // >>>> process cue function is called from UDP and CV threads -- causng some problems now
     // >>>> maybe not necessary to do data analysis here? ... seems maybe reasonable to me
     
-    MapOSC out = m_cues.procDataAndMixer(m_data, b);
-   
+    //MapOSC out = m_cues.procDataAndMixer(m_data, b);
+    MapOSC out;
+    
     // on input process OSC with current data and mixer (with osc lock)
     sendBundle( out );
     
@@ -261,6 +264,16 @@ void basicMainProcess::setMainParams( MapOSC & b )
     }
 }
 
+
+void basicMainProcess::setVignette(float x, float y, float r)
+{
+    if( r > 0 )
+    {
+        vignette_xyr_aspect = glm::vec4(1 - x, y / context.getAspectRatio(), r / context.getAspectRatio(), context.getAspectRatio() );
+    }
+}
+
+
 void basicMainProcess::captureFrame( int camera_id, const string& filename )
 {
     cv::imwrite(filename, frames[camera_id == 0 ? m_use_camera_id : camera_id]);
@@ -336,6 +349,118 @@ void basicMainProcess::processFrame(cv::UMat & frame, int camera_id )
     
 }
 
+MapOSC basicMainProcess::dataToMap(const AnalysisData& data)
+{
+    MapOSC osc;
+    
+    // osc.addMessage("/id_idx", id_idx);
+    // osc.addMessage("/start_time", start_time);
+    
+    // aspect
+    osc.addMessage("/ids", data.id);
+    osc.addMessage("/center/x", data.center_x);
+    osc.addMessage("/center/y", data.center_y);
+    osc.addMessage("/size/x", data.size_x);
+    osc.addMessage("/size/y", data.size_y);
+    osc.addMessage("/centroid/x", data.centroid_x);
+    osc.addMessage("/centroid/y", data.centroid_y);
+    osc.addMessage("/eccentricity", data.eccentricity);
+    osc.addMessage("/rotrect/major", data.rotrect_major);
+    osc.addMessage("/rotrect/minor", data.rotrect_minor);
+    osc.addMessage("/angle", data.angle);
+    osc.addMessage("/area", data.contour_area);
+    osc.addMessage("/hull/area", data.hull_area);
+    osc.addMessage("/parimeter", data.parimeter);
+    osc.addMessage("/isconvex", data.convex);
+    osc.addMessage("/parent", data.parent);
+    
+// dim_xy
+    osc.addMessage("/defect/count", data.defect_count);
+    osc.addMessage("/defect/dist_sum", data.defect_dist_sum);
+    osc.addMessage("/hull/count", data.hull_count);
+// contour count
+    osc.addMessage("/count", data.ncontours);
+
+
+    osc.addMessage("/focus", data.focus);
+
+
+    osc.addMessage("/elongation", data.elongation);
+    osc.addMessage("/verticality", data.verticality);
+    osc.addMessage("/centroid/dist", data.centroid_dist);
+    osc.addMessage("/centroid/angle", data.centroid_angle);
+
+    
+    osc.addMessage("/defect/rel/mean/angle", data.defect_rel_mean_angle);
+    osc.addMessage("/defect/rel/depthweight", data.defect_rel_depthweight);
+
+    osc.addMessage("/elapsed/contour", data.elapsed_contour);
+    osc.addMessage("/start/centroid/x", data.start_centroid_x);
+    osc.addMessage("/start/centroid/y", data.start_centroid_y);
+    
+    osc.addMessage("/delta/centroid/x", data.delta_centroid_x);
+    osc.addMessage("/delta/centroid/y", data.delta_centroid_y);
+    osc.addMessage("/delta/centroid/dist", data.delta_centroid_dist);
+    osc.addMessage("/moved", data.delta_centroid_dist);
+   
+    osc.addMessage("/noteOn/idx", data.noteOn_idx);
+    osc.addMessage("/sustain/prev/idx", data.sustain_idx);
+    osc.addMessage("/noteOff/prev/idx", data.noteOff_prev_idx);
+    
+    
+    vector<int> idx(data.ncontours);
+    vector<double> pix_0_mean(data.ncontours);
+    vector<double> pix_1_mean(data.ncontours);
+    vector<double> pix_2_mean(data.ncontours);
+    
+    vector<double> pix_0_var(data.ncontours);
+    vector<double> pix_1_var(data.ncontours);
+    vector<double> pix_2_var(data.ncontours);
+    
+    vector<double> pix_0_max(data.ncontours);
+    vector<double> pix_1_max(data.ncontours);
+    vector<double> pix_2_max(data.ncontours);
+    
+    vector<double> pix_0_std(data.ncontours);
+    vector<double> pix_1_std(data.ncontours);
+    vector<double> pix_2_std(data.ncontours);
+    
+    for( int i=0; i<data.ncontours; i++)
+    {
+        idx[i] = i;
+        pix_0_mean[i] = data.pix_channel_stats[i][0].mean;
+        pix_1_mean[i] = data.pix_channel_stats[i][1].mean;
+        pix_2_mean[i] = data.pix_channel_stats[i][2].mean;
+        pix_0_var[i] = data.pix_channel_stats[i][0].variance;
+        pix_1_var[i] = data.pix_channel_stats[i][1].variance;
+        pix_2_var[i] = data.pix_channel_stats[i][2].variance;
+        pix_0_max[i] = data.pix_channel_stats[i][0].max;
+        pix_1_max[i] = data.pix_channel_stats[i][1].max;
+        pix_2_max[i] = data.pix_channel_stats[i][2].max;
+        
+        pix_0_std[i] = sqrt(pix_0_var[i]) * 0.3921568627;
+        pix_1_std[i] = sqrt(pix_1_var[i]);
+        pix_2_std[i] = sqrt(pix_2_var[i]);
+    }
+    
+    osc.addMessage("/idx", idx);
+    
+    osc.addMessage("/pix/l/mean", pix_0_mean );
+    osc.addMessage("/pix/a/mean", pix_1_mean );
+    osc.addMessage("/pix/b/mean", pix_2_mean );
+    
+    osc.addMessage("/pix/l/mean", pix_0_var );
+    osc.addMessage("/pix/a/mean", pix_1_var );
+    osc.addMessage("/pix/b/mean", pix_2_var );
+    
+    osc.addMessage("/pix/l/std", pix_0_std );
+    osc.addMessage("/pix/a/std", pix_1_std );
+    osc.addMessage("/pix/b/std", pix_2_std );
+    
+
+    return osc;
+}
+
 /**
  *  virtual function callback called from detached openCV worker thread
  *  could add mappings here
@@ -347,7 +472,8 @@ void basicMainProcess::processAnalysis(const AnalysisData& data)
     
     {
         unique_lock<mutex> lock_osc(m_osc_lock);
-        out = m_cues.procDataAndMixer(data, b);
+
+//        out = m_cues.procDataAndMixer(data, b);
 
         setCVParams(b);
 
@@ -356,7 +482,7 @@ void basicMainProcess::processAnalysis(const AnalysisData& data)
 
     }
 
-    sendBundle( out );
+    sendBundle( dataToMap(data) );
 
 }
 
@@ -559,11 +685,11 @@ void basicMainProcess::handleKeyInput()
 
     if( glfwGetKey(context.getWindow(), GLFW_KEY_RIGHT ) == GLFW_PRESS )
     {
-        cout << m_cues.getNext() << endl;
+      //  cout << m_cues.getNext() << endl;
     }
     else if( glfwGetKey(context.getWindow(), GLFW_KEY_LEFT ) == GLFW_PRESS )
     {
-        cout << m_cues.getPrev() << endl;
+      //  cout << m_cues.getPrev() << endl;
 
     }
 
@@ -579,10 +705,21 @@ void basicMainProcess::draw()
     
     //   cout << (start - std::chrono::system_clock::now()).count()  << endl;
     
-    // this can get slowed down if a new frame comes in while the old one is still being drawn?
+    if( m_draw_black )
+    {
+        context.bindDefaultFramebuffer();
+        screen_shader.use();
+        glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+        context.updateViewport(1);
+        context.clear();
+
+        context.drawAndPoll();
+        m_newframe = false;
+        return;
+    }
     
+    // this can get slowed down if a new frame comes in while the old one is still being drawn?
     if( !lock.try_lock() || !context.isActive() || !objects_initialized || m_img.empty() || !m_newframe ){
-        //cout << "<< draw unlock" << endl;
         return;
     }
     
@@ -594,28 +731,7 @@ void basicMainProcess::draw()
 
     glm::mat4 transform = context.getTransform();
 
-    if( m_draw_black )
-    {
-        context.bindDefaultFramebuffer();
-        screen_shader.use();
-     /*
-        screen_shader.setMat4("transform_matrix", transform);
-        screen_shader.setFloat("time", (float)glfwGetTime() );
 
-        screen_shader.setFloat("noise_mix", noise_mix );
-        screen_shader.setFloat("noise_mult", noise_mult );
-        screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
-        screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
-*/
-
-        glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
-        context.updateViewport(1);
-        context.clear();
-
-        context.drawAndPoll();
-        m_newframe = false;
-        return;
-    }
 
 
     // make frame texture

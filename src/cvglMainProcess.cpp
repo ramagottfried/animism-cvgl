@@ -463,7 +463,7 @@ int cvglMainProcess::loadShaders()
 {
     std::string shader_path = "/Users/rgottfri/Documents/dev/animism-cvgl/src/"; //"/home/rama/animism-cvgl/src/";
 
-    if( !flow_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "flow_repos.fs" ) ){
+    if( !flow_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "flow_repos.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
     }
@@ -473,7 +473,7 @@ int cvglMainProcess::loadShaders()
         return 0;
     }
 
-    if( !screen_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "screen_vignette.fs" ) ){
+    if( !screen_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "screen_vignette.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
     }

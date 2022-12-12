@@ -13,7 +13,7 @@ void keyboardcallback(GLFWwindow *window, int key, int scanmode, int action, int
     if( key == GLFW_KEY_RIGHT && action == GLFW_PRESS )
     {
         MapOSC b;
-        string next = app.cues().getNext();
+        string next = "GLFW_KEY_RIGHT"; // app.cues().getNext();
         cout << "right " << next << endl;
 
         b.addMessage("/cue", next );
@@ -22,7 +22,7 @@ void keyboardcallback(GLFWwindow *window, int key, int scanmode, int action, int
     else if( key == GLFW_KEY_LEFT && action == GLFW_PRESS )
     {
         MapOSC b;
-        string prev = app.cues().getPrev();
+        string prev = "GLFW_KEY_LEFT"; //app.cues().getPrev();
         cout << "left " << prev << endl;
         b.addMessage("/cue", prev );
         app.receivedBundle(b);
@@ -39,9 +39,9 @@ int main( void )
 {
 
     std::cout << "hardware_concurrency " << std::thread::hardware_concurrency() << std::endl;
-    std::string sendIp = "192.168.100.1";
+    std::string sendIp = "127.0.0.1";
 
-    app.init(8888, 9999, sendIp);
+    app.init(8888, 9999, sendIp); // receive, send, sendIP
 
     cvglDeckLinkCamera bm_cam(1);
     cvglDeckLinkCamera bm_cam2(2); // 1 & 3
@@ -123,6 +123,10 @@ int main( void )
 
     glfwSetKeyCallback(app.context.getWindow(), keyboardcallback );
 
+    MapOSC b;
+    b.addMessage("/use/preprocess", 0);
+    app.setCVParams(b);
+    
     // main GL loop
     while( !app.context.shouldClose() )
     {

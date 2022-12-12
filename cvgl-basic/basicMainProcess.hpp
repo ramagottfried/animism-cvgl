@@ -70,6 +70,9 @@ public:
 
     int loadShaders();
 
+    
+    MapOSC dataToMap(const AnalysisData& data);
+
 //    AnimismCues& cues(){ return m_cues; }
 
 private:

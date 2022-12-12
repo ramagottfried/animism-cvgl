@@ -33,7 +33,7 @@ public:
     void start();
     void close();
     
-    void sendBundle( MapOSC & b );
+    void sendBundle( const MapOSC & b );
 
     virtual void receivedBundle( MapOSC & b ) {}
 
