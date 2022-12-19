@@ -150,7 +150,8 @@ void cvglContext::setupWindow(int width, int height )
     
     glfwMakeContextCurrent(m_window);
     glfwSetWindowSizeCallback(m_window, global_resize_callback);
-    
+
+    resize_callback(width, height);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------

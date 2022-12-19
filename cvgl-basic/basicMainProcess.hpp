@@ -20,9 +20,8 @@ public:
     
     // GL context
     cvglContext context;
-    void keyboard_cb(GLFWwindow *window, int key, int scanmode, int action, int mods);
 
-    cvglShader screen_shader, luma_shader, flow_shader;
+    cvglShader screen_shader;
 
     // globals
     
@@ -139,6 +138,9 @@ private:
     float contrast = 1, brightness = 0, saturation = 1, gamma = 1;
     glm::vec4 vignette_xyr_aspect;
     float vignette_fadeSize = 0.5;
+
+    glm::vec2 drawRange_y = glm::vec2(0.0f, 1.0f);
+    glm::vec2 drawRange_x = glm::vec2(0.0f, 1.0f);
 
 
 };

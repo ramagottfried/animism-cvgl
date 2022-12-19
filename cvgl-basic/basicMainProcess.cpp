@@ -70,6 +70,14 @@ void basicMainProcess::setMainParams( MapOSC & b )
         {
             m_draw_black = val.getInt() > 0;
         }
+        else if( addr == "/camera/cutoff" )
+        {
+            if( val.size() == 2 )
+            {
+                drawRange_y.x = val.get<float>(0);
+                drawRange_y.y = val.get<float>(1);
+            }
+        }
         else if( addr == "/vignette/xyr" )
         {
            setVignette( val.get<float>(0), val.get<float>(1), val.get<float>(2) );
@@ -94,7 +102,7 @@ void basicMainProcess::setMainParams( MapOSC & b )
         {
             m_show_webcam_tile = val.getInt() > 0;
         }
-        else if( addr == "/enable/contour" )
+        else if( addr == "/enable/contour" || addr == "/contour/enable" )
         {
             int setting = val.getInt();
             switch(setting)
@@ -129,7 +137,7 @@ void basicMainProcess::setMainParams( MapOSC & b )
         {
             m_contour_line_thickness = val.getFloat();
         }
-        else if( addr == "/enable/hull" )
+        else if( addr == "/enable/hull" || addr == "/hull/enable" )
         {
             m_draw_hull = val.getInt() > 0;
         }
@@ -141,7 +149,7 @@ void basicMainProcess::setMainParams( MapOSC & b )
         {
             m_hull_line_thickness = val.getFloat();
         }
-        else if( addr == "/enable/minrect" )
+        else if( addr == "/enable/minrect" || addr == "/minrect/enable"  )
         {
             m_draw_minrect = val.getInt() > 0;
         }
@@ -491,17 +499,7 @@ int basicMainProcess::loadShaders()
 {
     std::string shader_path = "/Users/rgottfri/Documents/dev/animism-cvgl/src/"; //"/home/rama/animism-cvgl/src/";
 
-    if( !flow_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "flow_repos.fs" ) ){
-        cout << "failed to load screen shader" << endl;
-        return 0;
-    }
-
-    if( !luma_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "luma_alpha_color.fs" ) ){
-        cout << "failed to load base shader" << endl;
-        return 0;
-    }
-
-    if( !screen_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "screen_vignette.fs" ) ){
+    if( !screen_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "crop_fragment.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
     }
@@ -510,39 +508,6 @@ int basicMainProcess::loadShaders()
 
     setVignette(0.5, 0.5, 1);
 
-    // setup first shader
-    luma_shader.use();
-    luma_shader.setInt("tex", 0);
-    luma_shader.setInt("prevTex", 1);
-    luma_shader.setMat4("transform_matrix", identityMatrix );
-
-    luma_shader.setFloat("gamma", gamma);
-    luma_shader.setFloat("contrast", contrast);
-    luma_shader.setFloat("saturation", saturation);
-    luma_shader.setFloat("brightness", brightness);
-    luma_shader.setFloat("scale_alpha", 1);
-
-    luma_shader.setFloat("luma_target", luma_target);
-    luma_shader.setFloat("luma_tol", luma_tol);
-    luma_shader.setFloat("luma_fade", luma_fade);
-    luma_shader.setFloat("luma_mix", luma_mix);
-
-
-    // setup first shader
-    flow_shader.use();
-    flow_shader.setInt("tex0", 0);
-    flow_shader.setInt("tex1", 1);
-    flow_shader.setMat4("transform_matrix", identityMatrix );
-
-    flow_shader.setVec2("hsflow_scale", hsflow_scale );
-    flow_shader.setVec2("hsflow_offset", hsflow_offset);
-    flow_shader.setFloat("hsflow_lambda", hsflow_lambda );
-
-    flow_shader.setVec2("repos_amt", repos_amt );
-    flow_shader.setVec4("repos_scale", repos_scale);
-    flow_shader.setVec4("repos_bias", repos_bias );
-
-    flow_shader.setFloat("flow_mix", flow_mix);
 
     screen_shader.use();
     screen_shader.setInt("framebuffer_tex", 0);
@@ -550,6 +515,8 @@ int basicMainProcess::loadShaders()
     screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
     screen_shader.setFloat("noise_mix", noise_mix);
     screen_shader.setFloat("noise_mix", noise_mult);
+    screen_shader.setVec2("drawRange_y", drawRange_y);
+
 
     return 1;
 
@@ -680,20 +647,6 @@ void basicMainProcess::analysisToGL(const AnalysisData &analysis)
  *  called from GL thread
  */
 
-void basicMainProcess::handleKeyInput()
-{
-
-    if( glfwGetKey(context.getWindow(), GLFW_KEY_RIGHT ) == GLFW_PRESS )
-    {
-      //  cout << m_cues.getNext() << endl;
-    }
-    else if( glfwGetKey(context.getWindow(), GLFW_KEY_LEFT ) == GLFW_PRESS )
-    {
-      //  cout << m_cues.getPrev() << endl;
-
-    }
-
-}
 
 void basicMainProcess::draw()
 {
@@ -732,7 +685,11 @@ void basicMainProcess::draw()
     glm::mat4 transform = context.getTransform();
 
 
-
+    context.bindDefaultFramebuffer();
+    context.clear();
+    
+    screen_shader.use();
+    
 
     // make frame texture
     UMat merge;
@@ -765,38 +722,6 @@ void basicMainProcess::draw()
     // draw main frame
 
 
-
-    int prev_fbIDX = fbIDX;
-    fbIDX = (fbIDX+1) % 2;
-
-    pass_buffer->bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    context.clear();
-
-    // note: don't update the viewport or transform, since the fbos are always the same size (1920x1080)
-
-    flow_shader.use();
-
-    flow_shader.setFloat("slide_up", 3.3);
-    flow_shader.setFloat("slide_down", 3.3);
-
-    flow_shader.setVec2("hsflow_scale", hsflow_scale );
-    flow_shader.setVec2("hsflow_offset", hsflow_offset);
-    flow_shader.setFloat("hsflow_lambda", hsflow_lambda );
-
-    flow_shader.setVec2("repos_amt", repos_amt );
-    flow_shader.setVec4("repos_scale", repos_scale);
-    flow_shader.setVec4("repos_bias", repos_bias );
-
-    flow_shader.setFloat("flow_mix", flow_mix);
-
-
-
-    glActiveTexture(GL_TEXTURE0+1); // Texture unit 1
-    context.bindTextureByID( framebuffer[prev_fbIDX]->getTexID() );
-
-    glActiveTexture(GL_TEXTURE0); // Texture unit 0 for new frames and gl colors
-
     if( m_draw_frame )
     {
         rect->bind();
@@ -804,46 +729,7 @@ void basicMainProcess::draw()
         rect->draw();
     }
 
-
-    // switch to write into storage framebuffer
-    // draw previous texture, applying flow stuff
-
-    // ----------------------------------------------------------------
-    // luma framebuffer, stored for feedback
-
-    framebuffer[fbIDX]->bind();
-    // note: don't update the viewport or transform, since the fbos are always the same size (1920x1080)
-    luma_shader.use();
-    luma_shader.setFloat("gamma", gamma);
-    luma_shader.setFloat("contrast", contrast);
-    luma_shader.setFloat("saturation", saturation);
-    luma_shader.setFloat("brightness", brightness);
-
-    luma_shader.setFloat("luma_target", luma_target);
-    luma_shader.setFloat("luma_tol", luma_tol);
-    luma_shader.setFloat("luma_fade", luma_fade);
-    luma_shader.setFloat("luma_mix", luma_mix);
-    luma_shader.setFloat("scale_alpha", 1);
-
-
-    //luma_shader.setFloat("prev_tex_ratio", 0.94);
-
-    // this needs to be black, since the processing creates alpha dips
-    // we will see the background if the the alpha is low
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    context.clear();
-
-
-    rect->bind();
-        glActiveTexture(GL_TEXTURE0);
-        frameTex->bind();
-
-        glActiveTexture(GL_TEXTURE0+1);
-        context.bindTextureByID( pass_buffer->getTexID() ); // tex0 = prev render pass
-    rect->draw();
-
-    drawShapes( luma_shader );
+    drawShapes( screen_shader );
 
 
     // ----------------------------------------------------------------
@@ -853,8 +739,7 @@ void basicMainProcess::draw()
     // switch to this default screen framebuffer
     // draw fbIDX frame buffer, using simple output shader (not stored)
 
-    context.bindDefaultFramebuffer();
-    screen_shader.use();
+
     screen_shader.setMat4("transform_matrix", transform);
     screen_shader.setFloat("time", (float)glfwGetTime() );
 
@@ -862,16 +747,8 @@ void basicMainProcess::draw()
     screen_shader.setFloat("noise_mult", noise_mult );
     screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
     screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
-
-
-    glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
-    context.updateViewport(1);
-    context.clear();
-    glActiveTexture(GL_TEXTURE0);
-
-    rect->bind();
-    context.bindTextureByID( framebuffer[fbIDX]->getTexID() ); //framebuffer->getTexID()
-    rect->draw();
+    screen_shader.setVec2("drawRange_y", drawRange_y);
+    screen_shader.setVec2("drawRange_x", drawRange_x);
 
     context.drawAndPoll();
 

@@ -8,6 +8,7 @@ basicMainProcess app;
 
 using namespace std;
 
+// note: could make this a callback method in the context class, by using the logWindow system, see cvglCallbacks.cpp
 void keyboardcallback(GLFWwindow *window, int key, int scanmode, int action, int mods)
 {
     if( key == GLFW_KEY_RIGHT && action == GLFW_PRESS )
