@@ -43,7 +43,7 @@ int main( void )
     app.init(8888, 9999, sendIp);
 
     cvglDeckLinkCamera bm_cam(1);
-    cvglDeckLinkCamera bm_cam2(2); // 1 & 3
+    cvglDeckLinkCamera bm_cam2(2); // 2 & 4
 
     cout << "blackmagic " << bm_cam.hasCamera() << " checking cv cam" << endl;
     cvglCVCamera cvcam(0);
