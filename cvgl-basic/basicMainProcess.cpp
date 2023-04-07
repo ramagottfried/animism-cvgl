@@ -497,7 +497,8 @@ void basicMainProcess::processAnalysis(const AnalysisData& data)
 
 int basicMainProcess::loadShaders()
 {
-    std::string shader_path = "/Users/rgottfri/Documents/dev/animism-cvgl/src/"; //"/home/rama/animism-cvgl/src/";
+    std::string shader_path = "./shaders/"; // relative to exec location
+    //std::string shader_path = "/Users/rgottfri/Documents/dev/animism-cvgl/src/"; //"/home/rama/animism-cvgl/src/";
 
     if( !screen_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "crop_fragment.fs" ) ){
         cout << "failed to load screen shader" << endl;

@@ -92,9 +92,9 @@ void context_error_callback(int error, const char* description)
 }
 
 
-void cvglContext::setupWindow(int width, int height )
+void cvglContext::setupWindow(int width, int height, std::string name )
 {
-    cout << "setting up window " << width <<  " " << height << endl;
+    cout << "setting up window " << name << " " << width <<  " " << height << endl;
     
     m_wind_h = height;
     m_wind_w = width;
@@ -133,7 +133,7 @@ void cvglContext::setupWindow(int width, int height )
 #endif
 
     // Open a window and create its OpenGL context
-    m_window = glfwCreateWindow( width, height, "cv gl", NULL, NULL);
+    m_window = glfwCreateWindow( width, height, name.c_str(), NULL, NULL);
     if( m_window == NULL ){
         cout <<"Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials." << endl;
         glfwTerminate();

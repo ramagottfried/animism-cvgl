@@ -24,7 +24,7 @@ public:
     ~cvglContext();
     void resize_callback(int w, int h);
 
-    void setupWindow(int width, int height );
+    void setupWindow(int width, int height, std::string name = "cvgl" );
     void flip( bool x, bool y);
 
     void set_time_uniform(float t);

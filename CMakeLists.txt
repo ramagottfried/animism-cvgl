@@ -124,23 +124,27 @@ list(APPEND LIB_LIST libcvgl)
 
 # ANIMISM build
 
-set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
+set(CUE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cvgl-animism/cues)
 
-file(GLOB SHADER_FILES src/*.fs src/*.vs ) # << move this to shader folder...
 file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 
 add_executable(cvgl
-    ${SHADER_FILES}
     ${CUE_FILES}
-    src/cvgl_main.cpp # << should not put this in the main src dir
-    src/cvglMainProcess.cpp
+    cvgl-animism/cvgl_main.cpp # << should not put this in the main src dir
+    cvgl-animism/cvglMainProcess.cpp
 )
 
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
+target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cvgl-animism)
+
 target_include_directories(cvgl PUBLIC ${CUE_DIR})
 
 target_link_libraries(cvgl libcvgl)
+
+add_custom_command(TARGET cvgl PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/src/shaders/ $<TARGET_FILE_DIR:cvgl>/shaders/)
 
 message("CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
 message("CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
@@ -161,7 +165,34 @@ target_include_directories(basic_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cvgl-bas
 
 target_link_libraries(basic_app libcvgl)
 
+add_custom_command(TARGET basic_app PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/src/shaders/ $<TARGET_FILE_DIR:basic_app>/shaders/)
 
+
+# zhdk build
+
+set(CUE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cvgl-zhdk/cues)
+
+file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
+
+add_executable(zhdk
+   ${CUE_FILES}
+   cvgl-zhdk/cvgl_main.cpp # << should not put this in the main src dir
+   cvgl-zhdk/cvglMainProcess.cpp
+)
+
+target_include_directories(zhdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_include_directories(zhdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
+target_include_directories(zhdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cvgl-zhdk)
+
+target_include_directories(zhdk PUBLIC ${CUE_DIR})
+
+target_link_libraries(zhdk libcvgl)
+
+add_custom_command(TARGET zhdk PRE_BUILD
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+                      ${CMAKE_SOURCE_DIR}/src/shaders/ $<TARGET_FILE_DIR:cvgl>/shaders/)
 
 
 # this is a funny idea, maybe useful someday, but for now too much work
