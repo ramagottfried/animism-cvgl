@@ -9,31 +9,25 @@
 #include "cvglUDPServer.hpp"
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
-#include "AnimismCues.hpp"
 
-#include "MirrorTriangles.hpp"
+// #include "AnimismCues.hpp"
 
-class cvglMainProcess :  public cvglCV, public cvglUDPServer
+
+class basicMainProcess :  public cvglCV, public cvglUDPServer
 {
     
 public:
     
     // GL context
     cvglContext context;
-    void keyboard_cb(GLFWwindow *window, int key, int scanmode, int action, int mods);
 
-    cvglShader screen_shader, luma_shader, flow_shader;
+    cvglShader screen_shader;
 
     // globals
     
     void setVignette(float x, float y, float r);
 
-
-    double rotateTriangles = 0, tri_step = 0.01, tri_damping = 0.99;
-    std::vector<double> tri_vel;
-
     std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh;
-    std::unique_ptr<cvglObject>     glitchRect, bigTriMirror, bigTriMirror2, halfMirror;
 
     std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex, prevFrame;
     
@@ -70,34 +64,19 @@ public:
 
 
     void initCues();
-
-  //  vector<cvglVertex> genTriangle(int i, float nTriangles, float yrange, float overlap, float x_offset = 0 );
-  //  vector<cvglVertex> genTriangle(float x, float y, float xrange, float yrange);
-
-    void makeMirrorTriangles();
-//    void triCollision(double x, double y);
-//    std::vector<float> getRGBA( const OdotMessage & msg );
     
     inline void useCameraID( int i ){ m_use_camera_id = i; }
-    
-    /*
-    inline void initMixer()
-    {
-        MapOSC out;
-        m_mixer.initMidi(out);
-        std::cout << "initializing midi mixer" << std::endl;
-        sendBundle( out );
-    }
-    */
 
     int loadShaders();
 
-    AnimismCues& cues(){ return m_cues; }
+    
+    MapOSC dataToMap(const AnalysisData& data);
+
+//    AnimismCues& cues(){ return m_cues; }
 
 private:
 
-    AnimismCues m_cues;
-    //cvglMixer m_mixer;
+    // AnimismCues m_cues;
 
     AnalysisData m_data;
     
@@ -123,14 +102,6 @@ private:
     bool m_draw_hull = true;
     bool m_draw_minrect = true;
     
-    float glitch_tri_alpha = 0.5;
-    float glitch_tri_offset_z = 1.;
-
-    float big_tri1_alpha = 0;
-
-    float big_tri2_alpha = 0.;
-
-    float half_mirror_alpha = 0.;
 
     std::vector<float> m_contour_rgba;
     std::vector<float> m_contour_triangles_rgba;
@@ -168,8 +139,9 @@ private:
     glm::vec4 vignette_xyr_aspect;
     float vignette_fadeSize = 0.5;
 
+    glm::vec2 drawRange_y = glm::vec2(0.0f, 1.0f);
+    glm::vec2 drawRange_x = glm::vec2(0.0f, 1.0f);
 
-    MirrorTriangles mirrorTriangles;
 
 };
 

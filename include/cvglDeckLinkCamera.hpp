@@ -48,7 +48,9 @@ private:
     
     BMDPixelFormat m_pixelFormat = bmdFormat8BitYUV;
 
-    int32_t m_refCount;
+//    int32_t m_refCount;
+    std::atomic<ULONG>        m_refCount;
+
     
     std::timed_mutex m_mutex;
     

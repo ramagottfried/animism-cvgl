@@ -461,9 +461,9 @@ void cvglMainProcess::makeMirrorTriangles()
 
 int cvglMainProcess::loadShaders()
 {
-    std::string shader_path = "/home/rama/animism-cvgl/src/";
+    std::string shader_path = "/home/rama/animism-cvgl/src/"; // "/Users/rgottfri/Documents/dev/animism-cvgl/src/"; //
 
-    if( !flow_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "flow_repos.fs" ) ){
+    if( !flow_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "flow_repos.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
     }
@@ -473,16 +473,13 @@ int cvglMainProcess::loadShaders()
         return 0;
     }
 
-    if( !screen_shader.loadShaderFiles( shader_path + "basic_vertex.vs", shader_path + "screen_vignette.fs" ) ){
+    if( !screen_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "screen_vignette.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
     }
 
     glm::mat4 identityMatrix = glm::identity<glm::mat4>();
-/*
-    shader1 = unique_ptr<animShader1>(new animShader1);
-    shader1->transform_matrix = identityMatrix;
-*/
+
     setVignette(0.5, 0.5, 1);
 
     // setup first shader

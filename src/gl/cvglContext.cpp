@@ -113,13 +113,13 @@ void cvglContext::setupWindow(int width, int height )
 
 #ifdef __APPLE__
     // GL 3.2 + GLSL 150
-    glsl_version = "#version 150";
+    // glsl_version = "#version 150";
     glfwWindowHint( // required on Mac OS
         GLFW_OPENGL_FORWARD_COMPAT,
         GL_TRUE
         );
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 #elif __linux__
     // GL 3.2 + GLSL 150
    // glsl_version = "#version 150";
@@ -150,7 +150,8 @@ void cvglContext::setupWindow(int width, int height )
     
     glfwMakeContextCurrent(m_window);
     glfwSetWindowSizeCallback(m_window, global_resize_callback);
-    
+
+    resize_callback(width, height);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------

@@ -75,7 +75,8 @@ struct AnalysisData
     //Eigen::ArrayXd          defect_rel_x; // rel from centroid
     //Eigen::ArrayXd          defect_rel_y;
     //Eigen::ArrayXd          defect_rel_angle;
-    //Eigen::ArrayXd          defect_rel_depthweight;
+    
+    Eigen::ArrayXd          defect_rel_depthweight;
     Eigen::ArrayXd          defect_rel_mean_angle;
     
     
@@ -121,7 +122,6 @@ struct AnalysisData
         parimeter.resize(n);
         angle.resize(n);
         eccentricity.resize(n);
-        centroid_y.resize(n);
         rotrect_minor.resize(n);
         rotrect_major.resize(n);
         focus.resize(n);
@@ -137,8 +137,9 @@ struct AnalysisData
         defect_rel_x.resize(n);
         defect_rel_y.resize(n);
         defect_rel_angle.resize(n);
-        defect_rel_depthweight.resize(n);
          */
+        defect_rel_depthweight.resize(n);
+         
         defect_rel_mean_angle.resize(n);
         
         delta_centroid_x = Eigen::ArrayXd::Zero(n);

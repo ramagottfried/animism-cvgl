@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <type_traits>
 
+
 #define WITH_EIGEN
 
 #ifdef WITH_EIGEN
@@ -35,6 +36,9 @@ public:
 
     MapOSC newMap();
 
+#if defined(__APPLE__)
+    template <typename T> T get();
+#elif defined(__linux__)
     template <typename T>
     T get()
     {
@@ -105,7 +109,7 @@ public:
     }
 
     size_t getSizeInBytes();
-
+#endif
 
 private:
 
@@ -135,6 +139,7 @@ public:
 
     OSCAtomVector(){}
     OSCAtomVector( std::vector< std::unique_ptr<OSCAtom> > vec );
+
     OSCAtomVector( const OSCAtomVector & other );
 
     OSCAtomVector( std::vector< OSCAtom > vec )
@@ -142,7 +147,21 @@ public:
         for( auto & v : vec )
             obj_vec.emplace_back(std::make_unique<OSCAtom>(v));
     }
-
+    OSCAtomVector& operator=(const OSCAtomVector& other)
+    {
+        if (this != &other) // not a self-assignment
+        {
+            if (obj_vec.size() != other.obj_vec.size()) // resource cannot be reused
+            {
+                for( size_t i = 0; i < other.obj_vec.size(); i++ )
+                {
+                    obj_vec.emplace_back( std::make_unique<OSCAtom>( *other.obj_vec[i] ) );
+                }
+            }
+        }
+        return *this;
+    }
+        
     OSCAtomVector(float val ) {   obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
     OSCAtomVector(double val ) {  obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
     OSCAtomVector(int32_t val ) {  obj_vec.emplace_back(std::make_unique<OSCAtom>(val)); }
@@ -329,6 +348,7 @@ public:
 
     const std::unordered_map<std::string, OSCAtomVector >& getMap(){ return address_lookup; }
 
+    inline void reserve(size_t n){ address_lookup.reserve(n); }
     inline size_t size() const { return address_lookup.size(); }
 
 private:

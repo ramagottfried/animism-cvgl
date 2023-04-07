@@ -4,29 +4,41 @@ project(cvgl)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(WITH_BLACKMAGIC True )
+
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(WITH_CUDA False )
+else()
+    set(WITH_CUDA True )
+endif()
+
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 
-set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
+if( DEFINED WITH_BLACKMAGIC )
+    # setup BlackMagic
+    
+    set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 12.1")
 
-# setup BlackMagic
-#set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 11.7")
-set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 12.1")
-set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Linux" )
-set(DECKLINK_SDK_INCLUDE_DIR "${DECKLINK_SDK}/Linux/include" )
-
-#set(PLATFORM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Linux)
-
-set(BLACKMAGIC_PLATFORM_SOURCES
-            ${DECKLINK_SDK_INCLUDE_DIR}/DeckLinkAPIDispatch.cpp
-            ${DECKLINK_PLATFORM_INCLUDE}/platform.cpp
-)
-
-#${CMAKE_CURRENT_SOURCE_DIR}/Linux/platform.h
-#${CMAKE_CURRENT_SOURCE_DIR}/Linux/platform.cpp
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Linux" )
+        set(DECKLINK_SDK_INCLUDE_DIR "${DECKLINK_SDK}/Linux/include" )
+        set(BLACKMAGIC_PLATFORM_SOURCES
+                    ${DECKLINK_SDK_INCLUDE_DIR}/DeckLinkAPIDispatch.cpp
+                    ${DECKLINK_PLATFORM_INCLUDE}/platform.cpp
+        )
+    elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+        set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Mac" )
+        set(DECKLINK_SDK_INCLUDE_DIR "${DECKLINK_SDK}/Mac/include" )
+        set(BLACKMAGIC_PLATFORM_SOURCES
+                    ${DECKLINK_SDK_INCLUDE_DIR}/DeckLinkAPIDispatch.cpp
+                    ${DECKLINK_PLATFORM_INCLUDE}/platform.cpp
+        )
+    endif()
+    
+endif()
 
 list(APPEND LIB_LIST dl pthread) #${CMAKE_DL_LIBS}
-
 
 # setup OpenGL / GLFW / GLAD / OPENCV
 set(GLAD_DIR "${PROJECT_SOURCE_DIR}/../glad")
@@ -45,12 +57,18 @@ message(STATUS "    version: ${OpenCV_VERSION}")
 message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    find_library(FoundationLib CoreFoundation)
+    list(APPEND LIB_LIST ${FoundationLib} )
+    message(STATUS "    include path: ${FoundationLib}")
+endif()
+
 find_package(Eigen3 REQUIRED)
 list(APPEND LIB_LIST Eigen3::Eigen)
 
 message(STATUS "    eigen include path: ${Eigen3_INCLUDE_DIRS}")
 
-add_library(libcvgl STATIC
+list(APPEND SRCLIST
     src/mixer/cvglMixer.cpp
     src/camera/cvglCameraBase.cpp
     src/camera/cvglCVCamera.cpp
@@ -78,27 +96,43 @@ add_library(libcvgl STATIC
     src/utils/cvglRandom.cpp
     src/utils/cvglLookupFigure.cpp
     src/cues/cvglCues.cpp
-
     ${GLAD_DIR}/src/glad.c
-    ${BLACKMAGIC_PLATFORM_SOURCES}
 )
 
+if( DEFINED WITH_BLACKMAGIC )
+    list(APPEND SRCLIST
+        src/camera/cvglDeckLinkCamera.cpp
+        ${BLACKMAGIC_PLATFORM_SOURCES} 
+    )
+endif()
+
+add_library(libcvgl STATIC
+    ${SRCLIST}
+)
+
+if( DEFINED WITH_BLACKMAGIC )
+    target_include_directories(libcvgl PUBLIC ${DECKLINK_SDK_INCLUDE_DIR} PUBLIC ${DECKLINK_PLATFORM_INCLUDE})
+endif()
+
 target_include_directories(libcvgl PUBLIC ${GLAD_DIR}/include )
-target_include_directories(libcvgl PUBLIC ${DECKLINK_SDK_INCLUDE_DIR} PUBLIC ${DECKLINK_PLATFORM_INCLUDE})
 target_include_directories(libcvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+
 target_link_libraries(libcvgl ${LIB_LIST}  )
 
 list(APPEND LIB_LIST libcvgl)
 
-file(GLOB RES_FILES src/*.fs src/*.vs )
+
+# ANIMISM build
+
+set(CUE_DIR "${PROJECT_SOURCE_DIR}/src/cues/animism")
+
+file(GLOB SHADER_FILES src/*.fs src/*.vs ) # << move this to shader folder...
 file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 
 add_executable(cvgl
-    ${RES_FILES}
+    ${SHADER_FILES}
     ${CUE_FILES}
-    src/animShader1.cpp
-    src/MirrorTriangles.cpp
-    src/cvgl_main.cpp
+    src/cvgl_main.cpp # << should not put this in the main src dir
     src/cvglMainProcess.cpp
 )
 
@@ -106,17 +140,33 @@ target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
 target_include_directories(cvgl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
 target_include_directories(cvgl PUBLIC ${CUE_DIR})
 
-#target_include_directories(cvgl PRIVATE ${GLAD_DIR}/include )
-#target_include_directories(cvgl PRIVATE ${DECKLINK_SDK_INCLUDE_DIR} PRIVATE ${DECKLINK_PLATFORM_INCLUDE})
+target_link_libraries(cvgl libcvgl)
+
+message("CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
+message("CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
+message("Shders found ${SHADER_FILES}")
+message("Cues found ${CUE_FILES}")
+
+
+# basic-ex setup
+
+add_executable(basic_app
+    cvgl-basic/basicMainProcess.cpp
+    cvgl-basic/cvgl-basic_main.cpp
+)
+
+target_include_directories(basic_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_include_directories(basic_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src )
+target_include_directories(basic_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/cvgl-basic)
+
+target_link_libraries(basic_app libcvgl)
+
+
+
 
 # this is a funny idea, maybe useful someday, but for now too much work
 #target_compile_definitions(cvgl PRIVATE "CUE_FILE_NAMES=\"yo\"")
 #target_compile_definitions(main PRIVATE "MY_FILE_PATH=\"${MY_FILE_PATH}\"")
 
-target_link_libraries(cvgl libcvgl)
-
-message("CMAKE_C_FLAGS_DEBUG is ${CMAKE_C_FLAGS_DEBUG}")
-message("CMAKE_C_FLAGS_RELEASE is ${CMAKE_C_FLAGS_RELEASE}")
-message("Shders found ${RES_FILES}")
-message("Cues found ${CUE_FILES}")
-
+# also potentially to log file path for loading shaders / future lua files?
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")

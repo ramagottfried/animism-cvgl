@@ -1,5 +1,8 @@
-﻿#include "opencv2/cudaoptflow.hpp"
+#ifdef WITH_CUDA
+#include "opencv2/cudaoptflow.hpp"
 #include "opencv2/cudaarithm.hpp"
+#endif
+
 #include "opencv2/video/tracking.hpp"
 
 #include "cvglCV.hpp"
@@ -26,9 +29,10 @@ void cvglCV::setCVParams( MapOSC & b )
                 m_use_preprocess = setProcessIDX;
                 m_prev_frame.release();
                 m_prev_frame = UMat();
+                cout << "setting preprocess to " << m_use_preprocess << " " << setProcessIDX << endl;
+
             }
 
-       //     cout << "setting preprocess to " << m_use_preprocess << " " << val.getInt() << endl;
         }
         else if( addr == "/invert" )
         {
@@ -50,15 +54,16 @@ void cvglCV::setCVParams( MapOSC & b )
         {
             m_canny_max = m.getFloat();
         }
-        else if( addr == "/size/min" )
+        else if( addr == "/size/min" || addr == "/min_size")
         {
             m_minsize = m.getFloat();
+            cout << "recieved " << m_minsize << endl;
         }
-        else if( addr == "/size/max" )
+        else if( addr == "/size/max" || addr == "/max_size")
         {
             m_maxsize = m.getFloat();
         }
-        else if( addr == "/gauss/sigma" )
+        else if( addr == "/gauss/sigma" || addr == "/gauss_sigma" )
         {
             m_gauss_sigma = m.getInt();
             m_gauss_ksize = m_gauss_sigma*5;
@@ -988,14 +993,24 @@ void cvglCV::analysisThread(AnalysisData data)
         ArrayXd rel_x = defect_x - data.centroid_x(i);
         ArrayXd rel_y = defect_y - data.centroid_y(i);
         ArrayXd defect_theta =  rel_y.binaryExpr(rel_x, [](double a, double b) { return std::atan2(a,b);} );
-        ArrayXd defect_depthweight = defect_depth / dist_sum;
+        if( dist_sum > 0 )
+        {
+            ArrayXd defect_depthweight = defect_depth / dist_sum;
+            
+            ArrayXd defect_w_x = ( defect_depthweight * defect_theta.sin() );
+            ArrayXd defect_w_y = ( defect_depthweight * defect_theta.cos() );
+
+            data.defect_rel_mean_angle(i) = std::atan2( defect_w_x.sum(),  defect_w_y.sum() ) * 57.2957795131;
+            data.defect_rel_depthweight(i) = defect_depthweight.mean();
+            data.defect_dist_sum(i) = dist_sum;
+        }/*
+        else
+        {
+            data.defect_rel_mean_angle(i) = 0;
+            data.defect_rel_depthweight(i) = 0;
+            data.defect_dist_sum(i) = 0;
+        } */
         
-        ArrayXd defect_w_x = ( defect_depthweight * defect_theta.sin() );
-        ArrayXd defect_w_y = ( defect_depthweight * defect_theta.cos() );
-
-        data.defect_rel_mean_angle = std::atan2( defect_w_x.sum(),  defect_w_y.sum() ) * 57.2957795131;
-
-        data.defect_dist_sum(i) = dist_sum;
         
     }
     
@@ -1059,12 +1074,14 @@ void cvglCV::analysisThread(AnalysisData data)
                 
             }
             
+            // -1 if not sustained (was in closest > -1 if a minute ago
+            data.sustain_idx.emplace_back( closest_idx );
+
             if( closest_idx > -1 )
             {
                 // selected a closest match index
                 data.id[closest_idx] = prev_data.id[j];
                 data.id_idx.emplace( prev_data.id[j], closest_idx );
-                data.sustain_idx.emplace_back( closest_idx );
             }
             else
             {
