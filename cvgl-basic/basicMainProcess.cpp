@@ -90,6 +90,16 @@ void basicMainProcess::setMainParams( MapOSC & b )
         {
             m_use_camera_id = val.getInt();
         }
+        else if(addr == "/camera/flip")
+        {
+            if( val.size() == 2 )
+            {
+                int id = val.get<int>(0);
+                int flip = val.get<int>(1);
+                
+                camera_flip[id] = flip;
+            }
+        }
         else if( addr == "/overlap/cameras")
         {
             m_overlap_cameras = cvgl::clip( val.getFloat(), 0., 1.);
@@ -98,40 +108,27 @@ void basicMainProcess::setMainParams( MapOSC & b )
         {
             m_overlap_flip = cvgl::clip( val.getFloat(), 0., 1.);
         }
-        else if( addr == "/show/webcam_tile" )
-        {
-            m_show_webcam_tile = val.getInt() > 0;
-        }
         else if( addr == "/enable/contour" || addr == "/contour/enable" )
         {
-            int setting = val.getInt();
-            switch(setting)
-            {
-            case 1:
-                m_draw_contour = true;
-                m_draw_contour_triangles = false;
-                break;
-            case 2:
-                m_draw_contour = false;
-                m_draw_contour_triangles = true;
-                break;
-            case 3:
-                m_draw_contour = true;
-                m_draw_contour_triangles = true;
-                break;
-            default:
-                m_draw_contour = false;
-                m_draw_contour_triangles = false;
-                break;
-            }
+            m_draw_contour = val.getInt();
         }
         else if( addr == "/contour/color" )
         {
             m_contour_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
+            m_contour_rgba[0] *= m_contour_rgba[3]; // kludge for alpha blending, only needed on mac?
+            m_contour_rgba[1] *= m_contour_rgba[3];
+            m_contour_rgba[2] *= m_contour_rgba[3];
+        }
+        else if( addr == "/contour_triangles/enable" )
+        {
+            m_draw_contour_triangles = val.getInt();
         }
         else if( addr == "/contour_triangles/color" )
         {
             m_contour_triangles_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
+            m_contour_triangles_rgba[0] *= m_contour_triangles_rgba[3]; // kludge for alpha blending, only needed on mac?
+            m_contour_triangles_rgba[1] *= m_contour_triangles_rgba[3];
+            m_contour_triangles_rgba[2] *= m_contour_triangles_rgba[3];
         }
         else if( addr == "/contour/width" )
         {
@@ -144,6 +141,9 @@ void basicMainProcess::setMainParams( MapOSC & b )
         else if( addr == "/hull/color" )
         {
             m_hull_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
+            m_hull_rgba[0] *= m_hull_rgba[3]; // kludge for alpha blending, only needed on mac?
+            m_hull_rgba[1] *= m_hull_rgba[3];
+            m_hull_rgba[2] *= m_hull_rgba[3];
         }
         else if( addr == "/hull/width" )
         {
@@ -156,6 +156,9 @@ void basicMainProcess::setMainParams( MapOSC & b )
         else if( addr == "/minrect/color" )
         {
             m_minrect_rgba = cvgl::getRGBA(const_cast<OSCAtomVector &>(val));
+            m_minrect_rgba[0] *= m_minrect_rgba[3]; // kludge for alpha blending, only needed on mac?
+            m_minrect_rgba[1] *= m_minrect_rgba[3];
+            m_minrect_rgba[2] *= m_minrect_rgba[3];
         }
         else if( addr == "/minrect/width" )
         {
@@ -252,6 +255,10 @@ void basicMainProcess::setMainParams( MapOSC & b )
         {
             noise_mix = val.getFloat();
         }
+        else if( addr == "/show/webcam_tile" )
+        {
+            m_show_webcam_tile = val.getInt() > 0;
+        }
         else if( addr == "/captureFrame")
         {
             if( val.size() == 2 )
@@ -317,10 +324,15 @@ void basicMainProcess::processFrame(cv::UMat & frame, int camera_id )
             setFrame(merge); // takes ownership of frame in local storage m_img
 
         }
+        else if( camera_flip.find(camera_id) != camera_flip.end() )
+        {
+            UMat flipped(frame);
+            cv::flip(frame, flipped, camera_flip[camera_id] );
+            setFrame(flipped); // takes ownership of frame in local storage m_img
+        }
         else
         {
             setFrame(frame); // takes ownership of frame in local storage m_img
-
         }
 
         m_newframe = true;
@@ -457,9 +469,9 @@ MapOSC basicMainProcess::dataToMap(const AnalysisData& data)
     osc.addMessage("/pix/a/mean", pix_1_mean );
     osc.addMessage("/pix/b/mean", pix_2_mean );
     
-    osc.addMessage("/pix/l/mean", pix_0_var );
-    osc.addMessage("/pix/a/mean", pix_1_var );
-    osc.addMessage("/pix/b/mean", pix_2_var );
+    osc.addMessage("/pix/l/var", pix_0_var );
+    osc.addMessage("/pix/a/var", pix_1_var );
+    osc.addMessage("/pix/b/var", pix_2_var );
     
     osc.addMessage("/pix/l/std", pix_0_std );
     osc.addMessage("/pix/a/std", pix_1_std );
@@ -523,6 +535,25 @@ int basicMainProcess::loadShaders()
 
 }
 
+void drawCircle(unique_ptr<cvglObject>& obj, float cx, float cy, float radius, float aspect_ratio, int c_steps = 20)
+{
+    
+    constexpr double twopi = 2.0 * 3.14159265358979323846;
+
+    const float aspect_adjust = 1.0f / aspect_ratio;
+    const float theta_incr = twopi / c_steps;
+    
+    obj->newObj(GL_TRIANGLE_FAN);
+    obj->addVertex(cvglVertex({{cx, cy, 0.0f},  {0.0f, 0.0f} })); // center point
+    for(int i = 0; i <= c_steps; i++)
+    {
+        float vx = cx + (radius * aspect_adjust * cos(i * theta_incr));
+        float vy = cy + (radius * sin(i * theta_incr));
+        obj->addVertex(cvglVertex({{vx, vy, 0.0f},  {0.0f, 0.0f} }));
+    }
+    obj->endObj();
+}
+
 /**
  *  initObjects()
  *  init function to setup VBOs for GL objects, must be called after context setup is complete
@@ -535,11 +566,12 @@ void basicMainProcess::initObjs()
     //glUniform4fv( vignette_attr_idx, 1, &vignette_xyr_aspect[0]);
 
 
-    rect = unique_ptr<cvglObject>(new cvglObject);
+    
     contourMesh = unique_ptr<cvglObject>(new cvglObject);
     hullMesh = unique_ptr<cvglObject>(new cvglObject);
     minrectMesh = unique_ptr<cvglObject>(new cvglObject);
     flowMesh = unique_ptr<cvglObject>(new cvglObject);
+    defect_dots = unique_ptr<cvglObject>(new cvglObject);
     
     frameTex =  unique_ptr<cvglTexture>(new cvglTexture);
     contourTex = unique_ptr<cvglTexture>(new cvglTexture);
@@ -547,16 +579,14 @@ void basicMainProcess::initObjs()
     hullTex =  unique_ptr<cvglTexture>(new cvglTexture);
     minrectTex =  unique_ptr<cvglTexture>(new cvglTexture);
     prevFrame =  unique_ptr<cvglTexture>(new cvglTexture);
-
-    framebuffer[0] = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
-    framebuffer[1] = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
-    pass_buffer = unique_ptr<cvglFramebuffer>(new cvglFramebuffer);
+    defect_tex =  unique_ptr<cvglTexture>(new cvglTexture);
 
     m_hull_rgba = vector<float>({1, 0, 1, 1});
     m_minrect_rgba = vector<float>({1, 1, 1, 0.9});
     m_contour_rgba = vector<float>({0.25, 0.5, 1., 0.125});
 
-
+    
+    rect = unique_ptr<cvglObject>(new cvglObject);
     float x[] = {-1, 1, 1, -1 };
     float y[] = {1, 1, -1, -1 };
     rect->newObj(GL_TRIANGLES);
@@ -569,7 +599,16 @@ void basicMainProcess::initObjs()
     rect->endObj();
     rect->initStaticDraw();
 
-  
+    orange_dot_pattern = unique_ptr<cvglObject>(new cvglObject); // do something with mac orange dot?
+    orange_dot_tex =  unique_ptr<cvglTexture>(new cvglTexture);
+    
+    float radius = 0.005;
+    float cx = 1 - radius - 0.001;
+    float cy = 1 - radius - 0.001;
+    
+    drawCircle(orange_dot_pattern, cx, cy, radius, context.getAspectRatio());
+    orange_dot_pattern->initStaticDraw();
+    
 
     objects_initialized = true;
 
@@ -589,8 +628,12 @@ void basicMainProcess::analysisToGL(const AnalysisData &analysis)
     // note: analysis only has part of the data when it gets here!! don't try to use the other data
 
     size_t npoints = 0;
-    for( auto& c : analysis.contours )
-        npoints += (c.cols * c.rows);
+    size_t ndefect_pts = 0;
+    for( int i = 0; i < analysis.ncontours; i++ )
+    {
+        npoints += (analysis.contours[i].cols * analysis.contours[i].rows);
+        ndefect_pts += (analysis.defects_vec[i].size() * 21); // circle tri_fan steps + 1 for center
+    }
     
     if( m_draw_contour || m_draw_contour_triangles){
         contourMesh->clear();
@@ -607,6 +650,12 @@ void basicMainProcess::analysisToGL(const AnalysisData &analysis)
     {
         minrectMesh->clear();
         minrectMesh->reserve( analysis.contours.size() * 4 * 2 );
+    }
+    
+    if( m_draw_defect_dots )
+    {
+        defect_dots->clear();
+        defect_dots->reserve(ndefect_pts);
     }
     
     for( size_t i = 0 ; i < analysis.contour_idx.size(); i++ )
@@ -637,6 +686,22 @@ void basicMainProcess::analysisToGL(const AnalysisData &analysis)
             //cvgl::pointsToPolygonLineVertex(rect_v, minrectMesh, analysis.halfW, analysis.halfH, 10);
         }
 
+        if( m_draw_defect_dots )
+        {
+            for( size_t j = 0; j < analysis.defects_vec[i].size(); j++ )
+            {
+                const Vec4i& v = analysis.defects_vec[i][j];
+                const float depth = v[3] / 256.;
+                if( depth > 5 )
+                {
+                    const Point2i* ptFar = analysis.contours[analysis.contour_idx[i]].ptr<Point2i>( v[2] );
+
+                    float defect_x = ((float)ptFar->x - analysis.halfW) / analysis.halfW;
+                    float defect_y = -((float)ptFar->y - analysis.halfH) / analysis.halfH;
+                    drawCircle(defect_dots, defect_x, defect_y, 0.005, context.getAspectRatio());
+                }
+            }
+        }
 
     }
     
@@ -717,20 +782,35 @@ void basicMainProcess::draw()
             cv::addWeighted(frames[1], 1.0-m_overlap_cameras, frames[2], m_overlap_cameras, 0.0, merge);
         }
 
+        size_t w = merge.size().width;
+        size_t h = merge.size().height;
+//        auto mask = UMat::zeros(merge.size(), merge.type());
+        cv::rectangle(merge,
+                      Point(drawRange_x[1] * w, (1. - drawRange_y[1]) * h),
+                      Point(drawRange_x[0] * w, drawRange_y[0] * h), 0, FILLED);
+        
+//        merge.copyTo(merge, mask);
+        
         frameTex->setTexture( merge.getMat(ACCESS_READ) );
     }
 
     // draw main frame
-
 
     if( m_draw_frame )
     {
         rect->bind();
         frameTex->bind();
         rect->draw();
+        
+        orange_dot_pattern->bind();
+        orange_dot_tex->bind();
+        orange_dot_tex->setTexture(1, 0, 0, 1);
+        orange_dot_pattern->draw();
+        
+        drawShapes( screen_shader );
     }
+    
 
-    drawShapes( screen_shader );
 
 
     // ----------------------------------------------------------------
@@ -743,8 +823,8 @@ void basicMainProcess::draw()
     screen_shader.setFloat("noise_mult", noise_mult );
     screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
     screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
-    screen_shader.setVec2("drawRange_y", drawRange_y);
-    screen_shader.setVec2("drawRange_x", drawRange_x);
+    screen_shader.setVec2("drawRange_y", {0,1});
+    screen_shader.setVec2("drawRange_x", {0,1});
 
     context.drawAndPoll();
 
@@ -759,12 +839,11 @@ void basicMainProcess::drawShapes(cvglShader& shapeRenderShader)
 {
     glm::mat4 transform = glm::identity<glm::mat4>(); // not screen version here...
 
-    glActiveTexture(GL_TEXTURE0);
+    //glActiveTexture(GL_TEXTURE0);
 
     if( m_draw_contour )
     {
         contourMesh->bind();
-        shapeRenderShader.setFloat("scale_alpha", 1);
         contourTex->setTexture(m_contour_rgba);//getFrame());
         contourMesh->draw(GL_TRIANGLES);
     }
@@ -774,7 +853,6 @@ void basicMainProcess::drawShapes(cvglShader& shapeRenderShader)
         contourMesh->bind();
         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
         contourTriTex->setTexture(m_contour_triangles_rgba);
-        shapeRenderShader.setFloat("scale_alpha", 1);
         contourMesh->draw(GL_TRIANGLE_STRIP);
         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
     }
@@ -782,7 +860,6 @@ void basicMainProcess::drawShapes(cvglShader& shapeRenderShader)
     if( m_draw_hull )
     {
         hullMesh->bind();
-        shapeRenderShader.setFloat("scale_alpha", 1);
         hullTex->setTexture(m_hull_rgba);
         hullMesh->draw(GL_TRIANGLE_STRIP);//vector<int>({GL_TRIANGLES, GL_POINTS}));
     }
@@ -792,10 +869,15 @@ void basicMainProcess::drawShapes(cvglShader& shapeRenderShader)
         //   glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
         minrectMesh->bind();
         minrectTex->setTexture(m_minrect_rgba);
-        shapeRenderShader.setFloat("scale_alpha", 1);
         minrectMesh->draw(GL_TRIANGLE_STRIP);
     }
 
+    if( m_draw_defect_dots )
+    {
+        defect_dots->bind();
+        defect_tex->setTexture(vector<float>({1,1,0,0.5}));
+        defect_dots->draw();
+    }
 
 }
 

@@ -111,13 +111,12 @@ void cvglCV::preprocessBasic()
     cv::cvtColor(src_color_sized, src_gray, cv::COLOR_RGB2GRAY);
     
     // cout << "nchannels " << src_color_sized.channels() << endl;
-    
     switch (m_color_mode) {
         case 1:
-            cvtColor(src_color_sized, src_color_sized, COLOR_RGB2HLS_FULL);
+            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2HLS_FULL);
             break;
         case 2:
-            cvtColor(src_color_sized, src_color_sized, COLOR_RGB2Lab);
+            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2Lab);
             break;
         default:
             break;
@@ -170,10 +169,10 @@ void cvglCV::preprocessDifference()
     
     switch (m_color_mode) {
         case 1:
-            cvtColor(src_color_sized, src_color_sized, COLOR_RGB2HLS_FULL);
+            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2HLS_FULL);
             break;
         case 2:
-            cvtColor(src_color_sized, src_color_sized, COLOR_RGB2Lab);
+            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2Lab);
             break;
         default:
             break;
@@ -212,10 +211,10 @@ void cvglCV::preprocessCanny()
     
     switch (m_color_mode) {
         case 1:
-            cvtColor(src_color_sized, src_color_sized, COLOR_RGB2HLS_FULL);
+            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2HLS_FULL);
             break;
         case 2:
-            cvtColor(src_color_sized, src_color_sized, COLOR_RGB2Lab);
+            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2Lab);
             break;
         default:
             break;
@@ -840,7 +839,7 @@ void cvglCV::analysisThread(AnalysisData data)
         else
             stats = getStatsChar( src_color_sized_mat, sob_mat, contour_mask, boundRect );
 
-        if (m_use_preprocess != 3 && m_color_mode == 2 && stats.size() == 3) {
+        if (m_use_preprocess != 3 && m_color_mode == 2 && stats.size() == 4) {
             stats[0].mean *= 0.3921568627; // 100/255 to sacle to 0-100
             stats[1].mean -= 128;
             stats[2].mean -= 128;

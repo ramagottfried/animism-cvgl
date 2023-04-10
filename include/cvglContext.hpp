@@ -164,15 +164,67 @@ public:
 
     inline GLFWwindow* getWindow(){ return m_window; }
 
+    void enterFullScreen()
+    {
+        GLFWmonitor* current_monitor = glfwGetWindowMonitor(m_window);
+        
+        // null if not currently full screen
+        if(current_monitor == NULL)
+        {
+            initMonitors();
+            glfwGetWindowPos(m_window, &win_xpos, &win_ypos);
+            // log position for exiting, size is already cached
+        }
+        else
+        {
+            for( int i = 0; i < monitors.size(); i++ )
+            {
+                if( current_monitor == monitors[i] ){
+                    current_monitor_index = i;
+                    break;
+                }
+            }
+        }
+        
+        current_monitor_index = (current_monitor_index + 1) % monitors.size();
+        
+        const GLFWvidmode* mode = glfwGetVideoMode( monitors[current_monitor_index] );
+         
+        glfwSetWindowMonitor(m_window, monitors[current_monitor_index], 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
+    
+    void exitFullScreen()
+    {
+        // if currently full screen
+        if( glfwGetWindowMonitor(m_window) != NULL )
+        {
+            glfwSetWindowMonitor(m_window, NULL, win_xpos, win_ypos, m_wind_w, m_wind_h, 0);
+            current_monitor_index = -1;
+        }
+    }
+    
+    void initMonitors(){
+        int count = 0;
+        GLFWmonitor **monitorPtrs = glfwGetMonitors(&count);
+        for(int i = 0; i < count; i++)
+            monitors.emplace_back(monitorPtrs[i]);
+    }
+    
 private:
     
     GLFWwindow* m_window = nullptr;
+    
+    std::vector<GLFWmonitor*> monitors;
+    int current_monitor_index = -1;
+    
     GLuint m_shaderProgram = 0;
     GLuint m_vertexShader = 0;
     GLuint m_fragmentShader = 0;
     
     size_t m_wind_h, m_wind_w;
-
+    int win_xpos = 0;
+    int win_ypos = 0;
+    
     double m_aspectRatio = 1.0;
     float m_x_scale = 1;
     float m_y_scale = 1;

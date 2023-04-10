@@ -52,7 +52,7 @@ public:
         
         glTexImage2D(GL_TEXTURE_2D,     // Type of texture
                      0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-                     GL_RGB,            // Internal colour format to convert to
+                     GL_RGBA,            // Internal colour format to convert to
                      bgr_mat.cols,          // Image width  i.e. 640 for Kinect in standard mode
                      bgr_mat.rows,          // Image height i.e. 480 for Kinect in standard mode
                      0,                 // Border width in pixels (can either be 1 or 0)

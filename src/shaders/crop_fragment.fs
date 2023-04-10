@@ -36,7 +36,7 @@ void main()
     vec4 bw_noise = vec4( vec3( rand(texcord0 + fract(time)) ), 1.0);
     vec4 bw_noise_mult = mix(bw_noise, bw_noise * tex_samp, noise_mult);
 
-    vec4 outSamp = mix(tex_samp, bw_noise_mult, noise_mix);
+    vec4 outSamp = tex_samp; // mix(tex_samp, bw_noise_mult, noise_mix);
 
     if( Texcoord.y < drawRange_y.x || Texcoord.y > drawRange_y.y || Texcoord.x < drawRange_x.x || Texcoord.x > drawRange_x.y )
     {

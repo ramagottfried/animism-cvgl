@@ -11,28 +11,10 @@ using namespace std;
 // note: could make this a callback method in the context class, by using the logWindow system, see cvglCallbacks.cpp
 void keyboardcallback(GLFWwindow *window, int key, int scanmode, int action, int mods)
 {
-    if( key == GLFW_KEY_RIGHT && action == GLFW_PRESS )
-    {
-        MapOSC b;
-        string next = "GLFW_KEY_RIGHT"; // app.cues().getNext();
-        cout << "right " << next << endl;
-
-        b.addMessage("/cue", next );
-        app.receivedBundle(b);
-    }
-    else if( key == GLFW_KEY_LEFT && action == GLFW_PRESS )
-    {
-        MapOSC b;
-        string prev = "GLFW_KEY_LEFT"; //app.cues().getPrev();
-        cout << "left " << prev << endl;
-        b.addMessage("/cue", prev );
-        app.receivedBundle(b);
-    }
-    else if( key == GLFW_KEY_SPACE && action == GLFW_PRESS )
-    {
-        MapOSC b;
-        b.addMessage("/captureFrame", 0 ); // default cam
-        app.receivedBundle(b);
+    if( key == GLFW_KEY_F && action == GLFW_PRESS ) {
+        app.context.enterFullScreen();
+    } else if( key == GLFW_KEY_W && action == GLFW_PRESS ) {
+        app.context.exitFullScreen();
     }
 }
 
@@ -121,13 +103,14 @@ int main( void )
     cout << "starting draw loop " << endl;
 
     app.context.flip(0,0);
-
-    glfwSetKeyCallback(app.context.getWindow(), keyboardcallback );
-
+    
     MapOSC b;
     b.addMessage("/use/preprocess", 0);
-    app.setCVParams(b);
+    b.addMessage("/camera/flip", 1, -1);
+    app.receivedBundle(b);
     
+    glfwSetKeyCallback(app.context.getWindow(), keyboardcallback );
+
     // main GL loop
     while( !app.context.shouldClose() )
     {

@@ -27,14 +27,10 @@ public:
     
     void setVignette(float x, float y, float r);
 
-    std::unique_ptr<cvglObject>     rect, contourMesh, hullMesh, minrectMesh, flowMesh;
+    std::unique_ptr<cvglObject> rect, contourMesh, hullMesh, minrectMesh, flowMesh, defect_dots, orange_dot_pattern;
 
-    std::unique_ptr<cvglTexture>    frameTex, contourTex, contourTriTex, hullTex, minrectTex, flowTex, prevFrame;
+    std::unique_ptr<cvglTexture> frameTex, contourTex, contourTriTex, hullTex, minrectTex, defect_tex, flowTex, prevFrame, orange_dot_tex;
     
-    int fbIDX = 0;
-    std::unique_ptr<cvglFramebuffer> framebuffer[2];
-    std::unique_ptr<cvglFramebuffer> pass_buffer;
-
     bool objects_initialized = false;
     
     // methods
@@ -88,6 +84,7 @@ private:
     bool m_show_webcam_tile = false;
 
     std::unordered_map<int, cv::UMat> frames;
+    std::unordered_map<int, int> camera_flip;
 
     std::mutex m_gl_lock, m_osc_lock;
     
@@ -101,7 +98,8 @@ private:
     
     bool m_draw_hull = true;
     bool m_draw_minrect = true;
-    
+    bool m_draw_defect_dots = false;
+
 
     std::vector<float> m_contour_rgba;
     std::vector<float> m_contour_triangles_rgba;

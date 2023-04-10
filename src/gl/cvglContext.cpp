@@ -4,25 +4,6 @@
 
 using namespace std;
 
-/*
-void cvglContext::set_time_uniform(float t)
-{
-    if( m_timeAttrib > -1 )
-    {
-        glUniform1fv(m_timeAttrib, 1, &t );
-    }
-}
-
-void cvglContext::set_contrast_uniform(float x)
-{
-    if( m_contrastAttr > -1 )
-    {
-        glUniform1fv(m_contrastAttr, 1, &x );
-
-    }
-}
-*/
-
 void cvglContext::resize_callback(int w, int h)
 {
     std::cout << "resize " << w << " " << h << std::endl;
@@ -132,6 +113,7 @@ void cvglContext::setupWindow(int width, int height, std::string name )
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 #endif
 
+
     // Open a window and create its OpenGL context
     m_window = glfwCreateWindow( width, height, name.c_str(), NULL, NULL);
     if( m_window == NULL ){
@@ -140,12 +122,6 @@ void cvglContext::setupWindow(int width, int height, std::string name )
         return;
     }
     
-    float xscale, yscale;
-    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-    glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-
-    cout << "\n\n\n monitor scaling " << xscale << " " << yscale << "\n\n\n" << endl;
-
     logWindow( m_window, this );
     
     glfwMakeContextCurrent(m_window);
@@ -170,7 +146,9 @@ void cvglContext::setupWindow(int width, int height, std::string name )
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+//    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glEnable(GL_LINE_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT,  GL_NICEST);
     
