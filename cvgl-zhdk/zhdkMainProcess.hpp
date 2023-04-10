@@ -9,11 +9,12 @@
 #include "cvglUDPServer.hpp"
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
-#include "AnimismCues.hpp"
+
+#include "ZhdkCues.hpp"
 
 #include "MirrorTriangles.hpp"
 
-class cvglMainProcess :  public cvglCV, public cvglUDPServer
+class zhdkMainProcess :  public cvglCV, public cvglUDPServer
 {
     
 public:
@@ -71,32 +72,15 @@ public:
 
     void initCues();
 
-  //  vector<cvglVertex> genTriangle(int i, float nTriangles, float yrange, float overlap, float x_offset = 0 );
-  //  vector<cvglVertex> genTriangle(float x, float y, float xrange, float yrange);
-
-    void makeMirrorTriangles();
-//    void triCollision(double x, double y);
-//    std::vector<float> getRGBA( const OdotMessage & msg );
-    
     inline void useCameraID( int i ){ m_use_camera_id = i; }
-    
-    /*
-    inline void initMixer()
-    {
-        MapOSC out;
-        m_mixer.initMidi(out);
-        std::cout << "initializing midi mixer" << std::endl;
-        sendBundle( out );
-    }
-    */
 
     int loadShaders();
 
-    AnimismCues& cues(){ return m_cues; }
+    ZhdkCues& cues(){ return m_cues; }
 
 private:
 
-    AnimismCues m_cues;
+    ZhdkCues m_cues;
     //cvglMixer m_mixer;
 
     AnalysisData m_data;
@@ -168,8 +152,9 @@ private:
     glm::vec4 vignette_xyr_aspect;
     float vignette_fadeSize = 0.5;
 
+    glm::vec2 drawRange_y = glm::vec2(0.0f, 1.0f);
+    glm::vec2 drawRange_x = glm::vec2(0.0f, 1.0f);
 
-    MirrorTriangles mirrorTriangles;
 
 };
 

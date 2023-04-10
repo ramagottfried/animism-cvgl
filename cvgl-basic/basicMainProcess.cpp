@@ -736,11 +736,6 @@ void basicMainProcess::draw()
     // ----------------------------------------------------------------
     // screen framebuffer
 
-
-    // switch to this default screen framebuffer
-    // draw fbIDX frame buffer, using simple output shader (not stored)
-
-
     screen_shader.setMat4("transform_matrix", transform);
     screen_shader.setFloat("time", (float)glfwGetTime() );
 

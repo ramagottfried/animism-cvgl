@@ -1,10 +1,10 @@
 
-#include "cvglMainProcess.hpp"
+#include "zhdkMainProcess.hpp"
 #include "cvglCVCamera.hpp"
 #include "cvglDeckLinkCamera.hpp"
 #include "cvglVideoPlayer.hpp"
 
-cvglMainProcess app;
+zhdkMainProcess app;
 
 
 void keyboardcallback(GLFWwindow *window, int key, int scanmode, int action, int mods)

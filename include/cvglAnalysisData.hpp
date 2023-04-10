@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <unordered_map>
 
+#include "MapOSC.hpp"
+
 struct PixStats {
     double min = std::numeric_limits<double>::max();
     double max = 0;
@@ -153,5 +155,8 @@ struct AnalysisData
         // add pixel data here
         pix_channel_stats.resize(n);
     }
+
+    MapOSC getOSC() const;
+
 };
 

@@ -1,5 +1,5 @@
 
-#include "cvglMainProcess.hpp"
+#include "zhdkMainProcess.hpp"
 
 #include "cvglRandom.hpp"
 #include "cvglHelperFunctions.hpp"
@@ -8,17 +8,23 @@ using namespace std;
 using namespace cv;
 
 
-void cvglMainProcess::initCues()
+void zhdkMainProcess::initCues()
 {
     MapOSC bndl;
     bndl.addMessage("/init/cueNames", m_cues.getCueNames() );
     sendBundle(bndl);
+
+    auto names = m_cues.getCueNames();
+
+    for( auto& c : names )
+        cout << c << endl;
+
 }
 
 /**
  virtual function called from UDP thread
  */
-void cvglMainProcess::receivedBundle( MapOSC & b )
+void zhdkMainProcess::receivedBundle( MapOSC & b )
 {
     unique_lock<mutex> lock_osc(m_osc_lock);
     
@@ -32,11 +38,12 @@ void cvglMainProcess::receivedBundle( MapOSC & b )
     // >>>> process cue function is called from UDP and CV threads -- causng some problems now
     // >>>> maybe not necessary to do data analysis here? ... seems maybe reasonable to me
     
+
     MapOSC out = m_cues.procDataAndMixer(m_data, b);
    
     // on input process OSC with current data and mixer (with osc lock)
     sendBundle( out );
-    
+
     setCVParams(b);
     
     // seems like this should be locked to avoid reading the values in the draw loop, but it's hanging...
@@ -49,7 +56,7 @@ void cvglMainProcess::receivedBundle( MapOSC & b )
 /**
  *  note: must be be set  with m_osc_lock mutex since reader is on a gl thread
  */
-void cvglMainProcess::setMainParams( MapOSC & b )
+void zhdkMainProcess::setMainParams( MapOSC & b )
 {
     for( const auto& m : b.getMap() )
     {
@@ -67,6 +74,14 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         else if( addr == "/video/black" )
         {
             m_draw_black = val.getInt() > 0;
+        }
+        else if( addr == "/camera/cutoff" )
+        {
+            if( val.size() == 2 )
+            {
+                drawRange_y.x = val.get<float>(0);
+                drawRange_y.y = val.get<float>(1);
+            }
         }
         else if( addr == "/vignette/xyr" )
         {
@@ -92,7 +107,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             m_show_webcam_tile = val.getInt() > 0;
         }
-        else if( addr == "/enable/contour" )
+        else if( addr == "/enable/contour" || addr == "/contour/enable" )
         {
             int setting = val.getInt();
             switch(setting)
@@ -127,7 +142,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             m_contour_line_thickness = val.getFloat();
         }
-        else if( addr == "/enable/hull" )
+        else if( addr == "/enable/hull" || addr == "/hull/enable" )
         {
             m_draw_hull = val.getInt() > 0;
         }
@@ -139,7 +154,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
         {
             m_hull_line_thickness = val.getFloat();
         }
-        else if( addr == "/enable/minrect" )
+        else if( addr == "/enable/minrect" || addr == "/minrect/enable"  )
         {
             m_draw_minrect = val.getInt() > 0;
         }
@@ -175,16 +190,6 @@ void cvglMainProcess::setMainParams( MapOSC & b )
             gamma = val.getFloat();
             cout << "setting gamma " << gamma << endl;
         }        
-        /*
-        else if( addr == "/triangle/interact/x")
-        {
-            const auto& vec = val.getAtomVector();
-            for( const auto& v : vec )
-            {
-         //       triCollision(v->getFloat(), 0);
-            }
-
-        }*/
         else if( addr == "/big_triangle1/alpha")
         {
             big_tri1_alpha = val.getFloat();
@@ -292,7 +297,7 @@ void cvglMainProcess::setMainParams( MapOSC & b )
     }
 }
 
-void cvglMainProcess::captureFrame( int camera_id, const string& filename )
+void zhdkMainProcess::captureFrame( int camera_id, const string& filename )
 {
     cv::imwrite(filename, frames[camera_id == 0 ? m_use_camera_id : camera_id]);
 }
@@ -301,7 +306,7 @@ void cvglMainProcess::captureFrame( int camera_id, const string& filename )
  *  callback from camera thread
  *  wondering if maybe the camera thread is getting slowed down by the analysis
  */
-void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
+void zhdkMainProcess::processFrame(cv::UMat & frame, int camera_id )
 {
     if( frame.empty() || !objects_initialized )
         return;
@@ -371,7 +376,7 @@ void cvglMainProcess::processFrame(cv::UMat & frame, int camera_id )
  *  virtual function callback called from detached openCV worker thread
  *  could add mappings here
  */
-void cvglMainProcess::processAnalysis(const AnalysisData& data)
+void zhdkMainProcess::processAnalysis(const AnalysisData& data)
 {
     // on new data, process with mixer (no osc lock?)
     MapOSC out, b;
@@ -392,7 +397,7 @@ void cvglMainProcess::processAnalysis(const AnalysisData& data)
 }
 
 
-void cvglMainProcess::setVignette(float x, float y, float r)
+void zhdkMainProcess::setVignette(float x, float y, float r)
 {
     if( r > 0 )
     {
@@ -400,80 +405,13 @@ void cvglMainProcess::setVignette(float x, float y, float r)
     }
 }
 
-void cvglMainProcess::makeMirrorTriangles()
-{
 
-
-    cvglRandom rand;
-    float nTriangles = 15;
-    float yrange = 0.4;
-    float overlap = 5;
-
-    float xRatio = 1. / nTriangles;
-
-    glitchRect->clear();
-//    glitchRect->reserve( nTriangles * 3 );
-    glitchRect->newObj();
-
-/*
-    for(int i = 0 ; i < nTriangles; i++)
-    {
-        auto tri = genTriangle(i, nTriangles, yrange, overlap, -2);
-
-        glitchRect->addVertex(tri[0]);
-        glitchRect->addVertex(tri[1]);
-        glitchRect->addVertex(tri[2]);
-    }
-
-    for(int i = 0 ; i < nTriangles; i++)
-    {
-        auto tri = genTriangle(i, nTriangles, yrange, overlap, -1);
-
-        glitchRect->addVertex(tri[0]);
-        glitchRect->addVertex(tri[1]);
-        glitchRect->addVertex(tri[2]);
-    }
-*/
-
-   // float minxrange =  (i == 0 ? 0 : (i-overlap) * xRatio);
-   // float maxxrange =  ((i + 1 + overlap) * xRatio);
-
-    for(int ix = 0 ; ix < nTriangles; ix++)
-    {
-        for(int iy = 0 ; iy < nTriangles; iy++)
-        {
-            auto tri = mirrorTriangles.genTriangle(ix*xRatio, iy*xRatio, overlap*xRatio, overlap*xRatio);
-            glitchRect->addVertex(tri[0]);
-            glitchRect->addVertex(tri[1]);
-            glitchRect->addVertex(tri[2]);
-
-        }
-
-//        tri_vel.emplace_back(0.);
-
-    }
-
-
-    glitchRect->endObj();
-    glitchRect->initStaticDraw();
-}
-
-
-int cvglMainProcess::loadShaders()
+int zhdkMainProcess::loadShaders()
 {
     std::string shader_path = "./shaders/"; // relative to exec location
+    //std::string shader_path = "/Users/rgottfri/Documents/dev/animism-cvgl/src/"; //"/home/rama/animism-cvgl/src/";
 
-    if( !flow_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "flow_repos.fs" ) ){
-        cout << "failed to load screen shader" << endl;
-        return 0;
-    }
-
-    if( !luma_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "luma_alpha_color.fs" ) ){
-        cout << "failed to load base shader" << endl;
-        return 0;
-    }
-
-    if( !screen_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "screen_vignette.fs" ) ){
+    if( !screen_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "crop_fragment.fs" ) ){
         cout << "failed to load screen shader" << endl;
         return 0;
     }
@@ -482,39 +420,6 @@ int cvglMainProcess::loadShaders()
 
     setVignette(0.5, 0.5, 1);
 
-    // setup first shader
-    luma_shader.use();
-    luma_shader.setInt("tex", 0);
-    luma_shader.setInt("prevTex", 1);
-    luma_shader.setMat4("transform_matrix", identityMatrix );
-
-    luma_shader.setFloat("gamma", gamma);
-    luma_shader.setFloat("contrast", contrast);
-    luma_shader.setFloat("saturation", saturation);
-    luma_shader.setFloat("brightness", brightness);
-    luma_shader.setFloat("scale_alpha", 1);
-
-    luma_shader.setFloat("luma_target", luma_target);
-    luma_shader.setFloat("luma_tol", luma_tol);
-    luma_shader.setFloat("luma_fade", luma_fade);
-    luma_shader.setFloat("luma_mix", luma_mix);
-
-
-    // setup first shader
-    flow_shader.use();
-    flow_shader.setInt("tex0", 0);
-    flow_shader.setInt("tex1", 1);
-    flow_shader.setMat4("transform_matrix", identityMatrix );
-
-    flow_shader.setVec2("hsflow_scale", hsflow_scale );
-    flow_shader.setVec2("hsflow_offset", hsflow_offset);
-    flow_shader.setFloat("hsflow_lambda", hsflow_lambda );
-
-    flow_shader.setVec2("repos_amt", repos_amt );
-    flow_shader.setVec4("repos_scale", repos_scale);
-    flow_shader.setVec4("repos_bias", repos_bias );
-
-    flow_shader.setFloat("flow_mix", flow_mix);
 
     screen_shader.use();
     screen_shader.setInt("framebuffer_tex", 0);
@@ -522,6 +427,8 @@ int cvglMainProcess::loadShaders()
     screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
     screen_shader.setFloat("noise_mix", noise_mix);
     screen_shader.setFloat("noise_mix", noise_mult);
+    screen_shader.setVec2("drawRange_y", drawRange_y);
+
 
     return 1;
 
@@ -532,7 +439,7 @@ int cvglMainProcess::loadShaders()
  *  init function to setup VBOs for GL objects, must be called after context setup is complete
  */
 
-void cvglMainProcess::initObjs()
+void zhdkMainProcess::initObjs()
 {
 
     //glm::vec4 vignette_xyr_aspect(0.5, 0.25, 1, context.getAspectRatio() );
@@ -578,7 +485,6 @@ void cvglMainProcess::initObjs()
     rect->endObj();
     rect->initStaticDraw();
 
-    makeMirrorTriangles();
 
     float triRatio = 3. / 4.;
 
@@ -665,7 +571,7 @@ void cvglMainProcess::initObjs()
 
 
 
-void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
+void zhdkMainProcess::analysisToGL(const AnalysisData &analysis)
 {
     
     
@@ -733,7 +639,7 @@ void cvglMainProcess::analysisToGL(const AnalysisData &analysis)
  *  called from GL thread
  */
 
-void cvglMainProcess::handleKeyInput()
+void zhdkMainProcess::handleKeyInput()
 {
 
     if( glfwGetKey(context.getWindow(), GLFW_KEY_RIGHT ) == GLFW_PRESS )
@@ -748,7 +654,7 @@ void cvglMainProcess::handleKeyInput()
 
 }
 
-void cvglMainProcess::draw()
+void zhdkMainProcess::draw()
 {
 
     //cout << ">> draw LOCK" << endl;
@@ -759,7 +665,20 @@ void cvglMainProcess::draw()
     //   cout << (start - std::chrono::system_clock::now()).count()  << endl;
     
     // this can get slowed down if a new frame comes in while the old one is still being drawn?
-    
+
+    if( m_draw_black )
+    {
+        context.bindDefaultFramebuffer();
+        screen_shader.use();
+        glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
+        context.updateViewport(1);
+        context.clear();
+
+        context.drawAndPoll();
+        m_newframe = false;
+        return;
+    }
+
     if( !lock.try_lock() || !context.isActive() || !objects_initialized || m_img.empty() || !m_newframe ){
         //cout << "<< draw unlock" << endl;
         return;
@@ -773,29 +692,10 @@ void cvglMainProcess::draw()
 
     glm::mat4 transform = context.getTransform();
 
-    if( m_draw_black )
-    {
-        context.bindDefaultFramebuffer();
-        screen_shader.use();
-     /*
-        screen_shader.setMat4("transform_matrix", transform);
-        screen_shader.setFloat("time", (float)glfwGetTime() );
+    context.bindDefaultFramebuffer();
+    context.clear();
 
-        screen_shader.setFloat("noise_mix", noise_mix );
-        screen_shader.setFloat("noise_mult", noise_mult );
-        screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
-        screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
-*/
-
-        glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
-        context.updateViewport(1);
-        context.clear();
-
-        context.drawAndPoll();
-        m_newframe = false;
-        return;
-    }
-
+    screen_shader.use();
 
     // make frame texture
     UMat merge;
@@ -829,37 +729,6 @@ void cvglMainProcess::draw()
 
 
 
-    int prev_fbIDX = fbIDX;
-    fbIDX = (fbIDX+1) % 2;
-
-    pass_buffer->bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    context.clear();
-
-    // note: don't update the viewport or transform, since the fbos are always the same size (1920x1080)
-
-    flow_shader.use();
-
-    flow_shader.setFloat("slide_up", 3.3);
-    flow_shader.setFloat("slide_down", 3.3);
-
-    flow_shader.setVec2("hsflow_scale", hsflow_scale );
-    flow_shader.setVec2("hsflow_offset", hsflow_offset);
-    flow_shader.setFloat("hsflow_lambda", hsflow_lambda );
-
-    flow_shader.setVec2("repos_amt", repos_amt );
-    flow_shader.setVec4("repos_scale", repos_scale);
-    flow_shader.setVec4("repos_bias", repos_bias );
-
-    flow_shader.setFloat("flow_mix", flow_mix);
-
-
-
-    glActiveTexture(GL_TEXTURE0+1); // Texture unit 1
-    context.bindTextureByID( framebuffer[prev_fbIDX]->getTexID() );
-
-    glActiveTexture(GL_TEXTURE0); // Texture unit 0 for new frames and gl colors
-
     if( m_draw_frame )
     {
         rect->bind();
@@ -867,57 +736,12 @@ void cvglMainProcess::draw()
         rect->draw();
     }
 
-
-    // switch to write into storage framebuffer
-    // draw previous texture, applying flow stuff
-
-    // ----------------------------------------------------------------
-    // luma framebuffer, stored for feedback
-
-    framebuffer[fbIDX]->bind();
-    // note: don't update the viewport or transform, since the fbos are always the same size (1920x1080)
-    luma_shader.use();
-    luma_shader.setFloat("gamma", gamma);
-    luma_shader.setFloat("contrast", contrast);
-    luma_shader.setFloat("saturation", saturation);
-    luma_shader.setFloat("brightness", brightness);
-
-    luma_shader.setFloat("luma_target", luma_target);
-    luma_shader.setFloat("luma_tol", luma_tol);
-    luma_shader.setFloat("luma_fade", luma_fade);
-    luma_shader.setFloat("luma_mix", luma_mix);
-    luma_shader.setFloat("scale_alpha", 1);
-
-
-    //luma_shader.setFloat("prev_tex_ratio", 0.94);
-
-    // this needs to be black, since the processing creates alpha dips
-    // we will see the background if the the alpha is low
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    context.clear();
-
-
-    rect->bind();    
-        glActiveTexture(GL_TEXTURE0);
-        frameTex->bind();
-
-        glActiveTexture(GL_TEXTURE0+1);
-        context.bindTextureByID( pass_buffer->getTexID() ); // tex0 = prev render pass
-    rect->draw();
-
-    drawShapes( luma_shader );
+    drawShapes( screen_shader );
 
 
     // ----------------------------------------------------------------
     // screen framebuffer
 
-
-    // switch to this default screen framebuffer
-    // draw fbIDX frame buffer, using simple output shader (not stored)
-
-    context.bindDefaultFramebuffer();
-    screen_shader.use();
     screen_shader.setMat4("transform_matrix", transform);
     screen_shader.setFloat("time", (float)glfwGetTime() );
 
@@ -925,16 +749,8 @@ void cvglMainProcess::draw()
     screen_shader.setFloat("noise_mult", noise_mult );
     screen_shader.setVec4("vignette_xyr_aspect", vignette_xyr_aspect);
     screen_shader.setFloat("vignette_fadeSize", vignette_fadeSize);
-
-
-    glClearColor(0.f, 0.f, 0.f, 1.0f); // set clear color to white (not really necessary actually, since we won't be able to see behind the quad anyways)
-    context.updateViewport(1);
-    context.clear();
-    glActiveTexture(GL_TEXTURE0);
-
-    rect->bind();
-    context.bindTextureByID( framebuffer[fbIDX]->getTexID() ); //framebuffer->getTexID()
-    rect->draw();
+    screen_shader.setVec2("drawRange_y", drawRange_y);
+    screen_shader.setVec2("drawRange_x", drawRange_x);
 
     context.drawAndPoll();
 
@@ -945,7 +761,7 @@ void cvglMainProcess::draw()
 }
 
 
-void cvglMainProcess::drawShapes(cvglShader& shapeRenderShader)
+void zhdkMainProcess::drawShapes(cvglShader& shapeRenderShader)
 {
     glm::mat4 transform = glm::identity<glm::mat4>(); // not screen version here...
 

@@ -161,7 +161,7 @@ protected:
     double m_track_radius = 0.2;
     
     int m_color_mode = 2; 
-    int m_use_preprocess = 3;
+    int m_use_preprocess = 0;
     
     float m_canny_min = 0;
     float m_canny_max = 30;

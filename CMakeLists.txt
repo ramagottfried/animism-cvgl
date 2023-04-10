@@ -178,8 +178,8 @@ file(GLOB CUE_FILES ${CUE_DIR}/*.cpp)
 
 add_executable(zhdk
    ${CUE_FILES}
-   cvgl-zhdk/cvgl_main.cpp # << should not put this in the main src dir
-   cvgl-zhdk/cvglMainProcess.cpp
+   cvgl-zhdk/zhdk_main.cpp # << should not put this in the main src dir
+   cvgl-zhdk/zhdkMainProcess.cpp
 )
 
 target_include_directories(zhdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
