@@ -18,7 +18,7 @@ set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 if( DEFINED WITH_BLACKMAGIC )
     # setup BlackMagic
     
-    set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 12.1")
+    set(DECKLINK_SDK "${PROJECT_SOURCE_DIR}/../Blackmagic DeckLink SDK 12.4")
 
     if(CMAKE_SYSTEM_NAME MATCHES "Linux")
         set(DECKLINK_PLATFORM_INCLUDE "${DECKLINK_SDK}/Examples/Linux" )

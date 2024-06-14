@@ -30,7 +30,7 @@ int main( void )
     cvglDeckLinkCamera bm_cam2(2); // 1 & 3
 
     cout << "blackmagic " << bm_cam.hasCamera() << " checking cv cam" << endl;
-    cvglCVCamera cvcam(0);
+    cvglCVCamera cvcam(1);
 
     //cvglVideoPlayer cvcam("/home/rama/opencv/doc/js_tutorials/js_assets/cup.mp4");
 
