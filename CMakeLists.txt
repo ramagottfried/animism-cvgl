@@ -4,6 +4,11 @@ project(cvgl)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-march=native)
+    message(STATUS "Enabled native CPU optimizations (-march=native)")
+endif()
+
 set(WITH_BLACKMAGIC True )
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
@@ -14,6 +19,8 @@ endif()
 
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
+
+#set(CMAKE_EXE_LINKER_FLAGS "-L/opt/homebrew/opt/ffmpeg@6/lib")
 
 if( DEFINED WITH_BLACKMAGIC )
     # setup BlackMagic
@@ -72,7 +79,7 @@ list(APPEND SRCLIST
     src/mixer/cvglMixer.cpp
     src/camera/cvglCameraBase.cpp
     src/camera/cvglCVCamera.cpp
-    src/camera/cvglDeckLinkCamera.cpp
+#    src/camera/cvglDeckLinkCamera.cpp # added below
     src/camera/cvglVideoPlayer.cpp
     src/gl/cvglCallbacks.cpp
     src/gl/cvglContext.cpp
@@ -201,3 +208,8 @@ add_custom_command(TARGET zhdk PRE_BUILD
 
 # also potentially to log file path for loading shaders / future lua files?
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
+
+#  xcode-select --install
+#For compilers to find ffmpeg@6 you may need to set:
+#  export LDFLAGS="-L/opt/homebrew/opt/ffmpeg@6/lib"
+#  export CPPFLAGS="-I/opt/homebrew/opt/ffmpeg@6/include"

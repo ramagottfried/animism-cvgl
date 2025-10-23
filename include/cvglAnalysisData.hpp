@@ -97,8 +97,11 @@ struct AnalysisData
 
     std::vector<int> id; // idx -> id lookup
     std::unordered_map<int, int> id_idx;  // id -> idx lookup
-    
+    std::vector<int> prev_id; // store for prev frame ids
+
     std::vector< std::chrono::time_point<std::chrono::system_clock> > start_time;
+    
+    std::chrono::time_point<std::chrono::system_clock> frame_time;
     
     void initSizeFromIdx()
     {

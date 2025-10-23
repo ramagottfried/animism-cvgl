@@ -14,7 +14,11 @@
 class cvglVideoPlayer : public cvglCameraBase
 {
 public:
-    cvglVideoPlayer(const std::string& file);
+    cvglVideoPlayer(){}
+    cvglVideoPlayer(const std::string& file){
+        loadFile(file);
+    }
+
     ~cvglVideoPlayer()
     {
         stop();
@@ -26,7 +30,34 @@ public:
     void pause(bool state);
     void stop();
     
-    
+    void setFrame(size_t frameNum);
+
+    void loadFile(const std::string& file);
+
+    inline double getCurrentFrame()
+    {
+        if( cap.isOpened() )
+            return cap.get(cv::CAP_PROP_POS_FRAMES);
+        else
+            return -1;
+    }
+
+    inline double getNumFrames()
+    {
+        if( cap.isOpened() )
+            return cap.get(cv::CAP_PROP_FRAME_COUNT);
+        else
+            return -1;
+    }
+
+    inline double getFrameRate()
+    {
+        if( cap.isOpened() )
+            return cap.get(cv::CAP_PROP_FPS);
+        else
+            return -1;
+    }
+
 private:
     
     cv::VideoCapture cap;
@@ -42,4 +73,6 @@ private:
     double fps, s_per_frame;
     size_t frameCount = 0, nFrames = 0;
     int direction = 1;
+    
+    long manual_frame = -1; //100;
 };

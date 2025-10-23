@@ -8,6 +8,7 @@
 #include "cvglCV.hpp"
 #include "cvglHelperFunctions.hpp"
 //#include "cvglMainProcess.hpp"
+#include <chrono>
 
 using namespace cv;
 using namespace std;
@@ -66,7 +67,7 @@ void cvglCV::setCVParams( MapOSC & b )
         else if( addr == "/gauss/sigma" || addr == "/gauss_sigma" )
         {
             m_gauss_sigma = m.getInt();
-            m_gauss_ksize = m_gauss_sigma*5;
+            m_gauss_ksize = (m_gauss_sigma*5)|1;
         }
         
     }
@@ -204,47 +205,58 @@ void cvglCV::preprocessCanny()
     }
     
     //  m_img = mat.clone();
-    
     float resize = m_resize; // avoid lock
-    cv::resize(m_img, src_color_sized, cv::Size(), resize, resize, cv::INTER_AREA);
-    cv::cvtColor(src_color_sized, src_gray, cv::COLOR_RGB2GRAY);
+
+    cv::cvtColor(m_img, src_gray, cv::COLOR_RGB2GRAY);
     
-    switch (m_color_mode) {
-        case 1:
-            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2HLS_FULL);
-            break;
-        case 2:
-            cvtColor(src_color_sized, src_color_sized, COLOR_BGR2Lab);
-            break;
-        default:
-            break;
-    }
+   
+
+   // const double resize_scalar = 1.0 / m_resize;
+   // cv::resize(can, can, cv::Size(), resize_scalar, resize_scalar);
+/*
+ 
+    Mat can;
+    cv::Canny(src_gray, can, m_canny_min, m_canny_max, 3);
+ 
+    cv::Mat rgbImage(can.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    
+    std::vector<cv::Mat> channels(3);
+    cv::split(rgbImage, channels);
+    
+    channels[1] = can * 0.85;
+    
+    cv::merge(channels, rgbImage);
+    
+    cv::add(m_img, rgbImage, m_img);
+  */
+    
+    cv::resize(src_gray, src_gray, cv::Size(), resize, resize, cv::INTER_AREA);
     
     if( m_invert )
     {
         bitwise_not(src_gray, src_gray);
     }
     
+    Mat can;
+    cv::Canny(src_gray, can, m_canny_min, m_canny_max, 3);
     
-    GaussianBlur(src_gray, src_blur_gray, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
+    GaussianBlur(can, src_blur_gray, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
     erode( src_blur_gray, src_blur_gray, m_er_element );
     dilate( src_blur_gray, src_blur_gray, m_di_element );
     
-    Mat can;
-    cv::Canny(src_blur_gray, can, m_canny_min, m_canny_max, 3);
+   /*
     
-    /*
     Mat can_blur;
     GaussianBlur(can, can_blur, cv::Size(m_gauss_ksize, m_gauss_ksize), m_gauss_sigma, m_gauss_sigma);
     erode( can_blur, can_blur, m_er_element );
     dilate( can_blur, can_blur, m_di_element );
-    */
 
+*/
     // previously I was bluring the edges to make larger contours, not sure if that is still worth doing maybe
 
     //    src_gray = can;
     
-    threshold( can, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
+    threshold( src_blur_gray, threshold_output, m_thresh, 255, cv::THRESH_BINARY );
     
     //Sobel(src_gray, sob, CV_32F, 1, 1);
     
@@ -483,9 +495,9 @@ void cvglCV::preprocessDenseFlow()
 
         double min, max;
         minMaxIdx(dist, &min, &max);
-        cout << "dist " << min << " " << max << endl;
+        //cout << "dist " << min << " " << max << endl;
         minMaxIdx(mag_gray, &min, &max);
-        cout << "mag_gray " << min << " " << max << endl;
+        //cout << "mag_gray " << min << " " << max << endl;
 /*
         vector<UMat> xy_dist = { angle, dist, flow_vec[0], flow_vec[1] };
 
@@ -787,8 +799,10 @@ AnalysisData cvglCV::analyzeContour()
     
     data.initSizeFromIdx();
     data.contour_area = Eigen::Map<Eigen::ArrayXd, Eigen::Aligned>(contour_area.data(), contour_area.size());
-    
-   // lock_guard<mutex> lock(m_lock);
+
+    data.frame_time = std::chrono::system_clock::now();
+
+    lock_guard<mutex> lock(m_lock);
    
     m_thread_pool->enqueue([this](AnalysisData _data){ analysisThread(_data);}, data);
     
@@ -811,7 +825,17 @@ void cvglCV::analysisThread(AnalysisData data)
         src_color_sized.copyTo(src_color_sized_mat);
         sob.copyTo(sob_mat);
 
-    m_lock.unlock();
+    /*
+    {
+        const auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        auto milliseconds = chrono::duration_cast<chrono::milliseconds>(duration).count();
+        printf("frame %p beg \t%ld \n", &data, milliseconds );
+    }
+     */
+        data.prev_id = prev_data.id;
+    
+    lock.unlock();
     
     int nchans = src_color_sized_mat.channels();
     double src_width = (double)src_color_sized_mat.size().width;
@@ -981,12 +1005,22 @@ void cvglCV::analysisThread(AnalysisData data)
         for( size_t j = 0; j < n_defects; ++j )
         {
             Vec4i& v = data.defects_vec[i][j];
-            cv::Point2i * ptFar = data.contours[i].ptr<cv::Point2i>( v[2] );
-            defect_x(j) = (double)ptFar->x / src_width;
-            defect_y(j) = (double)ptFar->y / src_height;
-            defect_depth(j) = (double)v[3] / 256.;
             
-            dist_sum += defect_depth(j);
+            if( v[2] < data.contours[i].rows ) // TO DO: WHY IS THIS HAPPENING must figure out and fix, but at least this fixes the crash hopefully
+            {
+                cv::Point2i * ptFar = data.contours[i].ptr<cv::Point2i>( v[2] );
+
+                defect_x(j) = (double)ptFar->x / src_width;
+                defect_y(j) = (double)ptFar->y / src_height;
+                defect_depth(j) = (double)v[3] / 256.;
+                
+                dist_sum += defect_depth(j);
+            }
+            else
+            {
+                // cout << "defect index " << v[2] << " contour size " << data.contours[i].size << " rows " << data.contours[i].rows << endl;
+            }
+                
         }
         
         ArrayXd rel_x = defect_x - data.centroid_x(i);
@@ -1002,13 +1036,13 @@ void cvglCV::analysisThread(AnalysisData data)
             data.defect_rel_mean_angle(i) = std::atan2( defect_w_x.sum(),  defect_w_y.sum() ) * 57.2957795131;
             data.defect_rel_depthweight(i) = defect_depthweight.mean();
             data.defect_dist_sum(i) = dist_sum;
-        }/*
+        }
         else
         {
             data.defect_rel_mean_angle(i) = 0;
             data.defect_rel_depthweight(i) = 0;
             data.defect_dist_sum(i) = 0;
-        } */
+        }
         
         
     }
@@ -1018,14 +1052,14 @@ void cvglCV::analysisThread(AnalysisData data)
     
     if( prev_data.centroids.size() == 0 )
     {
-        
+        data.noteOn_idx.reserve( data.centroids.size() );
+
         for( size_t i = 0; i < data.centroids.size(); i++ )
         {
             id_used[i] = 1;
             data.id.emplace_back(i);
+            data.noteOn_idx.emplace_back(i);
             data.id_idx.emplace(i, i);
-            
-            
         }
         
     }
@@ -1044,7 +1078,6 @@ void cvglCV::analysisThread(AnalysisData data)
         data.noteOff_prev_idx.reserve( prev_data.centroids.size() );
 
         // get delta movement between tracked contours
-        
         
         // fist check if previous points are found
         for( size_t j = 0; j < prev_data.centroids.size(); j++ )
@@ -1087,6 +1120,16 @@ void cvglCV::analysisThread(AnalysisData data)
                 // not found, so fee the id slot
                 id_used[ prev_data.id[j] ] = 0;
                 data.noteOff_prev_idx.emplace_back(j);
+                /*
+                std::cout << "\n note off id " << prev_data.id[j] << " idx " << j << std::endl;
+                // debug check prev ids
+                cout << "prev ids (" << prev_data.id.size() << ") ";
+                for( auto i : prev_data.id )
+                    cout << i << " ";
+                cout << endl;
+                
+                cout << "prev length " << prev_data.ncontours << " or " << prev_data.contour_idx.size() << endl;
+                 */
             }
             
         }
@@ -1128,14 +1171,22 @@ void cvglCV::analysisThread(AnalysisData data)
     
 
     analysisTracking(data, prev_data);
-    
+        
     processAnalysis(data);
-    
-    m_lock.lock();
+
+    lock.lock();
     m_prev_data = data;
     m_id_used = id_used;
-    m_lock.unlock();
-    
+    lock.unlock();
+
+    /*
+    {
+        const auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        auto milliseconds = chrono::duration_cast<chrono::milliseconds>(duration).count();
+        printf("frame %p end \t%ld \n", &data, milliseconds );
+    }
+     */
 }
 
 //typedef std::chrono::milliseconds ms_t;

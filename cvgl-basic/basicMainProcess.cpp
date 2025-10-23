@@ -276,6 +276,11 @@ void basicMainProcess::setMainParams( MapOSC & b )
                 captureFrame( val.get<int>(0), filename );
             }
         }
+        else if (addr == "/video/movie/frame")
+        {
+            //cout << "got movie frame? \n";
+            movie.setFrame( val.getInt() );
+        }
     }
 }
 
@@ -427,6 +432,10 @@ MapOSC basicMainProcess::dataToMap(const AnalysisData& data)
     osc.addMessage("/sustain/prev/idx", data.sustain_idx);
     osc.addMessage("/noteOff/prev/idx", data.noteOff_prev_idx);
     
+    /*
+    osc.addMessage("/test/prev/id", data.prev_id);
+    osc.addMessage("/test/count", frame_count++);
+     */
     
     vector<int> idx(data.ncontours);
     vector<double> pix_0_mean(data.ncontours);
@@ -476,7 +485,12 @@ MapOSC basicMainProcess::dataToMap(const AnalysisData& data)
     osc.addMessage("/pix/l/std", pix_0_std );
     osc.addMessage("/pix/a/std", pix_1_std );
     osc.addMessage("/pix/b/std", pix_2_std );
-    
+
+    if( movie.getNumFrames() > 0 ){
+        osc.addMessage("/movie/frame", movie.getCurrentFrame());
+        osc.addMessage("/movie/num_frames", movie.getNumFrames());
+        osc.addMessage("/movie/fps", movie.getFrameRate());
+    }
 
     return osc;
 }
@@ -509,8 +523,8 @@ void basicMainProcess::processAnalysis(const AnalysisData& data)
 
 int basicMainProcess::loadShaders()
 {
-    //std::string shader_path = "./shaders/"; // relative to exec location
-    std::string shader_path = "/Users/rgottfri/Documents/dev/animism-cvgl/src/shaders/"; //"/home/rama/animism-cvgl/src/";
+    std::string shader_path = "./shaders/"; // relative to exec location (doesn't work with xcode I think)
+    //std::string shader_path = "/Users/rgottfri/Documents/dev/animism-cvgl/src/shaders/"; //"/home/rama/animism-cvgl/src/";
 
     if( !screen_shader.loadShaderFiles( shader_path + "vertex.vs", shader_path + "crop_fragment.fs" ) ){
         cout << "failed to load screen shader" << endl;
@@ -663,7 +677,8 @@ void basicMainProcess::analysisToGL(const AnalysisData &analysis)
         
         if( m_draw_contour || m_draw_contour_triangles )
         {
-            cvgl::pointMatToVertex( analysis.contours[ analysis.contour_idx[i] ], contourMesh, analysis.halfW, analysis.halfH );
+            cvgl::pointMatToVertex( analysis.hullP_vec[i] , contourMesh, analysis.halfW, analysis.halfH ); 
+            // analysis.contours[ analysis.contour_idx[i] ] // now drawing hull instead of contour
             contourMesh->triangulate();
             //setTriangleTexcords( contourMesh );
         }
@@ -851,10 +866,10 @@ void basicMainProcess::drawShapes(cvglShader& shapeRenderShader)
     if( m_draw_contour_triangles )
     {
         contourMesh->bind();
-        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+        //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
         contourTriTex->setTexture(m_contour_triangles_rgba);
-        contourMesh->draw(GL_TRIANGLE_STRIP);
-        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+        contourMesh->draw(GL_TRIANGLES);
+        //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
     }
 
     if( m_draw_hull )

@@ -29,11 +29,20 @@ int main( void )
     cvglDeckLinkCamera bm_cam(1);
     cvglDeckLinkCamera bm_cam2(2); // 1 & 3
 
-    cout << "blackmagic " << bm_cam.hasCamera() << " checking cv cam" << endl;
-    cvglCVCamera cvcam(1);
-
-    //cvglVideoPlayer cvcam("/home/rama/opencv/doc/js_tutorials/js_assets/cup.mp4");
-
+    cout << "blackmagic " << bm_cam.hasCamera() << " " << bm_cam2.hasCamera() << " checking cv cam" << endl;
+    cvglCVCamera cvcam(0);
+//"/Users/rgottfri/Documents/Max 8/Projects/apophänie_2020/media/onlyvideo.mov"
+    app.movie.loadFile("/Users/rgottfri/Documents/__rama/yarn-wire/4_moth-sun-to-end_HD.mov" );
+    //app.movie.pause(true);
+    
+    if( app.movie.hasCamera() )
+    {
+        cout << "loaded movie " << endl;
+        app.movie.setProcessFrameCallback( [](cv::UMat& mat) { app.processFrame(mat, 4); } );
+//        app.context.setupWindow( app.movie.getWidth(), app.movie.getHeight() );
+        app.movie.start();
+    }
+    
     if( bm_cam.hasCamera() )
     {
         cout << "found blackmagic 2 " << endl;
@@ -102,7 +111,7 @@ int main( void )
 
     cout << "starting draw loop " << endl;
 
-    app.context.flip(0,0);
+    app.context.flip(1,0);
     
     MapOSC b;
     b.addMessage("/use/preprocess", 0);

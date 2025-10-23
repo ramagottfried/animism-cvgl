@@ -9,6 +9,7 @@
 #include "cvglUDPServer.hpp"
 #include "cvglProfile.hpp"
 #include "MapOSC.hpp"
+#include "cvglVideoPlayer.hpp"
 
 // #include "AnimismCues.hpp"
 
@@ -70,10 +71,13 @@ public:
 
 //    AnimismCues& cues(){ return m_cues; }
 
+    cvglVideoPlayer movie;
+
 private:
 
     // AnimismCues m_cues;
 
+    size_t frame_count = 0;
     AnalysisData m_data;
     
     cvglProfile profile;
@@ -139,6 +143,8 @@ private:
 
     glm::vec2 drawRange_y = glm::vec2(0.0f, 1.0f);
     glm::vec2 drawRange_x = glm::vec2(0.0f, 1.0f);
+
+
 
 
 };

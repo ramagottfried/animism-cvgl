@@ -3,7 +3,7 @@
 
 using namespace std;
 
-cvglVideoPlayer::cvglVideoPlayer(const string& file)
+void cvglVideoPlayer::loadFile(const string& file)
 {
     cap.open(file);
     if(!cap.isOpened())  // check if we succeeded
@@ -19,7 +19,30 @@ cvglVideoPlayer::cvglVideoPlayer(const string& file)
     
     nFrames = cap.get(cv::CAP_PROP_FRAME_COUNT);
     // could implement forward/backward system
-    cout << "opened file " << file << " fps " << fps << endl;
+    cout << "opened file " << file << " fps " << cap.get(cv::CAP_PROP_FPS) << " nframes " << nFrames << endl;
+}
+
+void cvglVideoPlayer::setFrame(size_t frameNum)
+{
+    manual_frame = frameNum;
+    /*
+    cv::UMat _frame;
+    if (frameNum >= 0 & frameNum <= nFrames)
+    {
+        cout << "trying frame " << frameNum << endl;
+        cout << " fps " << cap.get(cv::CAP_PROP_FPS) << " nframes " << cap.get(cv::CAP_PROP_FRAME_COUNT) << endl;
+
+        if( cap.isOpened() ){
+            //cap.set(cv::CAP_PROP_POS_FRAMES, frameNum);
+            cap.set(cv::CAP_PROP_POS_MSEC, 0);
+            cap >> _frame;
+
+            cout << "apparenty grabbed frame " << frameNum << " empty? " << _frame.empty() << endl;
+            m_processFrameCallback( _frame );
+        }
+               
+    }
+     */
 }
 
 // opencv camera callback
@@ -34,13 +57,19 @@ void cvglVideoPlayer::cvCamLoop()
     {
         if( !m_paused )
         {
+            
             current_time = chrono::system_clock::now();
             chrono::duration<double> elapsed_seconds = current_time-prevTime;
             
             if( elapsed_seconds.count() >= s_per_frame )
             {
                 bool do_callback = true;
-                
+            
+                if( manual_frame >= 0 & manual_frame <= nFrames )
+                {
+                    //cout << "manual_frame " << manual_frame << endl;
+                    cap.set(cv::CAP_PROP_POS_FRAMES, manual_frame);
+                }
                 
                 if( !cap.read(_frame) )
                 {
@@ -58,10 +87,11 @@ void cvglVideoPlayer::cvCamLoop()
                         do_callback = false;
                     }
                 }
+                
                 /**
                     note: processFrameCallback may take ownership of Mat
                  */
-                if( do_callback && m_processFrameCallback )
+                if( do_callback && m_processFrameCallback && !m_stop_cv_loop)
                     m_processFrameCallback( _frame );
                 
                 prevTime = current_time;
